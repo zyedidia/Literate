@@ -1,0 +1,42 @@
+body {
+	margin-left: 4em;
+	margin-right: 4em;
+}
+ol {
+	list-style: none;
+}
+pre.prettyprint {
+	padding: 10px;
+	background: #eee;
+	border-radius: 10px;
+	border: none;
+}
+em.codeblock_name {
+	margin-top: 1.25em;
+	display: block;
+}
+a:link {
+	color: blue;
+	text-decoration: none;
+}
+a:link:hover {
+	color: blue;
+	text-decoration: underline;
+}
+a:visited {
+	color: blue;
+}
+a:active {
+	color: red;
+}
+h2, h3 {
+	padding-right: 1.25em;
+}
+h1 {
+	text-align: center;
+}
+code {
+	background: #eee;
+	border-radius: 3px;
+	padding: 2px;
+}
