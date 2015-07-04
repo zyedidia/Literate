@@ -9,7 +9,7 @@ function weave(sourcefile)
 	include_scripts = """<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
 	<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 	<script type="text/x-mathjax-config">
-	  MathJax.Hub.Config({tex2jax: {inlineMath: [['\$','\$'], ['\\(','\\)']]}});
+	  MathJax.Hub.Config({tex2jax: {inlineMath: [['\$','\$']]}});
 	</script>"""
 
 	base_html =  """<!doctype html>
