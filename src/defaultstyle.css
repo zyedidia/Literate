@@ -1,13 +1,16 @@
 body {
 	margin-left: 4em;
 	margin-right: 4em;
+	font-size: x-large;
+
 }
 ol {
 	list-style: none;
 }
 pre.prettyprint {
+	font-size: large;
 	padding: 10px;
-	background: #eee;
+	background: #f4f4f4;
 	border-radius: 10px;
 	border: none;
 }
@@ -26,7 +29,7 @@ a:link:hover {
 a:visited {
 	color: blue;
 }
-a:active {
+a:link:active {
 	color: red;
 }
 h2, h3 {
@@ -36,7 +39,12 @@ h1 {
 	text-align: center;
 }
 code {
-	background: #eee;
+	background: #f4f4f4;
 	border-radius: 3px;
 	padding: 2px;
+}
+pre {
+	-moz-tab-size: 4; /* Code for Firefox */
+	-o-tab-size: 4; /* Code for Opera 10.6-12.1 */
+	tab-size: 4;
 }

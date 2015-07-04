@@ -1,0 +1,7 @@
+- Remove Root
+- Number links like CWEB
+- Name completion with '...'
+- Paragraphs should inline with headers
+- Index
+- Vim plugin
+- W2lit converter

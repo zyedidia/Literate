@@ -4,7 +4,7 @@
 
 @p An example of Literate
 
-This example, based on a program by Klaus Guntermann and Joachim Schrod [TUGboat 7 (1986), 134–137] presents the "word count" program from UNIX, rewritten in Literate $sin(x)^2$ to demonstrate literate programming in C (or any language). The level of detail in this document is intentionally high, for didactic purposes; many of the things spelled out here don’t need to be explained in other programs.
+This example, based on a program by Klaus Guntermann and Joachim Schrod [TUGboat 7 (1986), 134–137] presents the "word count" program from UNIX, rewritten in Literate to demonstrate literate programming in C (or any language). The level of detail in this document is intentionally high, for didactic purposes; many of the things spelled out here don’t need to be explained in other programs.
 
 The purpose of wc is to count lines, words, and/or characters in a list of files. The number of lines in a file is the number of newline characters it contains. The number of characters is the file length in bytes. A “word” is a maximal sequence of consecutive characters other than newline, space, or tab, containing at least one visible ASCII code. (We assume that the standard ASCII code is in use.)
 

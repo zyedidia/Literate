@@ -54,7 +54,7 @@ function weave(sourcefile)
 					line = "⟨$line⟩ ="
 				end
 				name = strip(line[4:search(line, "⟩")[1]-1])
-				write(out, "<a name=\"$name$paragraphnum\"><em class=\"codeblock_name\">$line</em></a>\n")
+				write(out, "<p id=\"$name$paragraphnum\"><em class=\"codeblock_name\">$line</em></a>\n")
 				write(out, start_codeblock)
 			else
 				write(out, end_codeblock)
@@ -90,7 +90,7 @@ function weave(sourcefile)
 			else
 				if startswith(line, "@p")
 					paragraphnum += 1
-					write(out, "<a name=\"$paragraphnum\"><h3>$paragraphnum. $(strip(line[3:end]))</h3></a>\n")
+					write(out, "<p id=\"$paragraphnum\"><h3>$paragraphnum. $(strip(line[3:end]))</h3></a>\n")
 				elseif startswith(line, "@title")
 					write(out, "<h1>$(strip(line[7:end]))</h1>\n")
 				else

@@ -3,16 +3,18 @@
 @title Hangman
 
 @p Introduction
-
+This is a Hangman program. It lets you make guesses about which letters are in an unknown word. On the eighth incorrect guess you lose.
 The structure of the hangman program will look like this:
 
 --- Root
 println("Welcome to hangman!")
 @<Setup>
-@<Loop start>
-@<User input>
-@<Check input>
-@<Check win>
+guesses_left = 8
+while guesses_left > 0
+	@<User input>
+	@<Check input>
+	@<Check win>
+end
 @<End>
 ---
 
@@ -21,8 +23,6 @@ println("Welcome to hangman!")
 First, we have the computer come up with a secret word which it chooses randomly from a list of words read from a text file.
 
 --- Setup
-@<Functions>
-
 words = readlines(open("words.txt"))
 secret_word = words[rand(1:length(words))] |> chomp # Use chomp to remove the '\n'
 ---
@@ -36,13 +36,6 @@ for i = 1:length(secret_word)
 end
 ---
 
-We should also make a variable which will hold the number of guesses the user has made, and a variable for how many guesses they can make before losing.
-
---- Setup +=
-guesses = 0
-max_guesses = 8
----
-
 @p Getting User Input
 
 Now we can start the game.
@@ -50,7 +43,7 @@ Now we can start the game.
 We ask for the user's guess, and accept one `Char`.
 
 --- User input
-printarray(dashes) # Later section
+@<print dashes array>
 println("You have $(max_guesses - guesses) guesses left")
 println("What's your guess? ")
 guess = readline(STDIN)[1]
@@ -91,25 +84,14 @@ end
 
 We want the dashes to look pretty when they are printed, not look like an array of chars. Instead of `['-', '-', '-', '-']`, we want `----`.
 
---- Functions
-function printarray(arr)
-    for element in arr
-        print(element)
-    end
-    println()
+--- print dashes array
+for element in dashes
+    print(element)
 end
+println()
 ---
 
-@p Adding the Loop
-
-To make sure that the guessing happens multiple times, we wrap everything in a loop
-
---- Loop start
-while guesses <= max_guesses
----
-
+@p
 --- End
-end # End the loop
-
 println("You lose. The word was $secret_word")
 ---
