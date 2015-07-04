@@ -1,4 +1,4 @@
-@codetype c
+@codetype c c
 
 @title WC
 
@@ -16,7 +16,7 @@ Most `Literate` programs share a common structure. It’s probably a good idea t
 
 Here, then, is an overview of the file wc.c that is defined by this CWEB program wc.w:
 
---- Root
+--- wc.c
 @<Header files to include>
 @<Global variables>
 @<Functions>

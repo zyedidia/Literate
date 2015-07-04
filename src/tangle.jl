@@ -1,9 +1,9 @@
 include("common.jl")
 
 function tangle(sourcefile)
-	out = open("$(name(inputfile)).$codetype", "w")
 
 	codeblocks = Dict{String, String}()
+	names = String[]
 
 	lexer = Lexer(sourcefile, [' ', '\n'])
 	while (t = advance(lexer)) != EOF
@@ -28,15 +28,20 @@ function tangle(sourcefile)
 			if add_to_block
 				codeblocks[block_name] *= code
 			else
+				push!(names, block_name)
 				codeblocks[block_name] = code
 			end
 		end
 	end
 	close(lexer)
 
-	write_code("root", codeblocks, out)
-
-	close(out)
+	for name in names
+		if endswith(name, ".$codetype")
+			out = open("$name", "w")
+			write_code("$name", codeblocks, out)
+			close(out)
+		end
+	end
 end
 
 function write_code(blockname, codeblocks, out)

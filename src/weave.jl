@@ -48,12 +48,19 @@ function weave(sourcefile)
 			in_codeblock = !in_codeblock
 			if in_codeblock
 				line = strip(line[4:end])
+				file = false
 				if contains(line, "+=")
-					line = "⟨$(strip(line[1:search(line, "+=")[1]-1]))⟩ +="
+					line = strip(line[1:search(line, "+=")[1]-1])
+					file = endswith(line, ".$codetype")
+					line = "⟨$line⟩ +="
 				else
+					file = endswith(line, ".$codetype")
 					line = "⟨$line⟩ ="
 				end
 				name = strip(line[4:search(line, "⟩")[1]-1])
+				if file
+					line = "<strong>$line</strong>"
+				end
 				write(out, "<p id=\"$name$paragraphnum\"><em class=\"codeblock_name\">$line</em></a>\n")
 				write(out, start_codeblock)
 			else
@@ -64,7 +71,6 @@ function weave(sourcefile)
 				m = match(r"@<.*?>", line)
 				name = line[m.offset+2:m.offset+length(m.match)-2]
 				if in_codeblock
-					# line = replace(line, m.match, "\\<span class=\"nocode\"\\>⟨\\<a href=\"#$name\"\\>$name $(block_paragraphs[name])\\</a\\>⟩\\</span\\>")
 					links = "\\<span class=\"nocode\"\\>⟨$name"
 					for paragraph in split(block_paragraphs[name], ", ")
 						links *= ", \\<a href=\"#$paragraph\"\\>$paragraph\\</a\\>"

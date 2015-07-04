@@ -19,6 +19,8 @@ function firstpass(sourcefile)
 			t = advance(lexer)
 			if t == "codetype"
 				advance(lexer)
+				advance(lexer)
+				advance(lexer)
 				global codetype = advance(lexer)
 			elseif t == "title"
 				while (t = advance(lexer)) != "\n"
@@ -28,11 +30,11 @@ function firstpass(sourcefile)
 				paragraphnum += 1
 			end
 		elseif t == "---"
-			t = advanceline(lexer)
-			if strip(t) == ""
+			t = strip(advanceline(lexer))
+			if t == ""
 				continue
 			end
-			block_name = strip(t)
+			block_name = t
 			if contains(block_name, "+=")
 				block_name = strip(block_name[1:search(block_name, "+")[1]-1])
 			end

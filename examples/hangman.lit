@@ -1,4 +1,4 @@
-@codetype jl
+@codetype Julia jl
 
 @title Hangman
 
@@ -6,7 +6,7 @@
 This is a Hangman program. It lets you make guesses about which letters are in an unknown word. On the eighth incorrect guess you lose.
 The structure of the hangman program will look like this:
 
---- Root
+--- Hangman.jl
 println("Welcome to hangman!")
 @<Setup>
 guesses_left = 8
@@ -32,7 +32,7 @@ Next we initialize the variable to hold the dashes.
 --- Setup +=
 dashes = Array(Char, length(secret_word))
 for i = 1:length(secret_word)
-    dashes[i] = '-'
+	dashes[i] = '-'
 end
 ---
 
@@ -56,14 +56,14 @@ We loop through the secret word, checking if any of its letters were guessed. If
 --- Check input
 got_one_correct = false
 for i = 1:length(secret_word)
-    if secret_word[i] == guess
-        got_one_correct = true
-        dashes[i] = guess
-    end
+	if secret_word[i] == guess
+		got_one_correct = true
+		dashes[i] = guess
+	end
 end
 
 if !got_one_correct
-    guesses += 1
+	guesses += 1
 end
 ---
 
@@ -75,8 +75,8 @@ Here we see if there are any dashes left in the array that holds the dashes. If 
 
 --- Check win
 if !('-' in dashes)
-    println("You win! The word was $secret_word")
-    exit()
+	println("You win! The word was $secret_word")
+	exit()
 end
 ---
 
@@ -86,7 +86,7 @@ We want the dashes to look pretty when they are printed, not look like an array 
 
 --- print dashes array
 for element in dashes
-    print(element)
+	print(element)
 end
 println()
 ---

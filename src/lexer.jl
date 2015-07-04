@@ -4,15 +4,14 @@ const EOF = '\0'
 
 type Lexer
 	buffer::IOBuffer
-	token::String
 	separators::Array{Char, 1}
 
 	function Lexer(buffer::IOBuffer, separators::Array{Char, 1})
-		new(buffer, "", separators)
+		new(buffer, separators)
 	end
 
 	function Lexer(str::String, separators::Array{Char, 1})
-		new(IOBuffer(str), "", separators)
+		new(IOBuffer(str), separators)
 	end
 end
 
@@ -67,7 +66,7 @@ function advance(lexer::Lexer)
 			break
 		end
 	end
-	lexer.token = trim(token)
+	trim(token)
 end
 
 function advanceline(lexer::Lexer)
@@ -83,7 +82,6 @@ function advanceline(lexer::Lexer)
 			break
 		end
 	end
-	lexer.token = trim(token)
 	line
 end
 
