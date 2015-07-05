@@ -76,10 +76,10 @@ function weave(sourcefile)
 				if contains(line, "+=")
 					line = strip(line[1:search(line, "+=")[1]-1])
 					file = ismatch(r"^.+\..+$", line)
-					line = "{$line} +="
+					line = "{$line} +≡"
 				else
 					file = ismatch(r"^.+\..+$", line)
-					line = "{$line} ="
+					line = "{$line} ≡"
 				end
 				name = strip(line[4:search(line, "}")[1]-1])
 				if file

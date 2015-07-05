@@ -6,13 +6,16 @@ body {
 pre.prettyprint {
 	font-size: 10pt;
 	padding: 10px;
-	background: #f4f4f4;
+	border-color: #ddd;
 	border-radius: 10px;
-	border: none;
+	border: solid;
+	border-color: #bbb;
+	border-width: 2px;
+	white-space: pre-wrap;
 }
 .codeblock_name {
 	font-family: Monaco, Menlo;
-	font-size: 11pt;
+	font-size: 10pt;
 	margin-top: 1.25em;
 	display: block;
 }
@@ -37,8 +40,8 @@ h1 {
 	text-align: center;
 }
 code {
-	background: #f4f4f4;
-	border-radius: 3px;
+	font-family: Monaco;
+	font-size: 10pt;
 	padding: 2px;
 	font-size: 11pt;
 }

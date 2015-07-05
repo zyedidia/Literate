@@ -1,4 +1,8 @@
 - Number links like CWEB
+- Stdin
+- Dates
+- User adjustable css/fonts
+- Codeblock names as comments in generated code
 - Name completion with '...'
 - Paragraphs should inline with headers
 - Index
