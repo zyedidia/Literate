@@ -8,14 +8,14 @@ The structure of the hangman program will look like this:
 
 --- Hangman.jl
 println("Welcome to hangman!")
-@<Setup>
+@{Setup}
 guesses_left = 8
 while guesses_left > 0
-	@<User input>
-	@<Check input>
-	@<Check win>
+	@{User input}
+	@{Check input}
+	@{Check win}
 end
-@<End>
+@{End}
 ---
 
 @p The Setup
@@ -43,8 +43,8 @@ Now we can start the game.
 We ask for the user's guess, and accept one `Char`.
 
 --- User input
-@<print dashes array>
-println("You have $(max_guesses - guesses) guesses left")
+@{print dashes array}
+println("You have $(guesses_left) guesses left")
 println("What's your guess? ")
 guess = readline(STDIN)[1]
 ---
@@ -63,7 +63,7 @@ for i = 1:length(secret_word)
 end
 
 if !got_one_correct
-	guesses += 1
+	guesses_left -= 1
 end
 ---
 

@@ -2,3 +2,4 @@
 
 examples/*.jl
 examples/*.c
+examples/*.pdf

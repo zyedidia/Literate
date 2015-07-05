@@ -76,37 +76,37 @@ function weave(sourcefile)
 				if contains(line, "+=")
 					line = strip(line[1:search(line, "+=")[1]-1])
 					file = ismatch(r"^.+\..+$", line)
-					line = "⟨$line⟩ +="
+					line = "{$line} +="
 				else
 					file = ismatch(r"^.+\..+$", line)
-					line = "⟨$line⟩ ="
+					line = "{$line} ="
 				end
-				name = strip(line[4:search(line, "⟩")[1]-1])
+				name = strip(line[4:search(line, "}")[1]-1])
 				if file
 					line = "<strong>$line</strong>"
 				end
-				write(out, "<p class=\"notp\" id=\"$name$paragraphnum\"><em class=\"codeblock_name\">$line</em></p>\n")
+				write(out, "<p class=\"notp\" id=\"$name$paragraphnum\"><span class=\"codeblock_name\">$line</span></p>\n")
 				write(out, start_codeblock)
 			else
 				write(out, end_codeblock)
 			end
 		else
-			while ismatch(r"@<.*?>", line)
-				m = match(r"@<.*?>", line)
+			while ismatch(r"@{.*?}", line)
+				m = match(r"@{.*?}", line)
 				name = line[m.offset+2:m.offset+length(m.match)-2]
 				if in_codeblock
-					links = "\\<span class=\"nocode\"\\>⟨$name"
+					links = "\\<span class=\"nocode\"\\>{$name"
 					for paragraph in split(block_paragraphs[name], ", ")
 						links *= ", \\<a href=\"#$paragraph\"\\>$paragraph\\</a\\>"
 					end
-					links *= "⟩\\</span\\>"
+					links *= "}\\</span\\>"
 					line = replace(line, m.match, links)
 				else
-					links = "⟨$name"
+					links = "{$name"
 					for paragraph in split(block_paragraphs[name], ", ")
 						links *= ", \\<a href\\=\\\"#$paragraph\\\"\\>$paragraph\\</a\\>"
 					end
-					links *= "⟩"
+					links *= "}"
 					line = replace(line, m.match, links)
 				end
 			end

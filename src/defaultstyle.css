@@ -1,16 +1,18 @@
 body {
 	margin-left: 4em;
 	margin-right: 4em;
-	font-size: 0.5cm;
+	font-size: 14pt;
 }
 pre.prettyprint {
-	font-size: 0.35cm;
+	font-size: 10pt;
 	padding: 10px;
 	background: #f4f4f4;
 	border-radius: 10px;
 	border: none;
 }
-em.codeblock_name {
+.codeblock_name {
+	font-family: Monaco, Menlo;
+	font-size: 11pt;
 	margin-top: 1.25em;
 	display: block;
 }
@@ -38,7 +40,7 @@ code {
 	background: #f4f4f4;
 	border-radius: 3px;
 	padding: 2px;
-	font-size: 0.43cm;
+	font-size: 11pt;
 }
 pre {
 	-moz-tab-size: 4; /* Code for Firefox */

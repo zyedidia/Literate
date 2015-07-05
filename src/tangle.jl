@@ -50,7 +50,7 @@ function write_code(blockname, codeblocks, out)
 	lines = split(code, "\n")
 
 	for line in lines
-		if startswith(strip(line), "@<")
+		if startswith(strip(line), "@{")
 			line = strip(line)
 			write_code(line[3:end-1], codeblocks, out)
 		else

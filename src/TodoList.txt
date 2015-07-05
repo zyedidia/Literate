@@ -3,4 +3,5 @@
 - Paragraphs should inline with headers
 - Index
 - Vim plugin -- Needs more work
-- W2lit converter
+- Make w2lit converter
+- Manual
