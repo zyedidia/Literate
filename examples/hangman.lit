@@ -85,8 +85,8 @@ end
 We want the dashes to look pretty when they are printed, not look like an array of chars. Instead of `['-', '-', '-', '-']`, we want `----`.
 
 --- print dashes array
-for element in dashes
-	print(element)
+for letter in dashes
+	print(letter)
 end
 println()
 ---

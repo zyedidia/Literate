@@ -2,7 +2,6 @@ include("lexer.jl")
 
 dir = dirname(Base.source_path())
 
-codetype = ""
 title = ""
 block_paragraphs = Dict{String, String}()
 
@@ -17,12 +16,7 @@ function firstpass(sourcefile)
 	while (t = advance(lexer)) != EOF
 		if t == "@"
 			t = advance(lexer)
-			if t == "codetype"
-				advance(lexer)
-				advance(lexer)
-				advance(lexer)
-				global codetype = advance(lexer)
-			elseif t == "title"
+			if t == "title"
 				while (t = advance(lexer)) != "\n"
 					global title *= t
 				end

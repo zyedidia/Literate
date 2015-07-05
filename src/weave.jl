@@ -16,7 +16,7 @@ end
 function weave(sourcefile)
 	out = open("$(name(inputfile)).html", "w")
 
-	start_codeblock = "<pre class=\"prettyprint lang-$codetype\">\n"
+	start_codeblock = "<pre class=\"prettyprint\">\n"
 	end_codeblock = "</pre>\n"
 
 	include_scripts = """<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
@@ -75,17 +75,17 @@ function weave(sourcefile)
 				file = false
 				if contains(line, "+=")
 					line = strip(line[1:search(line, "+=")[1]-1])
-					file = endswith(line, ".$codetype")
+					file = ismatch(r"^.+\..+$", line)
 					line = "⟨$line⟩ +="
 				else
-					file = endswith(line, ".$codetype")
+					file = ismatch(r"^.+\..+$", line)
 					line = "⟨$line⟩ ="
 				end
 				name = strip(line[4:search(line, "⟩")[1]-1])
 				if file
 					line = "<strong>$line</strong>"
 				end
-				write(out, "<p id=\"$name$paragraphnum\"><em class=\"codeblock_name\">$line</em></a>\n")
+				write(out, "<p class=\"notp\" id=\"$name$paragraphnum\"><em class=\"codeblock_name\">$line</em></p>\n")
 				write(out, start_codeblock)
 			else
 				write(out, end_codeblock)
@@ -123,7 +123,7 @@ function weave(sourcefile)
 					markdown = ""
 					in_paragraph = true
 					paragraphnum += 1
-					write(out, "<p id=\"$paragraphnum\"><h3>$paragraphnum. $(strip(line[3:end]))</h3></a>\n")
+					write(out, "<p class=\"notp\" id=\"$paragraphnum\"><h3>$paragraphnum. $(strip(line[3:end]))</h3></p>\n")
 				elseif startswith(line, "@title")
 					write(out, "<h1>$(strip(line[7:end]))</h1>\n")
 				else

@@ -1,10 +1,10 @@
 body {
 	margin-left: 4em;
 	margin-right: 4em;
-	font-size: x-large;
+	font-size: 0.5cm;
 }
 pre.prettyprint {
-	font-size: large;
+	font-size: 0.35cm;
 	padding: 10px;
 	background: #f4f4f4;
 	border-radius: 10px;
@@ -38,13 +38,14 @@ code {
 	background: #f4f4f4;
 	border-radius: 3px;
 	padding: 2px;
+	font-size: 0.43cm;
 }
 pre {
 	-moz-tab-size: 4; /* Code for Firefox */
 	-o-tab-size: 4; /* Code for Opera 10.6-12.1 */
 	tab-size: 4;
 }
-p {
+p:not(.notp) {
 	margin: 0;
 	text-indent: 1.5em;
 }

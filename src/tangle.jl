@@ -26,7 +26,7 @@ function tangle(sourcefile)
 				code *= c
 			end
 			if add_to_block
-				codeblocks[block_name] *= code
+				codeblocks[block_name] *= "\n$code"
 			else
 				push!(names, block_name)
 				codeblocks[block_name] = code
@@ -36,8 +36,8 @@ function tangle(sourcefile)
 	close(lexer)
 
 	for name in names
-		if endswith(name, ".$codetype")
-			out = open("$name", "w")
+		if ismatch(r"^.+\..+$", strip(name))
+			out = open("$(strip(name))", "w")
 			write_code("$name", codeblocks, out)
 			close(out)
 		end
