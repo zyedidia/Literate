@@ -2,10 +2,6 @@ body {
 	margin-left: 4em;
 	margin-right: 4em;
 	font-size: x-large;
-
-}
-ol {
-	list-style: none;
 }
 pre.prettyprint {
 	font-size: large;
@@ -47,4 +43,8 @@ pre {
 	-moz-tab-size: 4; /* Code for Firefox */
 	-o-tab-size: 4; /* Code for Opera 10.6-12.1 */
 	tab-size: 4;
+}
+p {
+	margin: 0;
+	text-indent: 1.5em;
 }

@@ -1,5 +1,18 @@
 include("common.jl")
 
+function write_markdown(markdown, out)
+	if markdown != ""
+		markdown = Markdown.parse(markdown) |> Markdown.html
+		markdown = replace(markdown, "\\&lt;", "<")
+		markdown = replace(markdown, "\\&gt;", ">")
+		markdown = replace(markdown, "\\&#61;", "=")
+		markdown = replace(markdown, "\\&quot;", "\"")
+		markdown = replace(markdown, "&#36;", "\$")
+		markdown = replace(markdown, "\\\$", "&#36;")
+		write(out, "$markdown\n")
+	end
+end
+
 function weave(sourcefile)
 	out = open("$(name(inputfile)).html", "w")
 
@@ -9,7 +22,7 @@ function weave(sourcefile)
 	include_scripts = """<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
 	<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 	<script type="text/x-mathjax-config">
-	  MathJax.Hub.Config({tex2jax: {inlineMath: [['\$','\$']]}});
+	MathJax.Hub.Config({tex2jax: {inlineMath: [['\$','\$']]}});
 	</script>"""
 
 	base_html =  """<!doctype html>
@@ -33,15 +46,26 @@ function weave(sourcefile)
 	lines = readlines(IOBuffer(sourcefile))
 
 	in_codeblock = false
+	in_paragraph = false
+	markdown = ""
 
 	for line in lines
 		line = chomp(line)
 		if line == ""
+			markdown *= "\n"
 			continue
 		end
 
 		if startswith(line, "@codetype")
 			continue
+		end
+
+		if ismatch(r"^---.+$", line)
+			in_paragraph = false
+			write_markdown(markdown, out)
+			markdown = ""
+		elseif ismatch(r"^---$", line)
+			in_paragraph = true
 		end
 
 		if ismatch(r"^---.*$", line)
@@ -95,23 +119,23 @@ function weave(sourcefile)
 				write(out, "$line\n")
 			else
 				if startswith(line, "@p")
+					write_markdown(markdown, out)
+					markdown = ""
+					in_paragraph = true
 					paragraphnum += 1
 					write(out, "<p id=\"$paragraphnum\"><h3>$paragraphnum. $(strip(line[3:end]))</h3></a>\n")
 				elseif startswith(line, "@title")
 					write(out, "<h1>$(strip(line[7:end]))</h1>\n")
 				else
-					line = Markdown.parse(line) |> Markdown.html
-					line = replace(line, "\\&lt;", "<")
-					line = replace(line, "\\&gt;", ">")
-					line = replace(line, "\\&#61;", "=")
-					line = replace(line, "\\&quot;", "\"")
-					line = replace(line, "&#36;", "\$")
-					line = replace(line, "\\\$", "&#36;")
-					write(out, "$line\n")
+					if in_paragraph
+						markdown *= line * "\n"
+					end
 				end
 			end
 		end
 	end
+	write_markdown(markdown, out)
+	markdown = ""
 	end_html = "</body>\n</html>"
 
 	write(out, end_html)
