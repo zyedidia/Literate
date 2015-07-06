@@ -1,4 +1,3 @@
-- Number links like CWEB
 - Stdin
 - Dates
 - User adjustable css/fonts

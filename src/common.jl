@@ -3,7 +3,8 @@ include("lexer.jl")
 dir = dirname(Base.source_path())
 
 title = ""
-block_paragraphs = Dict{String, String}()
+block_locations = Dict{String, String}()
+block_use_locations = Dict{String, String}()
 
 function name(file)
 	file[1:search(file, '.')-1]
@@ -12,6 +13,7 @@ end
 function firstpass(sourcefile)
 	lexer = Lexer(IOBuffer(sourcefile), [' ', '\n', '@'])
 	paragraphnum = 0
+	in_codeblock = false
 
 	while (t = advance(lexer)) != EOF
 		if t == "@"
@@ -22,20 +24,30 @@ function firstpass(sourcefile)
 				end
 			elseif t == "p"
 				paragraphnum += 1
+			elseif in_codeblock
+				restline = t * chomp(advanceline(lexer))
+				block_name = restline[2:end-1]
+				if !haskey(block_use_locations, block_name)
+					block_use_locations[block_name] = "$paragraphnum"
+				elseif !contains(block_use_locations[block_name], "$paragraphnum")
+					block_use_locations[block_name] *= ", $paragraphnum"
+				end
 			end
 		elseif t == "---"
 			t = strip(advanceline(lexer))
+			in_codeblock = true
 			if t == ""
+				in_codeblock = false
 				continue
 			end
 			block_name = t
 			if contains(block_name, "+=")
 				block_name = strip(block_name[1:search(block_name, "+")[1]-1])
 			end
-			if !haskey(block_paragraphs, block_name)
-				block_paragraphs[block_name] = "$paragraphnum"
-			elseif !contains(block_paragraphs[block_name], "$paragraphnum")
-				block_paragraphs[block_name] *= ", $paragraphnum"
+			if !haskey(block_locations, block_name)
+				block_locations[block_name] = "$paragraphnum"
+			elseif !contains(block_locations[block_name], "$paragraphnum")
+				block_locations[block_name] *= ", $paragraphnum"
 			end
 		end
 	end

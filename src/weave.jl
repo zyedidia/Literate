@@ -21,9 +21,7 @@ function weave(sourcefile)
 
 	include_scripts = """<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
 	<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
-	<script type="text/x-mathjax-config">
-	MathJax.Hub.Config({tex2jax: {inlineMath: [['\$','\$']]}});
-	</script>"""
+	<script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: [['\$','\$']]}}); </script>"""
 
 	base_html =  """<!doctype html>
 	<html>
@@ -48,6 +46,8 @@ function weave(sourcefile)
 	in_codeblock = false
 	in_paragraph = false
 	markdown = ""
+
+	cur_codeblock_name = ""
 
 	for line in lines
 		line = chomp(line)
@@ -81,7 +81,8 @@ function weave(sourcefile)
 					file = ismatch(r"^.+\..+$", line)
 					line = "{$line} ≡"
 				end
-				name = strip(line[4:search(line, "}")[1]-1])
+				cur_codeblock_name = strip(line[2:search(line, "}")[1]-1])
+				name = cur_codeblock_name
 				if file
 					line = "<strong>$line</strong>"
 				end
@@ -89,24 +90,55 @@ function weave(sourcefile)
 				write(out, start_codeblock)
 			else
 				write(out, end_codeblock)
+				name = cur_codeblock_name
+				if contains(block_locations[name], ",")
+					arr = split(block_locations[name], ", ")
+					output = "<p class=\"seealso\">See also section$(length(arr) > 2 ? "s" : "")"
+					for i in 1:length(arr)
+						location = arr[i]
+						if parse(Int, location) != paragraphnum
+							p = ""
+							if i > 2 && i < length(arr)
+								p = ","
+							elseif i == length(arr) && i > 2
+								p = " and"
+							end
+							output *= "$p <a href=\"#$location\">$location</a>"
+						end
+					end
+					output *= ".</p>\n"
+					write(out, output)
+				end
+				if haskey(block_use_locations, name)
+					arr = split(block_use_locations[name], ", ")
+					output = "<p class=\"seealso\">This code is used in section$(length(arr) > 1 ? "s" : "")"
+					for i in 1:length(arr)
+						location = arr[i]
+						p = ""
+						if i > 1 && i < length(arr)
+							p = " ,"
+						elseif i == length(arr) && i != 1
+							p = " and"
+						end
+						output *= "$p <a href=\"#$location\">$location</a>"
+					end
+					output *= ".</p>\n"
+					write(out, output)
+				end
 			end
 		else
 			while ismatch(r"@{.*?}", line)
 				m = match(r"@{.*?}", line)
 				name = line[m.offset+2:m.offset+length(m.match)-2]
+				anchor = ""
+				for paragraph in split(block_locations[name], ", ")
+					anchor *= ", \\<a href=\"#$paragraph\"\\>$paragraph\\</a\\>"
+				end
 				if in_codeblock
-					links = "\\<span class=\"nocode\"\\>{$name"
-					for paragraph in split(block_paragraphs[name], ", ")
-						links *= ", \\<a href=\"#$paragraph\"\\>$paragraph\\</a\\>"
-					end
-					links *= "}\\</span\\>"
+					links = "\\<span class=\"nocode\"\\>{$name$anchor}\\</span\\>"
 					line = replace(line, m.match, links)
 				else
-					links = "{$name"
-					for paragraph in split(block_paragraphs[name], ", ")
-						links *= ", \\<a href\\=\\\"#$paragraph\\\"\\>$paragraph\\</a\\>"
-					end
-					links *= "}"
+					links = "{$name$anchor}"
 					line = replace(line, m.match, links)
 				end
 			end

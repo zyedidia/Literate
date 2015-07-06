@@ -13,6 +13,9 @@ pre.prettyprint {
 	border-width: 2px;
 	white-space: pre-wrap;
 }
+.seealso {
+	font-size: 10pt;
+}
 .codeblock_name {
 	font-family: Monaco, Menlo;
 	font-size: 10pt;

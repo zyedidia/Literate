@@ -49,12 +49,12 @@ Now we come to the general layout of the *main* function.
 --- The main program
 int main(int argc, char **argv)
 {
-	@{Variables local to main}
-	prog_name = argv[0];
-	@{Set up option selection}
-	@{Process all the files}
-	@{Print the grand totals if there were multiple files}
-	return status;
+    @{Variables local to main}
+    prog_name = argv[0];
+    @{Set up option selection}
+    @{Process all the files}
+    @{Print the grand totals if there were multiple files}
+    return status;
 }
 ---
 
@@ -77,11 +77,11 @@ int silent = 0;
 --- Set up option selection
 which = "lwc"; /* if no option is given, print all three values */
 if (argc >1 && *argv[1] == '-') {
-	argv[1]++;
-	if (*argv [1] == 's') silent = 1, argv [1]++;
-	if (*argv [1]) which = argv [1];
-	argc--;
-	argv++;
+    argv[1]++;
+    if (*argv [1] == 's') silent = 1, argv [1]++;
+    if (*argv [1]) which = argv [1];
+    argc--;
+    argv++;
 }
 file_count = argc - 1;
 ---
@@ -93,12 +93,12 @@ Now we scan the remaining arguments and try to open a file, if possible. The fil
 --- Process all the files
 argc--;
 do {
-	@{If a file is given, try to open *(++argv ); continue if unsuccessful}
-	@{Initialize pointers and counters}
-	@{Scan file}
-	@{Write statistics for file}
-	@{Close file}
-	@{Update grand totals}
+    @{If a file is given, try to open *(++argv ); continue if unsuccessful}
+    @{Initialize pointers and counters}
+    @{Scan file}
+    @{Write statistics for file}
+    @{Close file}
+    @{Update grand totals}
 } while (--argc > 0);
 ---
 
@@ -114,10 +114,10 @@ int fd = 0;
 
 --- If a file is given, try to open *(++argv ); continue if unsuccessful
 if (file_count > 0 && (fd = open(*(++argv), 0)) < 0) {
-	fprintf(stderr, "%s: cannot open file %s\n", prog_name, *argv);
-	status |= 2;
-	file_count--;
-	continue;
+    fprintf(stderr, "%s: cannot open file %s\n", prog_name, *argv);
+    status |= 2;
+    file_count--;
+    continue;
 }
 ---
 
@@ -162,18 +162,18 @@ The present section, which does the counting that is wc's raison d'etre, was act
 
 --- Scan file
 while (1) {
-	@{Fill buffer if it is empty; break at end of file}
-	c = *ptr++;
-	if (c > ' ' && c < 177) {
-		if (!in_word) {
-			word_count++;
-			in_word = 1;
-		}
-		continue;
-	}
-	if (c == '\n') line_count++;
-	else if (c != ' ' && c != '\t') continue;
-	in_word = 0; /* c is newline, space, or tab */
+    @{Fill buffer if it is empty; break at end of file}
+    c = *ptr++;
+    if (c > ' ' && c < 177) {
+        if (!in_word) {
+            word_count++;
+            in_word = 1;
+        }
+        continue;
+    }
+    if (c == '\n') line_count++;
+    else if (c != ' ' && c != '\t') continue;
+    in_word = 0; /* c is newline, space, or tab */
 }
 ---
 
@@ -183,11 +183,11 @@ Buffered I/O allows us to count the number of characters almost for free.
 
 --- Fill buffer if it is empty; break at end of file
 if (ptr >= buf_end) {
-	ptr = buffer;
-	c = read(fd, ptr, BUFSIZ);
-	if (c <= 0) break;
-	char_count += c;
-	buf_end = buffer + c;
+    ptr = buffer;
+    c = read(fd, ptr, BUFSIZ);
+    if (c <= 0) break;
+    char_count += c;
+    buf_end = buffer + c;
 }
 ---
 
@@ -197,9 +197,9 @@ It’s convenient to output the statistics by defining a new function wc print ;
 
 --- Write statistics for file
 if (!silent) {
-	wc_print(which, char_count, word_count, line_count);
-	if (file_count) printf(" %s\n", *argv); /* not stdin */
-	else printf("\n"); /* stdin */
+    wc_print(which, char_count, word_count, line_count);
+    if (file_count) printf(" %s\n", *argv); /* not stdin */
+    else printf("\n"); /* stdin */
 }
 ---
 
@@ -217,9 +217,9 @@ We might as well improve a bit on UNIX’s wc by displaying the number of files 
 
 --- Print the grand totals if there were multiple files
 if (file_count > 1 || silent) {
-	wc_print(which, tot_char_count, tot_word_count, tot_line_count);
-	if (!file_count) printf("\n");
-	else printf(" total in %d file%s\n", file_count, file_count > 1 ? "s" : "");
+    wc_print(which, tot_char_count, tot_word_count, tot_line_count);
+    if (!file_count) printf("\n");
+    else printf(" total in %d file%s\n", file_count, file_count > 1 ? "s" : "");
 }
 ---
 
@@ -230,19 +230,19 @@ Here now is the function that prints the values according to the specified optio
 --- Functions
 void wc_print(char *which, long char_count, long word_count, long line_count)
 {
-	while (*which)
-		switch (*which++) {
-		case 'l': printf("%8ld", line_count);
-			break;
-		case 'w': printf("%8ld", word_count);
-			break;
-		case 'c': printf("%8ld", char_count);
-			break;
-		default:
-			if ((status & 1) == 0) {
-				fprintf(stderr, "\nUsage: %s [-lwc] [filename ...]\n", prog_name);
-				status |= 1;
-			}
-		}
+    while (*which)
+        switch (*which++) {
+        case 'l': printf("%8ld", line_count);
+            break;
+        case 'w': printf("%8ld", word_count);
+            break;
+        case 'c': printf("%8ld", char_count);
+            break;
+        default:
+            if ((status & 1) == 0) {
+                fprintf(stderr, "\nUsage: %s [-lwc] [filename ...]\n", prog_name);
+                status |= 1;
+            }
+        }
 }
 ---
