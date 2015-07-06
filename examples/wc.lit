@@ -187,7 +187,9 @@ in_word = 0;
 
 @p
 
-The grand totals must be initialized to zero at the beginning of the program. If we made these variables local to main, we would have to do this initialization explicitly; however, C’s globals are automatically zeroed. (Or rather, "statically zeroed.") (Get it?)
+The grand totals must be initialized to zero at the beginning of the program. 
+If we made these variables local to main, we would have to do this initialization explicitly; 
+however, C’s globals are automatically zeroed. (Or rather, "statically zeroed.") (Get it?)
 
 --- Global variables +=
 long tot_word_count, tot_line_count, tot_char_count; 
@@ -196,7 +198,8 @@ long tot_word_count, tot_line_count, tot_char_count;
 
 @p
 
-The present section, which does the counting that is `wc`'s *raison d'etre*, was actually one of the simplest to write. We look at each character and change state if it begins or ends a word.
+The present section, which does the counting that is `wc`'s *raison d'etre*, was actually 
+one of the simplest to write. We look at each character and change state if it begins or ends a word.
 
 --- Scan file
 while (1) {
