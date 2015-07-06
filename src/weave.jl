@@ -73,16 +73,19 @@ function weave(sourcefile)
 			if in_codeblock
 				line = strip(line[4:end])
 				file = false
+				adding = false
 				if contains(line, "+=")
 					line = strip(line[1:search(line, "+=")[1]-1])
-					file = ismatch(r"^.+\..+$", line)
-					line = "{$line} +≡"
-				else
-					file = ismatch(r"^.+\..+$", line)
-					line = "{$line} ≡"
+					adding = true
 				end
-				cur_codeblock_name = strip(line[2:search(line, "}")[1]-1])
+				cur_codeblock_name = line
 				name = cur_codeblock_name
+
+				definition_location = split(block_locations[line], ",")[1]
+				line = "$line <a href=\"#$definition_location\">$definition_location</a>"
+				file = ismatch(r"^.+\..+$", line)
+				line = "{$line} $(adding ? "+" : "")≡"
+
 				if file
 					line = "<strong>$line</strong>"
 				end
@@ -93,20 +96,22 @@ function weave(sourcefile)
 				name = cur_codeblock_name
 				if contains(block_locations[name], ",")
 					arr = split(block_locations[name], ", ")
-					output = "<p class=\"seealso\">See also section$(length(arr) > 2 ? "s" : "")"
-					for i in 1:length(arr)
+					links = ""
+					loopnum = 0
+					for i in 2:length(arr)
 						location = arr[i]
 						if parse(Int, location) != paragraphnum
+							loopnum += 1
 							p = ""
-							if i > 2 && i < length(arr)
+							if loopnum > 1 && i < length(arr)-1
 								p = ","
-							elseif i == length(arr) && i > 2
+							elseif loopnum == length(arr)-1 && loopnum > 1
 								p = " and"
 							end
-							output *= "$p <a href=\"#$location\">$location</a>"
+							links *= "$p <a href=\"#$location\">$location</a>"
 						end
 					end
-					output *= ".</p>\n"
+					output = "<p class=\"seealso\">This section is added to in section$(loopnum > 1 ? "s" : "") $links.</p>\n"
 					write(out, output)
 				end
 				if haskey(block_use_locations, name)
@@ -130,10 +135,8 @@ function weave(sourcefile)
 			while ismatch(r"@{.*?}", line)
 				m = match(r"@{.*?}", line)
 				name = line[m.offset+2:m.offset+length(m.match)-2]
-				anchor = ""
-				for paragraph in split(block_locations[name], ", ")
-					anchor *= ", \\<a href=\"#$paragraph\"\\>$paragraph\\</a\\>"
-				end
+				location = split(block_locations[name], ",")[1]
+				anchor = " \\<a href=\"#$location\"\\>$location\\</a\\>"
 				if in_codeblock
 					links = "\\<span class=\"nocode\"\\>{$name$anchor}\\</span\\>"
 					line = replace(line, m.match, links)
