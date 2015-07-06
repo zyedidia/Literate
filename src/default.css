@@ -9,7 +9,6 @@ body {
 pre.prettyprint {
 	font-size: 9pt;
 	padding: 10px;
-	border-color: #ddd;
 	/* border-radius: 10px; */
 	border: solid;
 	border-color: #bbb;
@@ -49,7 +48,6 @@ code {
 	font-family: Monaco;
 	font-size: 9pt;
 	padding: 2px;
-	font-size: 11pt;
 }
 pre {
 	-moz-tab-size: 4; /* Code for Firefox */
