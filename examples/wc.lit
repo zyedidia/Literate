@@ -117,7 +117,7 @@ file_count = argc - 1;
 @s
 
 Now we scan the remaining arguments and try to open a file, if possible. The file 
-is processed and its statistics are given. We use a `do . . . while` loop because 
+is processed and its statistics are given. We use a `do ... while` loop because 
 we should read from the standard input if no file name is given.
 
 --- Process all the files
@@ -199,7 +199,7 @@ long tot_word_count, tot_line_count, tot_char_count;
 
 @s
 
-The present section, which does the counting that is `wc`'s *raison d'etre*, was actually 
+The present section, which does the counting that is `wc`'s *raison d'être*, was actually 
 one of the simplest to write. We look at each character and change state if it begins or ends a word.
 
 --- Scan file
