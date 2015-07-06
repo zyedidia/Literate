@@ -7,7 +7,7 @@ block_locations = Dict{String, String}()
 block_use_locations = Dict{String, String}()
 
 function name(file)
-	file[1:search(file, '.')-1]
+	basename(file[1:search(file, '.')-1])
 end
 
 function firstpass(sourcefile)

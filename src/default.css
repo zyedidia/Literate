@@ -1,24 +1,27 @@
 body {
 	margin-left: 4em;
 	margin-right: 4em;
-	font-size: 14pt;
+	font-size: 11pt;
+}
+.section {
+	page-break-inside: avoid;
 }
 pre.prettyprint {
-	font-size: 10pt;
+	font-size: 9pt;
 	padding: 10px;
 	border-color: #ddd;
-	border-radius: 10px;
+	/* border-radius: 10px; */
 	border: solid;
 	border-color: #bbb;
 	border-width: 2px;
 	white-space: pre-wrap;
 }
 .seealso {
-	font-size: 10pt;
+	font-size: 9pt;
 }
 .codeblock_name {
 	font-family: Monaco, Menlo;
-	font-size: 10pt;
+	font-size: 9pt;
 	margin-top: 1.25em;
 	display: block;
 }
@@ -44,7 +47,7 @@ h1 {
 }
 code {
 	font-family: Monaco;
-	font-size: 10pt;
+	font-size: 9pt;
 	padding: 2px;
 	font-size: 11pt;
 }

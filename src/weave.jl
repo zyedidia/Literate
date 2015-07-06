@@ -26,6 +26,20 @@ function weave(inputstream, outputstream)
 	<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 	<script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: [['\$','\$']]}}); </script>"""
 
+	css = ""
+	files = readdir(pwd())
+	if "default.css" in files
+		css *= readall("$(pwd())/default.css")
+	else
+		css *= readall("$dir/default.css")
+	end
+
+	if "colorscheme.css" in files
+		css *= readall("$(pwd())/colorscheme.css")
+	else
+		css *= readall("$dir/colorscheme.css")
+	end
+
 	base_html =  """<!doctype html>
 	<html>
 	<head>
@@ -33,8 +47,7 @@ function weave(inputstream, outputstream)
 	<title>$title</title>
 	$include_scripts
 	<style>
-	$(readall("$dir/prettyprint.css"))
-	$(readall("$dir/defaultstyle.css"))
+	$css
 	</style>
 	</head>
 	<body>
@@ -74,6 +87,7 @@ function weave(inputstream, outputstream)
 		if ismatch(r"^---.*$", line)
 			in_codeblock = !in_codeblock
 			if in_codeblock
+				write(out, "<div class=\"codeblock\">\n")
 				line = strip(line[4:end])
 				file = false
 				adding = false
@@ -135,6 +149,8 @@ function weave(inputstream, outputstream)
 					output *= ".</p>\n"
 					write(out, output)
 				end
+				write(out, "</div>\n")
+				write(out, "</div>\n")
 			end
 		else
 			while ismatch(r"@{.*?}", line)
@@ -159,6 +175,7 @@ function weave(inputstream, outputstream)
 				write(out, "$line\n")
 			else
 				if startswith(line, "@s")
+					write(out, "<div class=\"section\">")
 					write_markdown(markdown, out)
 					markdown = ""
 					in_paragraph = true
