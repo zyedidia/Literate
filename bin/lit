@@ -1,18 +1,21 @@
-include("common.jl")
+#!/usr/bin/env julia
+dir = "$(dirname(Base.source_path()))/../src"
+
+include("$dir/common.jl")
 
 if length(inputfiles) == 0
 	if html
-		include("weave.jl")
+		include("$dir/weave.jl")
 		weave(STDIN, STDOUT)
 	end
 
 	if code
-		include("tangle.jl")
+		include("$dir/tangle.jl")
 		tangle(STDIN)
 	end
 else
 	if html
-		include("weave.jl")
+		include("$dir/weave.jl")
 		for file in inputfiles
 			inputstream = open(file)
 			outputstream = open("$(name(file)).html", "w")
@@ -23,7 +26,7 @@ else
 	end
 
 	if code
-		include("tangle.jl")
+		include("$dir/tangle.jl")
 		for file in inputfiles
 			inputstream = open(file)
 			tangle(inputstream)

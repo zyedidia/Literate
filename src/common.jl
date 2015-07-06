@@ -59,7 +59,8 @@ code = false
 inputfiles = String[]
 for arg in ARGS
 	if arg == "-h"
-		println("Usage: literate [-html] [-code] [file]")
+		println("Usage: lit [-html] [-code] [file ...]")
+		exit()
 	elseif arg == "-html"
 		html = true
 	elseif arg == "-code"

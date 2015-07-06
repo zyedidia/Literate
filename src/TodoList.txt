@@ -6,6 +6,6 @@
 - Index
 - Vim plugin -- Needs more work
 - Make w2lit converter
-- Change files
+- Support change files
 - Manual
-- Remove comma, and put link number(s) outside curly brackets
+- Rewrite in Literate
