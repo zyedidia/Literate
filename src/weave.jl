@@ -180,7 +180,8 @@ function weave(inputstream, outputstream)
 					markdown = ""
 					in_paragraph = true
 					paragraphnum += 1
-					write(out, "<p class=\"notp\" id=\"$paragraphnum\"><h3>$paragraphnum. $(strip(line[3:end]))</h3></p>\n")
+					heading_title = strip(line[3:end])
+					write(out, "<p class=\"notp\" id=\"$paragraphnum\"><h4 $(heading_title == "" ? "class=\"noheading\"" : "")>$paragraphnum. $heading_title</h4></p>\n")
 				elseif startswith(line, "@title")
 					write(out, "<h1>$(strip(line[7:end]))</h1>\n")
 				else
