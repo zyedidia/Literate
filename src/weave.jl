@@ -114,8 +114,10 @@ function weave(inputstream, outputstream)
 							links *= "$p <a href=\"#$location\">$location</a>"
 						end
 					end
-					output = "<p class=\"seealso\">See also section$(loopnum > 1 ? "s" : "") $links.</p>\n"
-					write(out, output)
+					if loopnum > 0
+						output = "<p class=\"seealso\">See also section$(loopnum > 1 ? "s" : "") $links.</p>\n"
+						write(out, output)
+					end
 				end
 				if haskey(block_use_locations, name)
 					arr = split(block_use_locations[name], ", ")
