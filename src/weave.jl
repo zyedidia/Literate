@@ -150,7 +150,6 @@ function weave(inputstream, outputstream)
 					write(out, output)
 				end
 				write(out, "</div>\n")
-				write(out, "</div>\n")
 			end
 		else
 			while ismatch(r"@{.*?}", line)
@@ -175,6 +174,7 @@ function weave(inputstream, outputstream)
 				write(out, "$line\n")
 			else
 				if startswith(line, "@s")
+					write(out, "</div>\n")
 					write(out, "<div class=\"section\">")
 					write_markdown(markdown, out)
 					markdown = ""
