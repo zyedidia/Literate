@@ -35,7 +35,7 @@ We must include the standard I/O definitions, since we want to send formatted ou
 
 @p
 
-The status variable will tell the operating system if the run was successful or not, and prog name is used in case there’s an error message to be printed.
+The `status` variable will tell the operating system if the run was successful or not, and `prog_name` is used in case there’s an error message to be printed.
 
 --- Global variables
 int status = 0;
