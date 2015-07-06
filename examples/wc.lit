@@ -2,7 +2,7 @@
 
 @title WC
 
-@p An example of Literate programming
+@s An example of Literate programming
 
 This example is a close adaptation of a tutorial example for Knuth and Levy's `CWEB` programming system,
 translated from `CWEB` to the `Literate` programming system. 
@@ -23,7 +23,7 @@ least one visible ASCII code. (We assume that the standard ASCII code is in use.
 This version of `wc` has a nonstandard "silent" option (`-s`), which suppresses printing 
 except for the grand totals over all files.
 
-@p
+@s
 
 Most `Literate` programs share a common structure. It’s probably a good idea to state 
 the overall structure explicitly at the outset, even though the various parts could all be 
@@ -38,7 +38,7 @@ Here, then, is an overview of the file `wc.c` that is defined by this `Literate`
 @{The main program}
 ---
 
-@p
+@s
 
 We must include the standard I/O definitions, since we want to send formatted output to *stdout* and *stderr*.
 
@@ -48,7 +48,7 @@ We must include the standard I/O definitions, since we want to send formatted ou
 #include <unistd.h>
 ---
 
-@p
+@s
 
 The `status` variable will tell the operating system if the run was successful or not, 
 and `prog_name` is used in case there’s an error message to be printed.
@@ -64,7 +64,7 @@ int status = OK;
 char *prog_name;
 ---
 
-@p
+@s
 
 Now we come to the general layout of the `main()` function.
 
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 }
 ---
 
-@p
+@s
 
 If the first argument begins with a '`-`', the user is choosing the desired counts and 
 specifying the order in which they should be displayed. Each selection is given by the 
@@ -99,7 +99,7 @@ char *which;    /* which counts to print */
 int silent = 0;    /* nonzero if the silent option was selected */
 ---
 
-@p
+@s
 
 --- Set up option selection
 which = "lwc";    /* if no option is given, print all three values */
@@ -113,7 +113,7 @@ if (argc >1 && *argv[1] == '-') {
 file_count = argc - 1;
 ---
 
-@p
+@s
 
 Now we scan the remaining arguments and try to open a file, if possible. The file 
 is processed and its statistics are given. We use a `do . . . while` loop because 
@@ -131,7 +131,7 @@ do {
 } while (--argc > 0);
 ---
 
-@p
+@s
 
 Here’s the code to open the file. A special trick allows us to handle input from *stdin* 
 when no name is given. Recall that the file descriptor to *stdin* is `0`; that’s what we 
@@ -141,7 +141,7 @@ use as the default initial value.
 int fd = 0;
 ---
 
-@p
+@s
 --- Header files to include and macro definitions +=
 #define READ_ONLY 0
 ---
@@ -155,13 +155,13 @@ if (file_count > 0 && (fd = open(*(++argv), READ_ONLY)) < 0) {
 }
 ---
 
-@p
+@s
 
 --- Close file
 close(fd);
 ---
 
-@p
+@s
 
 We will do some homemade buffering in order to speed things up: Characters will be 
 read into the buffer array before we process them. To do this we set up appropriate 
@@ -177,7 +177,7 @@ long word_count, line_count, char_count;
     /* number of words, lines, and characters found in the file so far */
 ---
 
-@p
+@s
 
 --- Initialize pointers and counters
 ptr = buf_end = buffer;
@@ -185,7 +185,7 @@ line_count = word_count = char_count = 0;
 in_word = 0;
 ---
 
-@p
+@s
 
 The grand totals must be initialized to zero at the beginning of the program. 
 If we made these variables local to main, we would have to do this initialization explicitly; 
@@ -196,7 +196,7 @@ long tot_word_count, tot_line_count, tot_char_count;
     /* total number of words, lines and chars */
 ---
 
-@p
+@s
 
 The present section, which does the counting that is `wc`'s *raison d'etre*, was actually 
 one of the simplest to write. We look at each character and change state if it begins or ends a word.
@@ -218,7 +218,7 @@ while (1) {
 }
 ---
 
-@p
+@s
 
 Buffered I/O allows us to count the number of characters almost for free.
 
@@ -232,7 +232,7 @@ if (ptr >= buf_end) {
 }
 ---
 
-@p
+@s
 
 It’s convenient to output the statistics by defining a new function `wc_print()`; 
 then the same function can be used for the totals. Additionally we must decide here 
@@ -246,7 +246,7 @@ if (!silent) {
 }
 ---
 
-@p
+@s
 
 --- Update grand totals
 tot_line_count += line_count;
@@ -254,7 +254,7 @@ tot_word_count += word_count;
 tot_char_count += char_count;
 ---
 
-@p
+@s
 
 We might as well improve a bit on `UNIX`’s `wc` by displaying the number of files too.
 
@@ -266,7 +266,7 @@ if (file_count > 1 || silent) {
 }
 ---
 
-@p
+@s
 
 Here now is the function that prints the values according to the specified options. 
 The calling routine is supposed to supply a newline. If an invalid option character 

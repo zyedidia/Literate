@@ -13,8 +13,11 @@ function write_markdown(markdown, out)
 	end
 end
 
-function weave(sourcefile)
-	out = open("$(name(inputfile)).html", "w")
+function weave(inputstream, outputstream)
+	input = readall(inputstream)
+	firstpass(input)
+
+	out = outputstream
 
 	start_codeblock = "<pre class=\"prettyprint\">\n"
 	end_codeblock = "</pre>\n"
@@ -41,7 +44,7 @@ function weave(sourcefile)
 
 	write(out, base_html)
 
-	lines = readlines(IOBuffer(sourcefile))
+	lines = readlines(IOBuffer(input))
 
 	in_codeblock = false
 	in_paragraph = false
@@ -111,7 +114,7 @@ function weave(sourcefile)
 							links *= "$p <a href=\"#$location\">$location</a>"
 						end
 					end
-					output = "<p class=\"seealso\">This section is added to in section$(loopnum > 1 ? "s" : "") $links.</p>\n"
+					output = "<p class=\"seealso\">See also section$(loopnum > 1 ? "s" : "") $links.</p>\n"
 					write(out, output)
 				end
 				if haskey(block_use_locations, name)
@@ -153,7 +156,7 @@ function weave(sourcefile)
 				line = replace(line, "\\&gt;", ">")
 				write(out, "$line\n")
 			else
-				if startswith(line, "@p")
+				if startswith(line, "@s")
 					write_markdown(markdown, out)
 					markdown = ""
 					in_paragraph = true
@@ -176,7 +179,3 @@ function weave(sourcefile)
 	write(out, end_html)
 	close(out)
 end
-
-buf = readall(inputfile)
-firstpass(buf)
-weave(buf)

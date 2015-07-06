@@ -1,11 +1,13 @@
 include("common.jl")
 
-function tangle(sourcefile)
+function tangle(inputstream)
+	input = readall(inputstream)
+	firstpass(input)
 
 	codeblocks = Dict{String, String}()
 	names = String[]
 
-	lexer = Lexer(sourcefile, [' ', '\n'])
+	lexer = Lexer(input, [' ', '\n'])
 	while (t = advance(lexer)) != EOF
 		if t == "---"
 			t = advanceline(lexer)
@@ -58,7 +60,3 @@ function write_code(blockname, codeblocks, out)
 		end
 	end
 end
-
-sourcefile = readall(inputfile)
-firstpass(sourcefile)
-tangle(sourcefile)

@@ -1,4 +1,3 @@
-- Stdin
 - Dates
 - User adjustable css/fonts
 - Codeblock names as comments in generated code
@@ -7,6 +6,6 @@
 - Index
 - Vim plugin -- Needs more work
 - Make w2lit converter
+- Change files
 - Manual
-- Minor bugs in 'see also' numbering see sections 10 and 12 of wc.html
 - Remove comma, and put link number(s) outside curly brackets

@@ -22,7 +22,7 @@ function firstpass(sourcefile)
 				while (t = advance(lexer)) != "\n"
 					global title *= t
 				end
-			elseif t == "p"
+			elseif t == "s"
 				paragraphnum += 1
 			elseif in_codeblock
 				restline = t * chomp(advanceline(lexer))
@@ -53,25 +53,23 @@ function firstpass(sourcefile)
 	end
 end
 
-if length(ARGS) < 1
-	println("No inputs")
-	exit()
-end
-
 html = false
 code = false
 
+inputfiles = String[]
 for arg in ARGS
-	if arg == "-html"
+	if arg == "-h"
+		println("Usage: literate [-html] [-code] [file]")
+	elseif arg == "-html"
 		html = true
 	elseif arg == "-code"
 		code = true
+	else
+		push!(inputfiles, arg)
 	end
 end
 
-if length(ARGS) < 2
+if !html && !code
 	html = true
 	code = true
 end
-
-inputfile = ARGS[length(ARGS)]

@@ -2,7 +2,7 @@
 
 @title Hangman
 
-@p Introduction
+@s Introduction
 This is a Hangman program. It lets you make guesses about which letters are in an unknown word. On the eighth incorrect guess you lose.
 The structure of the hangman program will look like this:
 
@@ -18,7 +18,7 @@ end
 @{End}
 ---
 
-@p The Setup
+@s The Setup
 
 First, we have the computer come up with a secret word which it chooses randomly from a list of words read from a text file.
 
@@ -36,7 +36,7 @@ for i = 1:length(secret_word)
 end
 ---
 
-@p Getting User Input
+@s Getting User Input
 
 Now we can start the game.
 
@@ -49,7 +49,7 @@ println("What's your guess? ")
 guess = readline(STDIN)[1]
 ---
 
-@p Checking the User's Guess
+@s Checking the User's Guess
 
 We loop through the secret word, checking if any of its letters were guessed. If they were, reveal that letter in the dashes array. If none of the letters in secret word were equal to the guess, then `got_one_correct` will be false, and one guess will be added.
 
@@ -67,7 +67,7 @@ if !got_one_correct
 end
 ---
 
-@p Checking for Victory
+@s Checking for Victory
 
 Now we should check if the user has guessed all the letters.
 
@@ -80,7 +80,7 @@ if !('-' in dashes)
 end
 ---
 
-@p Pretty Printing the Dashes
+@s Pretty Printing the Dashes
 
 We want the dashes to look pretty when they are printed, not look like an array of chars. Instead of `['-', '-', '-', '-']`, we want `----`.
 
@@ -91,7 +91,7 @@ end
 println()
 ---
 
-@p
+@s
 --- End
 println("You lose. The word was $secret_word")
 ---
