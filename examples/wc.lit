@@ -2,22 +2,36 @@
 
 @title WC
 
-@p An example of Literate
+@p An example of literate programming
 
-This example, based on a program by Klaus Guntermann and Joachim Schrod [TUGboat 7 (1986), 134–137] presents the "word count" program from UNIX, rewritten in Literate to demonstrate literate programming in C (or any language). The level of detail in this document is intentionally high, for didactic purposes; many of the things spelled out here don’t need to be explained in other programs.
+This example is a close adaptation of a tutorial example for Knuth and Levy's `CWEB` programming system,
+translated from `CWEB` to the `literate` programming system. 
+That example in turn is based on a program by Klaus Guntermann and Joachim Schrod 
+[*TUGboat* **7** (1986), 134–137] and presents the "word count" program from `UNIX`.
+This example demonstrates literate programming in C, although the 
+`literate` programming system can be used in conjunction with *any* other programming language. 
+The level of detail in this document is intentionally high, 
+for didactic purposes; many of the things spelled out here don’t need to be explained in other programs.
 
-The purpose of wc is to count lines, words, and/or characters in a list of files. The number of lines in a file is the number of newline characters it contains. The number of characters is the file length in bytes. A “word” is a maximal sequence of consecutive characters other than newline, space, or tab, containing at least one visible ASCII code. (We assume that the standard ASCII code is in use.)
+The purpose of `wc` is to count lines, words, and/or characters in a list of files. 
+The number of lines in a file is the number of newline characters it contains. 
+The number of characters is the file length in bytes. A "word" is a maximal 
+sequence of consecutive characters other than newline, space, or tab, containing at 
+least one visible ASCII code. (We assume that the standard ASCII code is in use.)
 
-This version of wc has a nonstandard “silent” option (-s), which suppresses printing except for the grand totals over all files.
+This version of `wc` has a nonstandard "silent" option (`-s`), which suppresses printing 
+except for the grand totals over all files.
 
 @p
 
-Most `Literate` programs share a common structure. It’s probably a good idea to state the overall structure explicitly at the outset, even though the various parts could all be introduced in unnamed sections of the code if we wanted to add them piecemeal.
+Most `literate` programs share a common structure. It’s probably a good idea to state 
+the overall structure explicitly at the outset, even though the various parts could all be 
+introduced in a piecemeal fashion.
 
-Here, then, is an overview of the file wc.c that is defined by this CWEB program wc.w:
+Here, then, is an overview of the file `wc.c` that is defined by this `literate` program `wc.lit`:
 
 --- wc.c
-@{Header files to include}
+@{Header files to include and macro definitions}
 @{Global variables}
 @{Functions}
 @{The main program}
@@ -25,9 +39,9 @@ Here, then, is an overview of the file wc.c that is defined by this CWEB program
 
 @p
 
-We must include the standard I/O definitions, since we want to send formatted output to stdout and stderr.
+We must include the standard I/O definitions, since we want to send formatted output to *stdout* and *stderr*.
 
---- Header files to include
+--- Header files to include and macro definitions
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -35,16 +49,23 @@ We must include the standard I/O definitions, since we want to send formatted ou
 
 @p
 
-The `status` variable will tell the operating system if the run was successful or not, and `prog_name` is used in case there’s an error message to be printed.
+The `status` variable will tell the operating system if the run was successful or not, 
+and `prog_name` is used in case there’s an error message to be printed.
+
+--- Header files to include and macro definitions +=
+#define OK 0    /* status code for successful run */
+#define usage_error 1    /* status code for improper syntax */
+#define cannot_open_file 2    /* status code for file access error */ 
+---
 
 --- Global variables
-int status = 0;
+int status = OK;
 char *prog_name;
 ---
 
 @p
 
-Now we come to the general layout of the *main* function.
+Now we come to the general layout of the `main()` function.
 
 --- The main program
 int main(int argc, char **argv)
@@ -60,11 +81,15 @@ int main(int argc, char **argv)
 
 @p
 
-If the first argument begins with a ‘−’, the user is choosing the desired counts and specifying the order in which they should be displayed. Each selection is given by the initial character (lines, words, or characters). For example, ‘−cl’ would cause just the number of characters and the number of lines to be printed, in that order. The default, if no special argument is given, is ‘−lwc’.
+If the first argument begins with a '`-`', the user is choosing the desired counts and 
+specifying the order in which they should be displayed. Each selection is given by the 
+initial character (lines, words, or characters). For example, '`-cl`' would cause just 
+the number of characters and the number of lines to be printed, in that order. The 
+default, if no special argument is given, is '`-lwc`'.
 
 We do not process this string now; we simply remember where it is. It will be used to control the formatting at output time.
 
-If the '−' is immediately followed by 's', only summary totals are printed.
+If the '`-`' is immediately followed by '`s`', only summary totals are printed.
 
 --- Variables local to main
 int file_count;
