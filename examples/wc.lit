@@ -32,7 +32,8 @@ introduced in a piecemeal fashion.
 Here, then, is an overview of the file `wc.c` that is defined by this `Literate` program `wc.lit`:
 
 --- wc.c
-@{Header files to include and macro definitions}
+@{Header files to include}
+@{Preprocessor definitions}
 @{Global variables}
 @{Functions}
 @{The main program}
@@ -42,7 +43,7 @@ Here, then, is an overview of the file `wc.c` that is defined by this `Literate`
 
 We must include the standard I/O definitions, since we want to send formatted output to *stdout* and *stderr*.
 
---- Header files to include and macro definitions
+--- Header files to include
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -53,7 +54,7 @@ We must include the standard I/O definitions, since we want to send formatted ou
 The `status` variable will tell the operating system if the run was successful or not, 
 and `prog_name` is used in case there’s an error message to be printed.
 
---- Header files to include and macro definitions +=
+--- Preprocessor definitions
 #define OK 0    /* status code for successful run */
 #define usage_error 1    /* status code for improper syntax */
 #define cannot_open_file 2    /* status code for file access error */ 
@@ -142,7 +143,7 @@ int fd = 0;
 ---
 
 @s
---- Header files to include and macro definitions +=
+--- Preprocessor definitions +=
 #define READ_ONLY 0
 ---
 
