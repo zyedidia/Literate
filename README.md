@@ -18,8 +18,8 @@ $ lit [-html] [-code] examples/wc.lit
 
 # Features
 ### In addition to those of CWEB
-* Markdown based -- very easy to read and write source.
-* Generates readable source code
+* Markdown based -- very easy to read and write Literate source.
+* Generates readable code in the target language
 * Supports any language including syntax highlighting and pretty printing in HTML
 * Compatible with Vim ([literate.vim] (https://github.com/zyedidia/literate.vim))
 * Highly customizable
