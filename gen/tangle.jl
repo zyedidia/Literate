@@ -1,11 +1,16 @@
+# Define the tangle function
+comment_type = ""
 function tangle(lines)
     codeblocks = Dict{String, String}()
     block_names = String[]
     
     for line_num = 1:length(lines)
         line = lines[line_num] |> chomp
-        
-        if startswith(line, "---") && !ismatch(r"^---$", line)
+
+        if startswith(line, "@comment_type")
+            global comment_type = strip(line[15:end])
+        elseif startswith(line, "---") && !ismatch(r"^---$", line)
+# Get the block name
 block_name = line[4:end] |> strip
 
 add_to_block = false # Whether or not this definition has a +=
@@ -15,6 +20,7 @@ if contains(block_name, "+=")
     add_to_block = true
 end
 
+# Get the code
 code = ""
 while true
     line = lines[line_num += 1]
@@ -22,6 +28,7 @@ while true
     code *= line
 end
 
+# Add the code to the dict
 if add_to_block
     codeblocks[block_name] *= "\n$code"
 else
@@ -32,6 +39,7 @@ end
         end
     end
 
+# Write the code
 for name in block_names
     if ismatch(r"^.+\w\.\w+$", basename(name))
         outstream = open("$outdir/$(strip(name))", "w")
@@ -42,9 +50,16 @@ end
 
 end
 
+# Define the write_code function
 function write_code(block_name, codeblocks, outstream)
     code = codeblocks[block_name]
     lines = split(code, "\n")
+
+    if comment_type != ""
+        if !ismatch(r"^.+\w\.\w+$", block_name)
+            write(outstream, "$comment_type $block_name\n")
+        end
+    end
 
     for line in lines
         if startswith(strip(line), "@{")

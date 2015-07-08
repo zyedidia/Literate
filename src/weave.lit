@@ -1,4 +1,5 @@
-@codetype Julia jl
+@code_type Julia jl
+@comment_type #
 @title Weave
 
 @s Introduction
@@ -152,7 +153,9 @@ function weave(lines, outputstream, source_dir)
     for line_num = 1:length(lines)
         line = lines[line_num] |> chomp
 
-        if startswith(line, "@codetype")
+        if startswith(line, "@code_type")
+            continue
+        elseif startswith(line, "@comment_type")
             continue
         end
 

@@ -1,4 +1,5 @@
-@codetype c c
+@code_type c c
+@comment_type //
 
 @title WC
 

@@ -1,7 +1,9 @@
+# Declare a few globals
 title = ""
 block_locations = Dict{String, Array{Int, 1}}()
 block_use_locations = Dict{String, Array{Int, 1}}()
 
+# Define the get_locations function
 function get_locations(lines)
     sectionnum = 0   # Which section is currently being parsed
     in_codeblock = false   # Whether we are parsing a codeblock or not
@@ -10,16 +12,19 @@ function get_locations(lines)
         line = lines[line_num] |> chomp # Use chomp to remove the \n
 
         if startswith(line, "@title")
+# Initialize the title variable
 global title = strip(line[7:end])
 
         elseif startswith(line, "@s")
             sectionnum += 1
         elseif startswith(line, "---")
+# A codeblock has been defined
 in_codeblock = true
 if ismatch(r"^---$", line)
     in_codeblock = false
     continue
 end
+# Get the block name
 block_name = line[4:end] |> strip # Remove the ---
 
 if contains(block_name, "+=")
@@ -27,6 +32,7 @@ if contains(block_name, "+=")
     block_name = block_name[1:plus_index-1] |> strip # Remove the "+=" and strip any whitespace
 end
 
+# Add the locations to the dict
 if !haskey(block_locations, block_name) # If this block has not been defined in the dict yet
     block_locations[block_name] = [sectionnum] # Create a new slot for it and add the current paragraph num
 elseif !(sectionnum in block_locations[block_name]) # If the current paragraph num isn't already in the array
@@ -35,6 +41,7 @@ end
 
 
         elseif in_codeblock && startswith(strip(line), "@{")
+# A codeblock has been used
 line = strip(line)
 block_name = line[3:end-1] # Substring to just get the block name
 
@@ -49,6 +56,7 @@ end
     end
 end
 
+# Define the write_markdown function
 function write_markdown(markdown, out)
     if markdown != ""
         html = Markdown.parse(markdown) |> Markdown.html
@@ -63,11 +71,13 @@ function write_markdown(markdown, out)
     end
 end
 
+# Define the weave function
 function weave(lines, outputstream, source_dir)
     out = outputstream
 
     get_locations(lines)
 
+# Set up html
 start_codeblock = "<pre class=\"prettyprint\">\n"
 end_codeblock = "</pre>\n"
 
@@ -75,6 +85,7 @@ scripts = """<script src="https://cdn.rawgit.com/google/code-prettify/master/loa
              <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
              <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: [['\$','\$']]}}); </script>"""
 
+# Get the CSS
 css = ""
 files = readdir(source_dir) # All the files in the current directory
 if "default.css" in files
@@ -109,6 +120,7 @@ base_html = """<!doctype html>
 
 write(out, base_html)
 
+# Set up variables
 sectionnum = 0 # Which section number we are currently parsing
 in_codeblock = false # Whether or not we are parsing a some code
 in_prose = false # Whether or not we are parsing prose
@@ -120,10 +132,13 @@ cur_codeblock_name = "" # The name of the current codeblock begin parsed
     for line_num = 1:length(lines)
         line = lines[line_num] |> chomp
 
-        if startswith(line, "@codetype")
+        if startswith(line, "@code_type")
+            continue
+        elseif startswith(line, "@comment_type")
             continue
         end
 
+# Parse the line
 if line == ""
     # This was a blank line
     if in_codeblock
@@ -139,6 +154,7 @@ if startswith(line, "codetype") # Ignore this line
 end
 
 if ismatch(r"^---.+$", line) # Codeblock began
+# Begin codeblock
 # A code block just began
 in_prose = false
 in_codeblock = true
@@ -173,6 +189,7 @@ write(out, "<p class=\"notp\" id=\"$name$sectionnum\"><span class=\"codeblock_na
 write(out, start_codeblock)
 
 elseif ismatch(r"^---$", line) # Codeblock ended
+# End codeblock
 # A code block just ended
 in_prose = true
 in_codeblock = false
@@ -182,6 +199,7 @@ write(out, end_codeblock)
 # This was stored when the code block began
 name = cur_codeblock_name
 
+# Write any "see also" links
 locations = block_locations[name]
 if length(locations) > 1
     links = "" # This will hold the html for the links
@@ -204,6 +222,7 @@ if length(locations) > 1
     end
 end
 
+# Write any "used in" links
 # Top level codeblocks such as files are never used, so we have to check here
 if haskey(block_use_locations, name)
     locations = block_use_locations[name]
@@ -226,6 +245,7 @@ end
 write(out, "</div>\n")
 
 elseif startswith(line, "@s") && !in_codeblock # Section began
+# Create a new section
 if sectionnum != 1
     # Every section is part of a div. Here we close the last one, and open a new one
     write(out, "</div>")
@@ -243,13 +263,16 @@ heading_title = strip(line[3:end])
 write(out, "<p class=\"notp\" id=\"$sectionnum\"><h4 $(heading_title == "" ? "class=\"noheading\"" : "")>$sectionnum. $heading_title</h4></p>\n")
 
 elseif startswith(line, "@title") # Title created
+# Create the title
 write(out, "<h1>$(strip(line[7:end]))</h1>\n")
 
 else
     if in_codeblock
+# Write out the line of code
 line = replace(line, "&", "&amp;")
 line = replace(line, "<", "&lt;")
 line = replace(line, ">", "&gt;")
+# Link any sections in the line
 while ismatch(r"@{.*?}", line)
     if !startswith(strip(line), "@{") && in_codeblock
         break
@@ -271,6 +294,8 @@ end
 write(out, "$line\n")
 
     else
+# Add the line to the markdown
+# Link any sections in the line
 while ismatch(r"@{.*?}", line)
     if !startswith(strip(line), "@{") && in_codeblock
         break
@@ -296,6 +321,7 @@ end
 
     end
 
+# Clean up
 write_markdown(markdown, out)
 write(out, "</body>\n</html>\n")
 

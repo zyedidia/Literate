@@ -1,9 +1,11 @@
 #!/usr/bin/env julia
 
+# Functions
 function name(path)
     basename(path[1:search(path, '.')[1]-1])
 end
 
+# Parse the arguments
 html = false
 code = false
 outdir = "."
@@ -32,6 +34,7 @@ end
 gen = "$(dirname(Base.source_path()))/../gen"
 
 if length(inputfiles) == 0
+# Use STDIN and STDOUT
 input = readall(STDIN)
 if html
     include("$gen/weave.jl")
@@ -44,6 +47,7 @@ if code
 end
 
 else
+# Weave and/or tangle the input files
 if code
     include("$gen/tangle.jl")
 end
