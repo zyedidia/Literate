@@ -62,8 +62,8 @@ and `prog_name` is used in case there’s an error message to be printed.
 ---
 
 --- Global variables
-int status = OK;
-char *prog_name;
+int status = OK;    /* exit status of command, initially OK */
+char *prog_name;    /* who we are */
 ---
 
 @s
@@ -129,7 +129,7 @@ do {
     @{Scan file}
     @{Write statistics for file}
     @{Close file}
-    @{Update grand totals}
+    @{Update grand totals} 
 } while (--argc > 0);
 ---
 
@@ -207,7 +207,7 @@ one of the simplest to write. We look at each character and change state if it b
 while (1) {
     @{Fill buffer if it is empty; break at end of file}
     c = *ptr++;
-    if (c > ' ' && c < 177) {
+    if (c > ' ' && c < 177) {    /* visible ASCII codes */
         if (!in_word) {
             word_count++;
             in_word = 1;
@@ -243,8 +243,8 @@ if we know the name of the file we have processed or if it was just *stdin*.
 --- Write statistics for file
 if (!silent) {
     wc_print(which, char_count, word_count, line_count);
-    if (file_count) printf(" %s\n", *argv); /* not stdin */
-    else printf("\n"); /* stdin */
+    if (file_count) printf(" %s\n", *argv);    /* not stdin */
+    else printf("\n");    /* stdin */
 }
 ---
 

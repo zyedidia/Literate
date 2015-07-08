@@ -3,3 +3,4 @@
 examples/*.jl
 examples/*.c
 examples/*.pdf
+examples/wc
