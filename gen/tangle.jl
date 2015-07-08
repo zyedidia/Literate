@@ -1,6 +1,4 @@
-function tangle(inputstream)
-    lines = readlines(inputstream)
-
+function tangle(lines)
     codeblocks = Dict{String, String}()
     block_names = String[]
     
@@ -36,7 +34,7 @@ end
 
 for name in block_names
     if ismatch(r"^.+\w\.\w+$", basename(name))
-        outstream = open("$(strip(name))", "w")
+        outstream = open("$outdir/$(strip(name))", "w")
         write_code("$name", codeblocks, outstream)
         close(outstream)
     end

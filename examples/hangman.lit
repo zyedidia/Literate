@@ -6,7 +6,7 @@
 This is a Hangman program. It lets you make guesses about which letters are in an unknown word. On the eighth incorrect guess you lose.
 The structure of the hangman program will look like this:
 
---- Hangman.jl
+--- hangman.jl
 println("Welcome to hangman!")
 @{Setup}
 guesses_left = 8

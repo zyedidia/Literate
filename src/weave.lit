@@ -10,7 +10,7 @@ Generally, the strategy is to parse each line, and make some transformation on i
 
 The structure of the file looks like this:
 
---- ../gen/weave.jl
+--- weave.jl
 @{Declare a few globals}
 @{Define the get_locations function}
 @{Define the write_markdown function}
@@ -36,8 +36,7 @@ The types of these dictionaries are `Dict{String, Array{Int, 1}}`. We also take 
 to get the @title of the lit file too.
 
 --- Define the get_locations function
-function get_locations(source)
-    lines = readlines(IOBuffer(source))
+function get_locations(lines)
     sectionnum = 0   # Which section is currently being parsed
     in_codeblock = false   # Whether we are parsing a codeblock or not
 
@@ -142,12 +141,10 @@ end
 @s
 
 --- Define the weave function
-function weave(inputstream, outputstream)
+function weave(lines, outputstream, source_dir)
     out = outputstream
 
-    input = readall(inputstream)
-    get_locations(input)
-    lines = readlines(IOBuffer(input))
+    get_locations(lines)
 
     @{Set up html}
     @{Set up variables}
@@ -199,20 +196,29 @@ write(out, base_html)
 @s
 
 Getting the CSS is slightly more complex because we allow the user to define their own style sheets in the current directory.
+There are three special stylesheets the user can define:
+
+* `default.css`: This will replace the page's css
+* `colorscheme.css`: This will replace the the colorscheme for pretty printing code. You can get color themes [here](http://jmblog.github.io/color-themes-for-google-code-prettify/)
+* `additions.css`: This css will be added in addition to the default css
 
 --- Get the CSS
 css = ""
-files = readdir(pwd()) # All the files in the current directory
+files = readdir(source_dir) # All the files in the current directory
 if "default.css" in files
-    css = readall("$(pwd())/default.css") # Read the user's default.css
+    css = readall("$source_dir/default.css") # Read the user's default.css
 else
     css = readall("$gen/default.css") # Use the default css
 end
 
 if "colorscheme.css" in files
-    css *= readall("$(pwd())/colorscheme.css") # Read the user's colorscheme.css
+    css *= readall("$source_dir/colorscheme.css") # Read the user's colorscheme.css
 else
     css *= readall("$gen/colorscheme.css") # Use the default colorscheme
+end
+
+if "additions.css" in files
+    css *= readall("$source_dir/additions.css") # Read the user's additions.css
 end
 ---
 
@@ -236,7 +242,11 @@ This is where the real stuff happens.
 --- Parse the line
 if line == ""
     # This was a blank line
-    markdown *= "\n" # Tell markdown this was a blank line
+    if in_codeblock
+        write(out, "\n")
+    else
+        markdown *= "\n" # Tell markdown this was a blank line
+    end
     continue
 end
 
@@ -278,7 +288,6 @@ markdown = ""
 write(out, "<div class=\"codeblock\">\n")
 name = strip(line[4:end]) # The codeblock name
 
-file = false # Whether or not this name is a file name
 adding = false # Whether or not this block is a +=
 
 if contains(name, "+=")
@@ -287,7 +296,7 @@ if contains(name, "+=")
 end
 
 cur_codeblock_name = name
-file = ismatch(r"^.+\w\.\w+$", name)
+file = ismatch(r"^.+\w\.\w+$", name) # Whether or not this name is a file name
 
 definition_location = block_locations[name][1]
 output = "$name <a href=\"#$definition_location\">$definition_location</a>" # Add the link to the definition location
@@ -345,7 +354,7 @@ if length(locations) > 1
             if loopnum > 1 && loopnum < length(locations)-1
                 punc = ","
             elseif loopnum == length(locations)-1 && loopnum > 1
-                punc = "and"
+                punc = " and"
             end
             links *= "$punc <a href=\"#$location\">$location</a>"
         end

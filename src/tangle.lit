@@ -10,21 +10,19 @@ write out the code, recursively following and links that are used.
 
 Here's what the structure looks like:
 
---- ../gen/tangle.jl
+--- tangle.jl
 @{Define the tangle function}
 @{Define the write_code function}
 ---
 
 @s
 
-We read the lines from the inputstream, and set up some variables to hold the code for each block, and all the block names. Then
+We receive the lines as an argument, and set up some variables to hold the code for each block, and all the block names. Then
 we start looping through each line. We use `line_num` because if we report any errors, we want to give the line number of the error.
 Then we check if the line is either a codeblock beginning or ending, and if so we add the code for it to the dictionaries.
 
 --- Define the tangle function
-function tangle(inputstream)
-    lines = readlines(inputstream)
-
+function tangle(lines)
     codeblocks = Dict{String, String}()
     block_names = String[]
     
@@ -118,7 +116,7 @@ write all the links that are in that codeblock.
 --- Write the code
 for name in block_names
     if ismatch(r"^.+\w\.\w+$", basename(name))
-        outstream = open("$(strip(name))", "w")
+        outstream = open("$outdir/$(strip(name))", "w")
         write_code("$name", codeblocks, outstream)
         close(outstream)
     end

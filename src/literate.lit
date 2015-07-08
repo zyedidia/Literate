@@ -1,0 +1,144 @@
+@codetype Julia jl
+@title Literate
+
+@s Introduction
+
+This is the main file that puts `tangle` and `weave` together into one program. It
+accepts the flags `-html` and `-code` if the user would like to generate only one
+or the other. By default both html and code will be generated. We also accept any
+number of `.lit` files, and if none are specified use `STDIN` and `STDOUT`.
+
+Here is the structure:
+
+--- lit.jl
+#!/usr/bin/env julia
+
+@{Functions}
+@{Parse the arguments}
+if length(inputfiles) == 0
+    @{Use STDIN and STDOUT}
+else
+    @{Weave and/or tangle the input files}
+end
+
+# vim: set ft=julia:
+---
+
+@s
+
+First we define a small yet useful function which takes a path to a file and
+returns the filename with no extension.
+
+--- Functions
+function name(path)
+    basename(path[1:search(path, '.')[1]-1])
+end
+---
+
+@s
+
+Now we parse all the arguments that the user has passed. We create two flags 
+`html` and `code` which will tell us later on what to generate. We also create
+an addition flag which specifies which directory to output the html/code to.
+Finally, we need an array to hold the input filenames.
+
+--- Parse the arguments
+html = false
+code = false
+outdir = "."
+
+inputfiles = String[]
+---
+
+@s
+
+Next we loop through each argument and check if it is one of the possible flags:
+
+* `-h`: Get the usage help
+* `-html`: Only generate html
+* `-code`: Only generate code
+* `--out-dir=dir`: Specify the directory to output html and/or code
+
+If the arguments is not one of these flags, we add the argument to the `inputfiles` 
+array.
+
+--- Parse the arguments +=
+for arg in ARGS
+    if arg == "-h"
+        println("Usage: lit [-html] [-code] [file ...]")
+        exit()
+    elseif arg == "-html"
+        html = true
+    elseif arg == "-code"
+        code = true
+    elseif startswith(arg, "--out-dir=")
+        outdir = realpath(arg[11:end])
+    else
+        push!(inputfiles, arg)
+    end
+end
+---
+
+@s
+
+Finally, we check if the user did not specify `-html` nor `-code`. In that case,
+they should both become true.
+
+--- Parse the arguments +=
+if !html && !code
+    html = code = true
+end
+---
+
+We also declare a variable called `gen` which holds the path of the `gen` folder
+(this is where the actual `.jl` files for tangle and weave are located).
+
+--- Parse the arguments +=
+gen = "$(dirname(Base.source_path()))/../gen"
+---
+
+@s
+
+If no input files were passed in, we should take input from `STDIN` and spit all
+output to `STDOUT`.
+
+--- Use STDIN and STDOUT
+input = readall(STDIN)
+if html
+    include("$gen/weave.jl")
+    weave(readlines(IOBuffer(input), STDOUT))
+end
+
+if code
+    include("$gen/tangle.jl")
+    tangle(readlines(IOBuffer(input)))
+end
+---
+
+@s
+
+If input files were given, we should loop through each one and tangle/weave it.
+
+--- Weave and/or tangle the input files
+if code
+    include("$gen/tangle.jl")
+end
+if html
+    include("$gen/weave.jl")
+end
+
+for file in inputfiles
+    inputstream = open(file)
+    input = readall(inputstream)
+    close(inputstream)
+    source_dir = dirname(file) == "" ? "." : dirname(file)
+    if html
+        outputstream = open("$outdir/$(name(file)).html", "w")
+        weave(readlines(IOBuffer(input)), outputstream, source_dir)
+        close(outputstream)
+    end
+    if code
+        tangle(readlines(IOBuffer(input)))
+    end
+end
+---

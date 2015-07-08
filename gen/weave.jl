@@ -2,8 +2,7 @@ title = ""
 block_locations = Dict{String, Array{Int, 1}}()
 block_use_locations = Dict{String, Array{Int, 1}}()
 
-function get_locations(source)
-    lines = readlines(IOBuffer(source))
+function get_locations(lines)
     sectionnum = 0   # Which section is currently being parsed
     in_codeblock = false   # Whether we are parsing a codeblock or not
 
@@ -64,12 +63,10 @@ function write_markdown(markdown, out)
     end
 end
 
-function weave(inputstream, outputstream)
+function weave(lines, outputstream, source_dir)
     out = outputstream
 
-    input = readall(inputstream)
-    get_locations(input)
-    lines = readlines(IOBuffer(input))
+    get_locations(lines)
 
 start_codeblock = "<pre class=\"prettyprint\">\n"
 end_codeblock = "</pre>\n"
@@ -79,17 +76,21 @@ scripts = """<script src="https://cdn.rawgit.com/google/code-prettify/master/loa
              <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: [['\$','\$']]}}); </script>"""
 
 css = ""
-files = readdir(pwd()) # All the files in the current directory
+files = readdir(source_dir) # All the files in the current directory
 if "default.css" in files
-    css = readall("$(pwd())/default.css") # Read the user's default.css
+    css = readall("$source_dir/default.css") # Read the user's default.css
 else
     css = readall("$gen/default.css") # Use the default css
 end
 
 if "colorscheme.css" in files
-    css *= readall("$(pwd())/colorscheme.css") # Read the user's colorscheme.css
+    css *= readall("$source_dir/colorscheme.css") # Read the user's colorscheme.css
 else
     css *= readall("$gen/colorscheme.css") # Use the default colorscheme
+end
+
+if "additions.css" in files
+    css *= readall("$source_dir/additions.css") # Read the user's additions.css
 end
 
 
@@ -125,7 +126,11 @@ cur_codeblock_name = "" # The name of the current codeblock begin parsed
 
 if line == ""
     # This was a blank line
-    markdown *= "\n" # Tell markdown this was a blank line
+    if in_codeblock
+        write(out, "\n")
+    else
+        markdown *= "\n" # Tell markdown this was a blank line
+    end
     continue
 end
 
@@ -145,7 +150,6 @@ markdown = ""
 write(out, "<div class=\"codeblock\">\n")
 name = strip(line[4:end]) # The codeblock name
 
-file = false # Whether or not this name is a file name
 adding = false # Whether or not this block is a +=
 
 if contains(name, "+=")
@@ -154,7 +158,7 @@ if contains(name, "+=")
 end
 
 cur_codeblock_name = name
-file = ismatch(r"^.+\w\.\w+$", name)
+file = ismatch(r"^.+\w\.\w+$", name) # Whether or not this name is a file name
 
 definition_location = block_locations[name][1]
 output = "$name <a href=\"#$definition_location\">$definition_location</a>" # Add the link to the definition location
@@ -190,7 +194,7 @@ if length(locations) > 1
             if loopnum > 1 && loopnum < length(locations)-1
                 punc = ","
             elseif loopnum == length(locations)-1 && loopnum > 1
-                punc = "and"
+                punc = " and"
             end
             links *= "$punc <a href=\"#$location\">$location</a>"
         end
