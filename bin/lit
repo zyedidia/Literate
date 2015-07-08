@@ -1,21 +1,46 @@
 #!/usr/bin/env julia
-dir = "$(dirname(Base.source_path()))/../src"
 
-include("$dir/common.jl")
+function name(path)
+    basename(path[1:search(path, '.')[1]-1])
+end
+
+html = false
+code = false
+
+inputfiles = String[]
+for arg in ARGS
+	if arg == "-h"
+		println("Usage: lit [-html] [-code] [file ...]")
+		exit()
+	elseif arg == "-html"
+		html = true
+	elseif arg == "-code"
+		code = true
+	else
+		push!(inputfiles, arg)
+	end
+end
+
+if !html && !code
+	html = true
+	code = true
+end
+
+gen = "$(dirname(Base.source_path()))/../gen"
 
 if length(inputfiles) == 0
 	if html
-		include("$dir/weave.jl")
+		include("$gen/weave.jl")
 		weave(STDIN, STDOUT)
 	end
 
 	if code
-		include("$dir/tangle.jl")
+		include("$gen/tangle.jl")
 		tangle(STDIN)
 	end
 else
 	if html
-		include("$dir/weave.jl")
+		include("$gen/weave.jl")
 		for file in inputfiles
 			inputstream = open(file)
 			outputstream = open("$(name(file)).html", "w")
@@ -26,7 +51,7 @@ else
 	end
 
 	if code
-		include("$dir/tangle.jl")
+		include("$gen/tangle.jl")
 		for file in inputfiles
 			inputstream = open(file)
 			tangle(inputstream)

@@ -5,4 +5,3 @@
 - Make w2lit converter
 - Support change files
 - Manual
-- Rewrite in Literate

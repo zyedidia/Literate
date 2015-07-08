@@ -10,14 +10,16 @@ write out the code, recursively following and links that are used.
 
 Here's what the structure looks like:
 
---- tangle.jl
-include("common.jl")
-
+--- ../gen/tangle.jl
 @{Define the tangle function}
 @{Define the write_code function}
 ---
 
 @s
+
+We read the lines from the inputstream, and set up some variables to hold the code for each block, and all the block names. Then
+we start looping through each line. We use `line_num` because if we report any errors, we want to give the line number of the error.
+Then we check if the line is either a codeblock beginning or ending, and if so we add the code for it to the dictionaries.
 
 --- Define the tangle function
 function tangle(inputstream)
@@ -42,6 +44,11 @@ end
 
 @s
 
+Getting the block name on a normal definition is a matter of removing the `---`. However there may be a `+=` and in that
+case we want to strip that off too. We make sure to find the *last* occurrence of a `+=` so that a user could have a `+=`
+in the name of the code block. Then we substring it off. We also set a flag `add_to_block` to tell the code later on
+that this is not a codeblock definition, but a `+=` definition.
+
 --- Get the block name
 block_name = line[4:end] |> strip
 
@@ -55,6 +62,9 @@ end
 
 @s
 
+Now we want to actually get the code for the codeblock. We loop through each line, incrementing `line_num` until we come
+across the end of the codeblock (signified by `---`).
+
 --- Get the code
 code = ""
 while true
@@ -65,6 +75,10 @@ end
 ---
 
 @s
+
+Finally we add the code to the dictionary in the corresponding slot. If the code was an addition to a previous codeblock
+definition, that codeblock must already by defined in the dictionary and we add this code to that index. If not, we
+create a new slot for the block name, and assign it to its code.
 
 --- Add the code to the dict
 if add_to_block
