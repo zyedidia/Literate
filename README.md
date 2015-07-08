@@ -1,6 +1,6 @@
 # Literate
 
-Literate is a computer programming system to create literate programs. It works with any language, and can generate HTML pages as output, that can also be converted to pdfs using [wkhtmltopdf] (http://wkhtmltopdf.org/).
+Literate (lit for short) is a computer programming system to create literate programs. It works with any language, and can generate HTML pages as output, that can also be converted to pdfs using [wkhtmltopdf] (http://wkhtmltopdf.org/).
 
 The goal of this project is to create a modern literate programming system which keeps most, if not all of the features of Knuth and Levy's CWEB system, but simplifies the system and adds even more features.
 
