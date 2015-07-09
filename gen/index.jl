@@ -20,6 +20,21 @@ end
 end
 
 function create_index(inputfile)
+    try
+        run(`which ctags`)
+    catch
+        println("You do not have ctags installed and it is required for making an index.")
+        println("If you do not want to make an index use the -noindex flag.")
+        return ""
+    end
+        
+    supported_languages = split(lowercase(readall(`ctags --list-languages`)), "\n")
+    if !(lowercase(codetype) in supported_languages)
+        println("$codetype is not supported by your version of ctags.")
+        println("Please use -noindex if you would not like to create an index.")
+        return ""
+    end
+
 # Run Ctags on the lit file
 tags_str = readall(`ctags -x --language-force=$(lowercase(codetype)) $inputfile`)
 
