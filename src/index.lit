@@ -1,0 +1,132 @@
+@code_type Julia jl
+@comment_type #
+@title Index
+
+@s Introduction
+
+The index will be a list of all of the identifiers (functions, variables, macros...) used in the `.lit`
+program with links back to the section they were used. The index will give the name of the identifier,
+the type of identifier it is, and what line number it was used on. There will also be a link to the line.
+
+This program will attempt to create an index from a `.lit` file by using Exuberant Ctags. Ctags generates
+a list of identifiers and where they were used from a C file or any other kind of file of the 41 languages
+it supports. However, we will run ctags on a `.lit` file using the `--language-force` option to force ctags
+to interpret the lit file as the code type it has. This works well, although ctags gives some false
+positives. When creating the index, we must make sure that all the line numbers were from codeblocks (and
+not from prose).
+
+The overall structure of the program will look like this:
+
+--- index.jl
+@{Create the Tag type}
+
+function section_for_linenum(linenum)
+    @{Get the section number given a line number}
+end
+
+function create_index(inputfile)
+    @{Run Ctags on the lit file}
+    @{Create the HTML for the index}
+    return html
+end
+---
+
+@s
+
+We create a type called `Tag` to hold the information from one line of a tags file. The information
+stored in an Tag is 
+
+* `name`: The identifier name
+* `type`: The type of the identifier i.e. `function`, `local`, `macro`...
+* `line_num`: The line number the identifier is declared on
+
+--- Create the Tag type
+type Tag
+    name::String
+    tag_type::String
+    line_num::Int
+end
+---
+
+@s
+
+Next we run Ctags on the inputfile, using `--language-force` to specify the language.
+
+--- Run Ctags on the lit file
+tags_str = readall(`ctags -x --language-force=$(lowercase(codetype)) $inputfile`)
+---
+
+@s
+
+Now we also want to parse the tags and create an array of `Tags`. Before adding the tag to the array,
+we check if it was a false positive by making sure the line number is contained in the `code_lines`
+array.
+
+--- Run Ctags on the lit file +=
+tags_arr = split(tags_str, "\n")
+tags = Tag[]
+
+for tag in tags_arr
+    if tag != ""
+        words = split(tag, r"\s+")
+        line_num = parse(Int, words[3])
+
+        if !(line_num in code_lines)
+            continue
+        end
+
+        name = words[1]
+        tag_type = words[2]
+        
+        push!(tags, Tag(name, tag_type, line_num))
+    end
+end
+---
+
+@s
+
+Now we have the line number for each tag, but we want to display the section number. So we define a function
+to help us do this. This function takes in a line number and returns the section number. It uses the
+`section_linenums` array defined in `weave` to help.
+
+--- Get the section number given a line number
+for i = 1:length(section_linenums)
+    if i == length(section_linenums)
+        return i
+    end
+    if linenum < section_linenums[i + 1]
+        return i
+    end
+end
+---
+
+@s
+
+Now that we have all the tags, we can begin to create the HTML for the index.
+
+--- Create the HTML for the index
+html = "<h3>Index</h3>\n"
+html *= "<h5>Identifiers Used</h5>\n"
+html *= "<ul class=\"two-col\">\n"
+
+for tag in tags
+    section_num = section_for_linenum(tag.line_num)
+    html *= "<li><code>$(tag.name)</code>: <em>$(tag.tag_type)</em> <a href=\"#$section_num\">$section_num</a></li>\n"
+end
+html *= "</ul>"
+
+html *= "<h5>Code Blocks</h5>\n"
+html *= "<ul class=\"two-col\">\n"
+
+# Sort the block_locations dictionary so that the codeblocks come in order
+for (name, locations) in sort(collect(block_locations), by=x->x[2][1])
+    html *= "<li><code>$(name)</code>"
+    for i = 1:length(locations)
+        location = locations[i]
+        p = i == 1 ? " " : ", "
+        html *= "$p<a href=\"#$(location)\">$(location)</a>"
+    end
+    html *= "</li>\n"
+end
+html *= "</ul>"
+---

@@ -41,12 +41,14 @@ end
 Now we parse all the arguments that the user has passed. We create two flags 
 `html` and `code` which will tell us later on what to generate. We also create
 an addition flag which specifies which directory to output the html/code to.
-Finally, we need an array to hold the input filenames.
+The `index` flag tells us whether or not to create an index.  Finally, we need
+an array to hold the input filenames.
 
 --- Parse the arguments
 html = false
 code = false
 outdir = "."
+index = true
 
 inputfiles = String[]
 ---
@@ -58,6 +60,7 @@ Next we loop through each argument and check if it is one of the possible flags:
 * `-h`: Get the usage help
 * `-html`: Only generate html
 * `-code`: Only generate code
+* `-noindex`: Don't create an index
 * `--out-dir=dir`: Specify the directory to output html and/or code
 
 If the arguments is not one of these flags, we add the argument to the `inputfiles` 
@@ -66,12 +69,14 @@ array.
 --- Parse the arguments +=
 for arg in ARGS
     if arg == "-h"
-        println("Usage: lit [-html] [-code] [file ...]")
+        println("Usage: lit [-noindex] [-html] [-code] [--out-dir=dir] [file ...]")
         exit()
     elseif arg == "-html"
         html = true
     elseif arg == "-code"
         code = true
+    elseif arg == "-noindex"
+        index = false
     elseif startswith(arg, "--out-dir=")
         outdir = realpath(arg[11:end])
     else
@@ -107,7 +112,7 @@ output to `STDOUT`.
 input = readall(STDIN)
 if html
     include("$gen/weave.jl")
-    weave(readlines(IOBuffer(input), STDOUT))
+    weave(readlines(IOBuffer(input)), STDOUT, ".", "none", false)
 end
 
 if code
@@ -135,7 +140,7 @@ for file in inputfiles
     source_dir = dirname(file) == "" ? "." : dirname(file)
     if html
         outputstream = open("$outdir/$(name(file)).html", "w")
-        weave(readlines(IOBuffer(input)), outputstream, source_dir)
+        weave(readlines(IOBuffer(input)), outputstream, source_dir, file, index)
         close(outputstream)
     end
     if code

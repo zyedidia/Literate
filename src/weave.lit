@@ -23,10 +23,26 @@ The structure of the file looks like this:
 The global variables defined here will hold the results of the first pass to get the locations of code blocks and other
 useful information like the number of sections and the title.
 
+
 --- Declare a few globals
 title = ""
-block_locations = Dict{String, Array{Int, 1}}()
-block_use_locations = Dict{String, Array{Int, 1}}()
+block_locations = Dict{String, Array{UInt16, 1}}()
+block_use_locations = Dict{String, Array{UInt16, 1}}()
+---
+
+We also define `codetype` and `codetype_ext` to hold the name and extension of the language the user is using.
+
+--- Declare a few globals +=
+codetype = ""
+codetype_ext = ""
+---
+
+Finally we define an array for holding the line numbers (in the lit file) on which there was code, and an array for
+holding the line numbers each section starts on.
+
+--- Declare a few globals +=
+code_lines = Array{UInt16, 1}() # Hopefully there won't be more than 65,535 lines
+section_linenums = Array{UInt16, 1}()
 ---
 
 @s
@@ -47,6 +63,7 @@ function get_locations(lines)
         if startswith(line, "@title")
             @{Initialize the title variable}
         elseif startswith(line, "@s")
+            push!(section_linenums, Uint16(line_num))
             sectionnum += 1
         elseif startswith(line, "---")
             @{A codeblock has been defined}
@@ -142,7 +159,7 @@ end
 @s
 
 --- Define the weave function
-function weave(lines, outputstream, source_dir)
+function weave(lines, outputstream, source_dir, inputfilename, has_index)
     out = outputstream
 
     get_locations(lines)
@@ -154,12 +171,20 @@ function weave(lines, outputstream, source_dir)
         line = lines[line_num] |> chomp
 
         if startswith(line, "@code_type")
+            command = split(line, " ")
+            global codetype = command[2]
+            global codetype_ext = command[3]
             continue
         elseif startswith(line, "@comment_type")
             continue
         end
 
         @{Parse the line}
+    end
+
+    if has_index
+        include("$gen/index.jl")
+        write(out, create_index(inputfilename))
     end
 
     @{Clean up}
@@ -459,6 +484,7 @@ line = replace(line, "&", "&amp;")
 line = replace(line, "<", "&lt;")
 line = replace(line, ">", "&gt;")
 @{Link any sections in the line}
+push!(code_lines, Uint16(line_num))
 write(out, "$line\n")
 ---
 

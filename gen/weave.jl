@@ -1,7 +1,13 @@
 # Declare a few globals
 title = ""
-block_locations = Dict{String, Array{Int, 1}}()
-block_use_locations = Dict{String, Array{Int, 1}}()
+block_locations = Dict{String, Array{UInt16, 1}}()
+block_use_locations = Dict{String, Array{UInt16, 1}}()
+
+codetype = ""
+codetype_ext = ""
+
+code_lines = Array{UInt16, 1}() # Hopefully there won't be more than 65,535 lines
+section_linenums = Array{UInt16, 1}()
 
 # Define the get_locations function
 function get_locations(lines)
@@ -16,6 +22,7 @@ function get_locations(lines)
 global title = strip(line[7:end])
 
         elseif startswith(line, "@s")
+            push!(section_linenums, Uint16(line_num))
             sectionnum += 1
         elseif startswith(line, "---")
 # A codeblock has been defined
@@ -72,7 +79,7 @@ function write_markdown(markdown, out)
 end
 
 # Define the weave function
-function weave(lines, outputstream, source_dir)
+function weave(lines, outputstream, source_dir, inputfilename, has_index)
     out = outputstream
 
     get_locations(lines)
@@ -133,6 +140,9 @@ cur_codeblock_name = "" # The name of the current codeblock begin parsed
         line = lines[line_num] |> chomp
 
         if startswith(line, "@code_type")
+            command = split(line, " ")
+            global codetype = command[2]
+            global codetype_ext = command[3]
             continue
         elseif startswith(line, "@comment_type")
             continue
@@ -291,6 +301,7 @@ while ismatch(r"@{.*?}", line)
     end
 end
 
+push!(code_lines, Uint16(line_num))
 write(out, "$line\n")
 
     else
@@ -319,6 +330,11 @@ markdown *= line * "\n"
     end
 end
 
+    end
+
+    if has_index
+        include("$gen/index.jl")
+        write(out, create_index(inputfilename))
     end
 
 # Clean up

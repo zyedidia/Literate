@@ -38,7 +38,7 @@ if length(inputfiles) == 0
 input = readall(STDIN)
 if html
     include("$gen/weave.jl")
-    weave(readlines(IOBuffer(input), STDOUT))
+    weave(readlines(IOBuffer(input)), STDOUT, ".", "none", false)
 end
 
 if code
@@ -62,7 +62,7 @@ for file in inputfiles
     source_dir = dirname(file) == "" ? "." : dirname(file)
     if html
         outputstream = open("$outdir/$(name(file)).html", "w")
-        weave(readlines(IOBuffer(input)), outputstream, source_dir)
+        weave(readlines(IOBuffer(input)), outputstream, source_dir, file, true)
         close(outputstream)
     end
     if code

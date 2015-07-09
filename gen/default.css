@@ -60,3 +60,18 @@ p:not(.notp) {
 	margin: 0;
 	text-indent: 2em;
 }
+/* .two-col li { */
+/*     display: inline-block; */
+/*     width: 50%; */
+/*     margin: 0; */
+/*     padding: 0; */
+/*     vertical-align: top; */
+/* } */
+.two-col li:before {
+    content: '-';
+    padding: 5px;
+    margin-right: 5px;
+    color: orange;
+    background-color: white;
+    display: inline-block;
+}

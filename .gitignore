@@ -4,3 +4,5 @@ examples/*.jl
 examples/*.c
 examples/*.pdf
 examples/wc
+
+bin/.lit.bak
