@@ -72,7 +72,7 @@ html *= "<h5>Code Blocks</h5>\n"
 html *= "<ul class=\"two-col\">\n"
 
 # Sort the block_locations dictionary so that the codeblocks come in order
-for (name, locations) in sort(collect(block_locations), by=x->x[2][1])
+for (name, locations) in sort(collect(block_locations))
     html *= "<li><code>$(name)</code>"
     for i = 1:length(locations)
         location = locations[i]

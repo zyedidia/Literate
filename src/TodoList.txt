@@ -1,5 +1,6 @@
 - User adjustable css/fonts -- needs more work
 - Index
+- Edit readme to discuss ctags -- better error reporting for old versions of ctags
 - Vim plugin -- Needs more work
 - Make w2lit converter
 - Support change files
