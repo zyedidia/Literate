@@ -7,8 +7,4 @@ examples: wc.lit hangman.lit
 wc: wc.c
 
 clean:
-	rm -f *.html
-	rm -f *.jl
-	rm -f *.c
-	rm -f *.pdf
-	rm -f wc
+	rm -f *.html *.jl *.c *.pdf wc
