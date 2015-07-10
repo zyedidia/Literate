@@ -6,6 +6,9 @@ body {
 .section {
 	page-break-inside: avoid;
 }
+.codeblock {
+    padding-bottom: 15px;
+}
 pre.prettyprint {
 	font-size: 11pt;
 	padding: 10px;

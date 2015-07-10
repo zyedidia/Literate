@@ -1,0 +1,138 @@
+@code_type Lua lua
+@comment_type --
+@title Literate
+
+@s Introduction
+
+This is the main file that puts `tangle` and `weave` together into one program. It
+accepts the flags `-html` and `-code` if the user would like to generate only one
+or the other. By default both html and code will be generated. We also accept any
+number of `.lit` files, and if none are specified use `STDIN` and `STDOUT`.
+
+Here is the structure:
+
+--- lit.lua
+#!/usr/bin/env lua
+
+require "stringutil"
+require "fileutil"
+
+require "weave"
+require "tangle"
+
+@{Parse the arguments}
+if #inputfiles == 0 then
+    @{Use STDIN and STDOUT}
+else
+    @{Weave and/or tangle the input files}
+end
+
+-- vim: set ft=lua:
+---
+
+@s
+
+First we parse all the arguments that the user has passed. We create two flags 
+`html` and `code` which will tell us later on what to generate. We also create
+an addition flag which specifies which directory to output the html/code to.
+The `index` flag tells us whether or not to create an index.  Finally, we need
+an array to hold the input filenames.
+
+--- Parse the arguments
+html = false
+code = false
+outdir = "."
+index = true
+
+inputfiles = {}
+---
+
+@s
+
+Next we loop through each argument and check if it is one of the possible flags:
+
+* `-h`: Get the usage help
+* `-html`: Only generate html
+* `-code`: Only generate code
+* `-noindex`: Don't create an index
+* `--out-dir=dir`: Specify the directory to output html and/or code
+
+If the arguments is not one of these flags, we add the argument to the `inputfiles` 
+array.
+
+--- Parse the arguments +=
+for i=1,#arg do
+    argument = arg[i]
+    if argument == "-h" then
+        print("Usage: lit [-noindex] [-html] [-code] [--out-dir=dir] [file ...]")
+        os.exit()
+    elseif argument == "-html" then
+        html = true
+    elseif argument == "-code" then
+        code = true
+    elseif argument == "-noindex" then
+        index = false
+    elseif startswith(argument, "--out-dir=") then
+        outdir = string.sub(argument, 11, #argument)
+    else
+        inputfiles[#inputfiles + 1] = argument
+    end
+end
+---
+
+@s
+
+Finally, we check if the user did not specify `-html` nor `-code`. In that case,
+they should both become true.
+
+--- Parse the arguments +=
+if not html and not code then
+    html = true
+    code = true
+end
+---
+
+We also declare a variable called `gen` which holds the path of the `gen` folder
+(this is where the actual `.jl` files for tangle and weave are located).
+
+--- Parse the arguments +=
+gen = dirname(arg[0]) .. "../gen"
+---
+
+@s
+
+If no input files were passed in, we should take input from `STDIN` and spit all
+output to `STDOUT`.
+
+--- Use STDIN and STDOUT
+lines = lines_from()
+if html then
+    weave(lines, "STDOUT", ".", "none", false)
+end
+
+if code then
+    tangle(lines)
+end
+---
+
+@s
+
+If input files were given, we should loop through each one and tangle/weave it.
+
+--- Weave and/or tangle the input files
+for num,file in pairs(inputfiles) do
+    local lines = lines_from(file)
+    local source_dir = dirname(file)
+    if source_dir == "" then
+        source_dir = "."
+    end
+    if html then
+        local outputstream = io.open(outdir .. "" .. name(file) .. ".html", "w")
+        weave(lines, outputstream, source_dir, file, index)
+        outputstream:close()
+    end
+    if code then
+        tangle(lines)
+    end
+end
+---

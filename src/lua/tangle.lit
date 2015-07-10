@@ -1,0 +1,135 @@
+@code_type Lua lua
+@comment_type --
+@title Tangle
+
+@s Introduction
+Tangle is the part of `Literate` which takes a `.lit` file and generates the corresponding code. It must parse the codeblocks,
+detect links to other codeblocks, and follow those.
+
+The overall strategy here is to first fill a dictionary with each piece of code, and its corresponding name. Then, we will
+write out the code, recursively following and links that are used.
+
+Here's what the structure looks like:
+
+--- tangle.lua
+@{Define the tangle function}
+@{Define the write_code function}
+---
+
+@s
+
+We receive the lines as an argument, and set up some variables to hold the code for each block, and all the block names. Then
+we start looping through each line. We use `line_num` because if we report any errors, we want to give the line number of the error.
+Then we check if the line is either a codeblock beginning or ending, and if so we add the code for it to the dictionaries.
+
+--- Define the tangle function
+comment_type = ""
+function tangle(lines)
+    local codeblocks = {} -- String => String
+    local block_names = {} -- Number => String
+    
+    for line_num,line in pairs(lines) do
+        line = chomp(line)
+        if startswith(line, "@comment_type") then
+            comment_type = strip(string.sub(line, 15, #line))
+        elseif startswith(line, "---") and not string.match(line, "^---$") then
+            @{Get the block name}
+            @{Get the code}
+            @{Add the code to the dict}
+        end
+    end
+
+    @{Write the code}
+end
+---
+
+@s
+
+Getting the block name on a normal definition is a matter of removing the `---`. However there may be a `+=` and in that
+case we want to strip that off too. We make sure to find the *last* occurrence of a `+=` so that a user could have a `+=`
+in the name of the code block. Then we substring it off. We also set a flag `add_to_block` to tell the code later on
+that this is not a codeblock definition, but a `+=` definition.
+
+--- Get the block name
+local block_name = strip(string.sub(line, 4, #line))
+
+local add_to_block = false -- Whether or not this definition has a +=
+if string.match(block_name, "+=") then
+    local plus_index = block_name:match'^.*()%+'
+    block_name = strip(string.sub(block_name, 1, plus_index-1))
+    add_to_block = true
+end
+---
+
+@s
+
+Now we want to actually get the code for the codeblock. We loop through each line, incrementing `line_num` until we come
+across the end of the codeblock (signified by `---`).
+
+--- Get the code
+local code = ""
+while true do
+    line_num = line_num + 1
+    line = lines[line_num]
+    if line == nil then break end
+    if chomp(line) == "---" then break end
+    code = code .. line
+end
+---
+
+@s
+
+Finally we add the code to the dictionary in the corresponding slot. If the code was an addition to a previous codeblock
+definition, that codeblock must already by defined in the dictionary and we add this code to that index. If not, we
+create a new slot for the block name, and assign it to its code.
+
+--- Add the code to the dict
+if add_to_block then
+    codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
+else
+    block_names[#block_names + 1] = block_name
+    codeblocks[block_name] = code
+end
+---
+
+@s
+
+Now we define the `write_code` function which takes the `block_name`, `codeblocks`, and `outstream` and writes the code,
+recursively following links until it is done.
+
+--- Define the write_code function
+function write_code(block_name, codeblocks, outstream)
+    local code = codeblocks[block_name]
+    local lines = split(code, "\n")
+
+    if comment_type ~= "" then
+        if not string.match(block_name, "^.+%w%.%w+$") then
+            write(outstream, comment_type .. " " .. block_name .. "\n")
+        end
+    end
+
+    for line_num,line in pairs(lines) do
+        if startswith(strip(line), "@{") then
+            line = strip(line)
+            write_code(string.sub(line, 3, #line - 1), codeblocks, outstream)
+        else
+            write(outstream, line .. "\n")
+        end
+    end
+end
+---
+
+@s
+
+Here we check if the name is a file with the regular expression `^.+%w%.%w+$`. If it is, we treat it as our root, and recursively
+write all the links that are in that codeblock.
+
+--- Write the code
+for i,name in pairs(block_names) do
+    if string.match(basename(name), "^.+%w%.%w+$") then
+        outstream = io.open(outdir .. "/" .. strip(name), "w")
+        write_code(name, codeblocks, outstream)
+        outstream:close()
+    end
+end
+---

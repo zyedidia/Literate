@@ -1,0 +1,108 @@
+@code_type Lua lua
+@comment_type --
+@title File Util
+
+@s Introduction
+
+This file provides some nice utilities for dealing with the filesystem in Lua. We will define functions
+to strip paths and get filenames, and functions to read and write to files.
+
+The overall structure will look like this:
+
+--- fileutil.lua
+@{The write function}
+@{The file_exists function}
+@{The lines_from function}
+@{The dirname function}
+@{The basename function}
+@{The name function}
+---
+
+@s
+
+This function writes a string either to *stdout* or to a file depending on the input parameter.
+
+--- The write function
+function write(output, str)
+    if output == "stdout" then
+        io.write(str)
+    else
+        output:write(str)
+    end
+end
+---
+
+@s
+
+This function is pretty self explanatory.
+
+--- The file_exists function
+function file_exists(file)
+    local f = io.open(file, "rb")
+    if f then f:close() end
+    return f ~= nil
+end
+---
+
+@s
+
+The `lines_from` function returns a table containing the lines in the file passed in.
+
+--- The lines_from function
+function lines_from(file)
+    if file ~= nil then
+        if not file_exists(file) then 
+            print(file, " does not exist!")
+            return {}
+        end
+    end
+    lines = {}
+    if file ~= nil then
+        for line in io.lines(file, "*L") do 
+            lines[#lines + 1] = line
+        end
+    else
+        for line in io.lines() do 
+            lines[#lines + 1] = line
+        end
+    end
+    return lines
+end
+---
+
+@s
+
+The dirname function returns the directory part of a path. `"path/to/something.lua"` would return `"path/to"`.
+When just `"something.lua"` is passed, it returns an empty string.
+
+--- The dirname function
+function dirname(path)
+    if path:match(".-/.-") then
+        local name = string.gsub(path, "(.*/)(.*)", "%1")
+        return name
+    else
+        return ''
+    end
+end
+---
+
+@s
+
+Basename is the opposite of dirname. For `"path/to/something.lua"`, it returns `"something.lua"`
+
+--- The basename function
+function basename(path)
+    return string.gsub(path, "(.*/)(.*)", "%2")
+end
+---
+
+@s
+
+Finally, name is basename, but it strips the extension, so you just get the filename itself.
+
+--- The name function
+function name(path)
+    local filename = basename(path)
+    return filename:match"(.*)%..*"
+end
+---
