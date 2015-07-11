@@ -1,34 +1,8 @@
-@code_type Lua lua
-@comment_type --
-@title String Util
-
-@s Introduction
-
-This file provides some useful string functions.
-
---- stringutil.lua
-@{The startswith function}
-@{The split function}
-@{The strip function}
-@{The chomp function}
-@{The literalize function}
----
-
-@s
-
-The `startswith` function returns true if a string starts with a certain string.
-
---- The startswith function
+-- The startswith function
 function startswith(str, start)
     return string.sub(str, 1, string.len(start)) == start
 end
----
-
-@s
-
-The split function splits a string from a pattern.
-
---- The split function
+-- The split function
 function split(pString, pPattern)
     local Table = {}  -- NOTE: use {n = 0} in Lua-5.0
     local fpat = "(.-)" .. pPattern
@@ -47,35 +21,15 @@ function split(pString, pPattern)
     end
     return Table
 end
----
-
-@s
-
-The strip function removes trailing whitespace
-
---- The strip function
+-- The strip function
 function strip(str)
     return str:gsub("^%s*(.-)%s*$", "%1")
 end
----
-
-@s
-
-The chomp function removes trailing newlines
-
---- The chomp function
+-- The chomp function
 function chomp(str)
     return str:gsub("\n$", "")
 end
----
-
-@s
-
-The literalize function will escape all the magic lua pattern characters in the string that is
-passed in.
-
---- The literalize function
+-- The literalize function
 function literalize(str)
     return str:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", function(c) return "%" .. c end)
 end
----

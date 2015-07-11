@@ -10,12 +10,28 @@ to strip paths and get filenames, and functions to read and write to files.
 The overall structure will look like this:
 
 --- fileutil.lua
+@{The run function}
 @{The write function}
 @{The file_exists function}
 @{The lines_from function}
+@{The readall function}
+@{The readdir function}
 @{The dirname function}
 @{The basename function}
 @{The name function}
+---
+
+@s
+
+The run function runs a shell command and returns the result.
+
+--- The run function
+function run(cmd)
+    local handle = io.popen(cmd)
+    local result = handle:read("*a")
+    handle:close()
+    return result
+end
 ---
 
 @s
@@ -67,6 +83,30 @@ function lines_from(file)
         end
     end
     return lines
+end
+---
+
+@s
+
+The `readall` function reads the entire file and returns the string.
+
+--- The readall function
+function readall(file)
+    local f = io.open(file, "rb")
+    local content = f:read("*all")
+    f:close()
+    return content
+end
+---
+
+@s
+
+The `readdir` function returns a list of the files in a directory.
+
+--- The readdir function
+function readdir(dir)
+    files = run("ls")
+    return split(files, "\n")
 end
 ---
 

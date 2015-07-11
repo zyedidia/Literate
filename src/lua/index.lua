@@ -1,25 +1,13 @@
-@code_type Lua lua
-@comment_type --
-@title Index
-
-@s Introduction
-
-The index will be a list of all of the identifiers (functions, variables, macros...) used in the `.lit`
-program with links back to the section they were used. The index will give the name of the identifier,
-the type of identifier it is, and what line number it was used on. There will also be a link to the line.
-
-This program will attempt to create an index from a `.lit` file by using Exuberant Ctags. Ctags generates
-a list of identifiers and where they were used from a C file or any other kind of file of the 41 languages
-it supports. However, we will run ctags on a `.lit` file using the `--language-force` option to force ctags
-to interpret the lit file as the code type it has. This works well, although ctags gives some false
-positives. When creating the index, we must make sure that all the line numbers were from codeblocks (and
-not from prose).
-
-The overall structure of the program will look like this:
-
---- index.lua
 function section_for_linenum(linenum)
-    @{Get the section number given a line number}
+-- Get the section number given a line number
+for i = 1,#section_linenums do
+    if i == #section_linenums then
+        return i
+    end
+    if linenum < section_linenums[i + 1] then
+        return i
+    end
+end
 end
 
 -- Sort a table
@@ -50,17 +38,7 @@ function create_index(inputfile)
         return ""
     end
 
-    @{Run Ctags on the lit file}
-    @{Create the HTML for the index}
-    return html
-end
----
-
-@s
-
-Next we run Ctags on the inputfile, using `--language-force` to specify the language.
-
---- Run Ctags on the lit file
+-- Run Ctags on the lit file
 tags_str = run("ctags -x --language-force=" .. string.lower(codetype) .. " " .. inputfile)
 
 if tags_str == nil then
@@ -68,15 +46,7 @@ if tags_str == nil then
     print("Please use -noindex if you would not like to create an index.")
     return ""
 end
----
 
-@s
-
-Now we also want to parse the tags and create an array of `Tags`. Before adding the tag to the array,
-we check if it was a false positive by making sure the line number is contained in the `code_lines`
-array.
-
---- Run Ctags on the lit file +=
 tags_arr = split(tags_str, "\n")
 tags = {}
 
@@ -96,30 +66,7 @@ for _,tag in pairs(tags_arr) do
     end
     ::continue::
 end
----
-
-@s
-
-Now we have the line number for each tag, but we want to display the section number. So we define a function
-to help us do this. This function takes in a line number and returns the section number. It uses the
-`section_linenums` array defined in `weave` to help.
-
---- Get the section number given a line number
-for i = 1,#section_linenums do
-    if i == #section_linenums then
-        return i
-    end
-    if linenum < section_linenums[i + 1] then
-        return i
-    end
-end
----
-
-@s
-
-Now that we have all the tags, we can begin to create the HTML for the index.
-
---- Create the HTML for the index
+-- Create the HTML for the index
 local html = "<h3>Index</h3>\n"
 html = html .. "<h5>Identifiers Used</h5>\n"
 html = html .. "<ul class=\"two-col\">\n"
@@ -147,4 +94,5 @@ for name,locations in pairsByKeys(block_locations) do
     html = html .. "</li>\n"
 end
 html = html .. "</ul>"
----
+    return html
+end

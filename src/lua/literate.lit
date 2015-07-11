@@ -20,6 +20,10 @@ require "fileutil"
 require "weave"
 require "tangle"
 
+require "index"
+
+md = require("markdown")
+
 @{Parse the arguments}
 if #inputfiles == 0 then
     @{Use STDIN and STDOUT}
@@ -96,7 +100,7 @@ We also declare a variable called `gen` which holds the path of the `gen` folder
 (this is where the actual `.jl` files for tangle and weave are located).
 
 --- Parse the arguments +=
-gen = dirname(arg[0]) .. "../gen"
+gen = dirname(arg[0]) .. "../../gen"
 ---
 
 @s
@@ -127,7 +131,7 @@ for num,file in pairs(inputfiles) do
         source_dir = "."
     end
     if html then
-        local outputstream = io.open(outdir .. "" .. name(file) .. ".html", "w")
+        local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
         weave(lines, outputstream, source_dir, file, index)
         outputstream:close()
     end

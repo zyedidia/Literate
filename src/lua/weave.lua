@@ -1,58 +1,14 @@
-@code_type Lua lua
-@comment_type --
-@title Weave
-
-@s Introduction
-Weave is the part of `Literate` which takes a `.lit` file and generates HTML for it to be viewed in a browser.
-It creates the structure for the webpage and adds the useful links from and to sections. Weave must also transform
-the prose from text to markdown. To do this, we use Julia's Markdown capabilities.
-
-Generally, the strategy is to parse each line, and make some transformation on it to turn it into html.
-
-The structure of the file looks like this:
-
---- weave.lua
-@{Declare a few globals}
-@{Define the get_locations function}
-@{Define the write_markdown function}
-@{Define the weave function}
----
-
-@s
-
-The global variables defined here will hold the results of the first pass to get the locations of code blocks and other
-useful information like the number of sections and the title.
-
-
---- Declare a few globals
+-- Declare a few globals
 title = ""
 block_locations = {} -- String => (Number => Number)
 block_use_locations = {} -- String => (Number => Number)
----
 
-We also define `codetype` and `codetype_ext` to hold the name and extension of the language the user is using.
-
---- Declare a few globals +=
 codetype = ""
 codetype_ext = ""
----
 
-Finally we define an array for holding the line numbers (in the lit file) on which there was code, and an array for
-holding the line numbers each section starts on.
-
---- Declare a few globals +=
 code_lines = {} -- Number => Number
 section_linenums = {} -- Number => Number
----
-
-@s
-
-The main objective that this code accomplishes is to create two dictionaries: `block_locations` and `block_use_locations`.
-These dictionaries hold the locations of each block corresponding to its name, and where each block was used.
-The types of these dictionaries are `Dict{String, Array{Int, 1}}`. We also take advantage of looping through all the lines
-to get the @title of the lit file too.
-
---- Define the get_locations function
+-- Define the get_locations function
 function get_locations(lines)
     local sectionnum = 0   -- Which section is currently being parsed
     local in_codeblock = false   -- Whether we are parsing a codeblock or not
@@ -61,70 +17,33 @@ function get_locations(lines)
         line = chomp(line) -- Use chomp to remove the \n
 
         if startswith(line, "@title") then
-            @{Initialize the title variable}
+-- Initialize the title variable
+title = strip(string.sub(line, 7, #line))
         elseif startswith(line, "@s") then
             section_linenums[#section_linenums + 1] = line_num
             sectionnum = sectionnum + 1
         elseif startswith(line, "---") then
-            @{A codeblock has been defined}
-        elseif in_codeblock and startswith(strip(line), "@{") then
-            @{A codeblock has been used}
-        end
-        ::continue::
-    end
-end
----
-
-@s
-
---- Initialize the title variable
-title = strip(string.sub(line, 7, #line))
----
-
-@s
-
-Here we check for the `"---"` which signifies either the beginning or the end of a codeblock. If the `---` is followed
-by a title or any sort of text, then it is the beginning of a codeblock, otherwise, it is the end.
-
---- A codeblock has been defined
+-- A codeblock has been defined
 in_codeblock = true
 if string.match(line, "^%-%-%-$") then
     in_codeblock = false
     goto continue
 end
-@{Get the block name}
-@{Add the locations to the dict}
----
-
-@s
-
---- Get the block name
+-- Get the block name
 local block_name = strip(string.sub(line, 4, #line)) -- Remove the '---'
 
 if string.match(block_name, "+=") then
     local plus_index = block_name:match'^.*()%+' -- Get the index of the "+" (the [end] is to get the last occurrence)
     block_name = strip(string.sub(block_name, 1, plus_index-1)) -- Remove the "+=" and strip any whitespace
 end
----
-
-@s
-
---- Add the locations to the dict
+-- Add the locations to the dict
 if block_locations[block_name] == nil then -- If this block has not been defined in the dict yet
     block_locations[block_name] = {sectionnum} -- Create a new slot for it and add the current section num
 elseif block_locations[block_name][sectionnum] == nil then -- If the current section num isn't already in the array
     block_locations[block_name][#block_locations[block_name] + 1] = sectionnum -- Add it
 end
----
-
-@s
-
-In this case, we are trying to find in which sections all codeblocks are used. We only check the line if we
-are in a codeblock.
-
-The code here looks alot like @{Add the locations to the dict}.
-
---- A codeblock has been used
+        elseif in_codeblock and startswith(strip(line), "@{") then
+-- A codeblock has been used
 line = strip(line)
 local block_name = string.sub(line, 3, #line - 1) -- Substring to just get the block name
 
@@ -134,14 +53,11 @@ if block_use_locations[block_name] == nil then
 elseif block_use_locations[block_name][sectionnum] == nil then
     block_use_locations[block_name][#block_use_locations[block_name] + 1] = sectionnum
 end
----
-
-@s
-This is a small function which takes some text and turns it into markdown using Julia's Markdown support.
-Markdown will escape any HTML symbols, which is a good thing, but sometimes it is useful to be able to write some HTML
-from Markdown, so we define a couple things that transform `\<` directly to `<` in the HTML.
-
---- Define the write_markdown function
+        end
+        ::continue::
+    end
+end
+-- Define the write_markdown function
 function write_markdown(markdown, out)
     if markdown ~= "" then
         local html = markdown
@@ -152,48 +68,13 @@ function write_markdown(markdown, out)
         write(out, html .. "\n")
     end
 end
----
-
-@s
-
---- Define the weave function
+-- Define the weave function
 function weave(lines, outputstream, source_dir, inputfilename, has_index)
     local out = outputstream
 
     get_locations(lines)
 
-    @{Set up html}
-    @{Set up variables}
-
-    for line_num,line in pairs(lines) do
-        line = chomp(line)
-
-        if startswith(line, "@code_type") then
-            local command = split(line, " ")
-            codetype = command[2]
-            codetype_ext = command[3]
-            goto continue
-        elseif startswith(line, "@comment_type") then
-            goto continue
-        end
-
-        @{Parse the line}
-        ::continue::
-    end
-
-    if has_index then
-        write(out, create_index(inputfilename))
-    end
-
-    @{Clean up}
-end
----
-
-@s
-
-In this section, we define the starting structure for the html document. We include some scripts and CSS stylesheets.
-
---- Set up html
+-- Set up html
 local start_codeblock = "<pre class=\"prettyprint\">\n"
 local end_codeblock = "</pre>\n"
 
@@ -201,33 +82,7 @@ local scripts = [[<script src="https://cdn.rawgit.com/google/code-prettify/maste
              <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
              <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: [['\$','\$'\]\]}}); </script>]]
 
-@{Get the CSS}
-
-local base_html = [[<!doctype html>
-               <html>
-               <head>
-               <meta charset="utf-8">
-               <title> ]] .. title .. [[ </title>
-               ]] .. scripts .. [[
-               <style>
-               ]] .. css .. [[
-               </style>
-               </head>
-               <body>]]
-
-write(out, base_html)
----
-
-@s
-
-Getting the CSS is slightly more complex because we allow the user to define their own style sheets in the current directory.
-There are three special stylesheets the user can define:
-
-* `default.css`: This will replace the page's css
-* `colorscheme.css`: This will replace the the colorscheme for pretty printing code. You can get color themes [here](http://jmblog.github.io/color-themes-for-google-code-prettify/)
-* `additions.css`: This css will be added in addition to the default css
-
---- Get the CSS
+-- Get the CSS
 local css = ""
 local files = readdir(source_dir) -- All the files in the current directory
 if files["default.css"] ~= nil then
@@ -245,26 +100,41 @@ end
 if files["additions.css"] ~= nil then
     css = css .. readall(source_dir .. "/additions.css") -- Read the user's additions.css
 end
----
 
-@s
+local base_html = [[<!doctype html>
+               <html>
+               <head>
+               <meta charset="utf-8">
+               <title> ]] .. title .. [[ </title>
+               ]] .. scripts .. [[
+               <style>
+               ]] .. css .. [[
+               </style>
+               </head>
+               <body>]]
 
-We initialize some variables here before beginning to parse.
-
---- Set up variables
+write(out, base_html)
+-- Set up variables
 local sectionnum = 0 -- Which section number we are currently parsing
 local in_codeblock = false -- Whether or not we are parsing a some code
 local in_prose = false -- Whether or not we are parsing prose
 local markdown = "" -- This variable holds the current markdown that needs to be transformed to html
 
 local cur_codeblock_name = "" -- The name of the current codeblock begin parsed
----
 
-@s
+    for line_num,line in pairs(lines) do
+        line = chomp(line)
 
-This is where the real stuff happens.
+        if startswith(line, "@code_type") then
+            local command = split(line, " ")
+            codetype = command[2]
+            codetype_ext = command[3]
+            goto continue
+        elseif startswith(line, "@comment_type") then
+            goto continue
+        end
 
---- Parse the line
+-- Parse the line
 if line == "" then
     -- This was a blank line
     if in_codeblock then
@@ -280,28 +150,7 @@ if startswith(line, "codetype") then -- Ignore this line
 end
 
 if string.match(line, "^%-%-%-.+$") then -- Codeblock began
-    @{Begin codeblock}
-elseif string.match(line, "^%-%-%-$") then -- Codeblock ended
-    @{End codeblock}
-elseif startswith(line, "@s") and not in_codeblock then -- Section began
-    @{Create a new section}
-elseif startswith(line, "@title") then -- Title created
-    @{Create the title}
-else
-    if in_codeblock then
-        @{Write out the line of code}
-    else
-        @{Add the line to the markdown}
-    end
-end
----
-
-@s
-
-When a code block begins, we need to write out the name of the code block in {} and if it is a file,
-write it in bold. We also wrap the title, codeblock, and any links that come afterward in a div.
-
---- Begin codeblock
+-- Begin codeblock
 -- A code block just began
 in_prose = false
 in_codeblock = true
@@ -339,15 +188,8 @@ end
 write(out, "<p class=\"notp\" id=\"" .. name .. sectionnum .. "\"><span class=\"codeblock_name\">" .. output .. "</span></p>\n")
 -- We can now begin pretty printing the code that comes next
 write(out, start_codeblock)
----
-
-@s
-
-When a codeblock ends, we have to write two things. We must write out any links to other places where this codeblock gets added to,
-and we have to write any links to places where this code block is used. Luckily, once we get the block name, this is really simple
-thanks to the `block_locations` and `block_use_locations` dictionaries.
-
---- End codeblock
+elseif string.match(line, "^%-%-%-$") then -- Codeblock ended
+-- End codeblock
 -- A code block just ended
 in_prose = true
 in_codeblock = false
@@ -357,21 +199,7 @@ write(out, end_codeblock)
 -- This was stored when the code block began
 local name = cur_codeblock_name
 
-@{Write any "see also" links}
-@{Write any "used in" links}
--- Close the "codeblock" div
-write(out, "</div>\n")
----
-
-@s
-
-When writing see also links, we only want to list links where this code section has been *added* to, not where it was defined.
-That means we have to exclude `block_locations[name][1]`. In addition, if the section where the codeblock was added to is the
-current section, we don't want to write that out.
-
-We also have to perform a few extra checks to make sure we get our grammar right.
-
---- Write any "see also" links
+-- Write any "see also" links
 local locations = block_locations[name]
 if #locations > 1 then
     local links = "" -- This will hold the html for the links
@@ -397,13 +225,7 @@ if #locations > 1 then
         write(out, "<p class=\"seealso\">See also section" .. plural .. links .. ".</p>\n")
     end
 end
----
-
-@s
-
-When writing the links that tell you which section this code was used in, we do something very similar to before.
-
---- Write any "used in" links
+-- Write any "used in" links
 -- Top level codeblocks such as files are never used, so we have to check here
 if block_use_locations[name] ~= nil then
     local locations = block_use_locations[name]
@@ -425,14 +247,10 @@ if block_use_locations[name] ~= nil then
     output = output .. ".</p>\n"
     write(out, output)
 end
----
-
-@s
-
-Now that all the codeblock stuff is finished, we should check for commands used in prose. One of these is creating a new
-section with `@s`.
-
---- Create a new section
+-- Close the "codeblock" div
+write(out, "</div>\n")
+elseif startswith(line, "@s") and not in_codeblock then -- Section began
+-- Create a new section
 if sectionnum ~= 1 then
     -- Every section is part of a div. Here we close the last one, and open a new one
     write(out, "</div>")
@@ -452,23 +270,17 @@ if heading_title == "" then
     class = "class=\"noheading\""
 end
 write(out, "<p class=\"notp\" id=\"" .. sectionnum .. "\"><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4></p>\n")
----
-
-@s
-
-Here we do a simple check for the `@title`
-
---- Create the title
+elseif startswith(line, "@title") then -- Title created
+-- Create the title
 local title = strip(string.sub(line, 7, #line))
 write(out, "<h1>" .. title .. "</h1>\n")
----
-
-@s
-
-At any point when the user types a section link into either prose or code, it needs to be styled and link to the correct place.
-Here we detect that.
-
---- Link any sections in the line
+else
+    if in_codeblock then
+-- Write out the line of code
+line = string.gsub(line, "&", "&amp;")
+line = string.gsub(line, "<", "&lt;")
+line = string.gsub(line, ">", "&gt;")
+-- Link any sections in the line
 while string.match(line, "@{.*}") do
     if not startswith(strip(line), "@{") and in_codeblock then
         break
@@ -486,35 +298,39 @@ while string.match(line, "@{.*}") do
         line = string.gsub(line, literalize(m), links)
     end
 end
----
-
-@s
-
-Here we write actually write the line to html if it is in a codeblock. We must first escape certain HTML special characters. It
-is should also be possible to have \(html character) inside a string without it getting replaced with the actual character. So
-we make sure the character is not inside a string before escaping it.
-
---- Write out the line of code
-line = string.gsub(line, "&", "&amp;")
-line = string.gsub(line, "<", "&lt;")
-line = string.gsub(line, ">", "&gt;")
-@{Link any sections in the line}
 code_lines[#code_lines + 1] = line_num
 write(out, line .. "\n")
----
-
-@s
-
---- Add the line to the markdown
-@{Link any sections in the line}
+    else
+-- Add the line to the markdown
+-- Link any sections in the line
+while string.match(line, "@{.*}") do
+    if not startswith(strip(line), "@{") and in_codeblock then
+        break
+    end
+    local m = string.match(line, "@{.*}")
+    local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
+    local location = block_locations[name][1]
+    if in_codeblock then
+        local anchor = " <a href=\"#" .. location .. "\">" .. location .. "</a>"
+        local links = "<span class=\"nocode\">{" .. name .. anchor .. "}</span>" -- The nocode is so that this is not pretty printed
+        line = string.gsub(line, literalize(m), links)
+    else
+        local anchor = "[" .. location .. "](#" .. location .. ")"
+        local links = "{" .. name .. anchor .. "}"
+        line = string.gsub(line, literalize(m), links)
+    end
+end
 markdown = markdown .. line .. "\n"
----
+    end
+end
+        ::continue::
+    end
 
-@s
+    if has_index then
+        write(out, create_index(inputfilename))
+    end
 
-Finally, we clean up at the end. We write any last bits of markdown, and write the closing HTML.
-
---- Clean up
+-- Clean up
 write_markdown(markdown, out)
 write(out, "</body>\n</html>\n")
----
+end
