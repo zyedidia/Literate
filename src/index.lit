@@ -89,7 +89,7 @@ for _,tag in pairs(tags_arr) do
             goto continue
         end
 
-        name = words[1]
+        local name = words[1]
         tag_type = words[2]
         
         tags[#tags + 1] = {name, tag_type, line_num}
