@@ -1,5 +1,5 @@
-@code_type Julia jl
-@comment_type #
+@code_type Lua lua
+@comment_type --
 @title Weave
 
 @s Introduction
@@ -11,7 +11,7 @@ Generally, the strategy is to parse each line, and make some transformation on i
 
 The structure of the file looks like this:
 
---- weave.jl
+--- weave.lua
 @{Declare a few globals}
 @{Define the get_locations function}
 @{Define the write_markdown function}
@@ -26,8 +26,8 @@ useful information like the number of sections and the title.
 
 --- Declare a few globals
 title = ""
-block_locations = Dict{String, Array{UInt16, 1}}()
-block_use_locations = Dict{String, Array{UInt16, 1}}()
+block_locations = {} -- String => (Number => Number)
+block_use_locations = {} -- String => (Number => Number)
 ---
 
 We also define `codetype` and `codetype_ext` to hold the name and extension of the language the user is using.
@@ -41,8 +41,8 @@ Finally we define an array for holding the line numbers (in the lit file) on whi
 holding the line numbers each section starts on.
 
 --- Declare a few globals +=
-code_lines = Array{UInt16, 1}() # Hopefully there won't be more than 65,535 lines
-section_linenums = Array{UInt16, 1}()
+code_lines = {} -- Number => Number
+section_linenums = {} -- Number => Number
 ---
 
 @s
@@ -54,22 +54,23 @@ to get the @title of the lit file too.
 
 --- Define the get_locations function
 function get_locations(lines)
-    sectionnum = 0   # Which section is currently being parsed
-    in_codeblock = false   # Whether we are parsing a codeblock or not
+    local sectionnum = 0   -- Which section is currently being parsed
+    local in_codeblock = false   -- Whether we are parsing a codeblock or not
 
-    for line_num = 1:length(lines)
-        line = lines[line_num] |> chomp # Use chomp to remove the \n
+    for line_num,line in pairs(lines) do
+        line = chomp(line) -- Use chomp to remove the \n
 
-        if startswith(line, "@title")
+        if startswith(line, "@title") then
             @{Initialize the title variable}
-        elseif startswith(line, "@s")
-            push!(section_linenums, Uint16(line_num))
-            sectionnum += 1
-        elseif startswith(line, "---")
+        elseif startswith(line, "@s") then
+            section_linenums[#section_linenums + 1] = line_num
+            sectionnum = sectionnum + 1
+        elseif startswith(line, "---") then
             @{A codeblock has been defined}
-        elseif in_codeblock && startswith(strip(line), "@{")
+        elseif in_codeblock and startswith(strip(line), "@{") then
             @{A codeblock has been used}
         end
+        ::continue::
     end
 end
 ---
@@ -77,7 +78,7 @@ end
 @s
 
 --- Initialize the title variable
-global title = strip(line[7:end])
+title = strip(string.sub(line, 7, #line))
 ---
 
 @s
@@ -87,9 +88,9 @@ by a title or any sort of text, then it is the beginning of a codeblock, otherwi
 
 --- A codeblock has been defined
 in_codeblock = true
-if ismatch(r"^---$", line)
+if string.match(line, "^%-%-%-$") then
     in_codeblock = false
-    continue
+    goto continue
 end
 @{Get the block name}
 @{Add the locations to the dict}
@@ -98,21 +99,21 @@ end
 @s
 
 --- Get the block name
-block_name = line[4:end] |> strip # Remove the ---
+local block_name = strip(string.sub(line, 4, #line)) -- Remove the '---'
 
-if contains(block_name, "+=")
-    plus_index = search(block_name, "+")[end] # Get the index of the "+" (the [end] is to get the last occurrence)
-    block_name = block_name[1:plus_index-1] |> strip # Remove the "+=" and strip any whitespace
+if string.match(block_name, "+=") then
+    local plus_index = block_name:match'^.*()%+' -- Get the index of the "+" (the [end] is to get the last occurrence)
+    block_name = strip(string.sub(block_name, 1, plus_index-1)) -- Remove the "+=" and strip any whitespace
 end
 ---
 
 @s
 
 --- Add the locations to the dict
-if !haskey(block_locations, block_name) # If this block has not been defined in the dict yet
-    block_locations[block_name] = [sectionnum] # Create a new slot for it and add the current paragraph num
-elseif !(sectionnum in block_locations[block_name]) # If the current paragraph num isn't already in the array
-    push!(block_locations[block_name], sectionnum) # Add it
+if block_locations[block_name] == nil then -- If this block has not been defined in the dict yet
+    block_locations[block_name] = {sectionnum} -- Create a new slot for it and add the current section num
+elseif block_locations[block_name][sectionnum] == nil then -- If the current section num isn't already in the array
+    block_locations[block_name][#block_locations[block_name] + 1] = sectionnum -- Add it
 end
 ---
 
@@ -125,13 +126,13 @@ The code here looks alot like @{Add the locations to the dict}.
 
 --- A codeblock has been used
 line = strip(line)
-block_name = line[3:end-1] # Substring to just get the block name
+local block_name = string.sub(line, 3, #line - 1) -- Substring to just get the block name
 
-# Pretty much the same as before
-if !haskey(block_use_locations, block_name)
-    block_use_locations[block_name] = [sectionnum]
-elseif !(sectionnum in block_use_locations[block_name])
-    push!(block_use_locations[block_name], sectionnum)
+-- Pretty much the same as before
+if block_use_locations[block_name] == nil then
+    block_use_locations[block_name] = {sectionnum}
+elseif block_use_locations[block_name][sectionnum] == nil then
+    block_use_locations[block_name][#block_use_locations[block_name] + 1] = sectionnum
 end
 ---
 
@@ -142,16 +143,13 @@ from Markdown, so we define a couple things that transform `\<` directly to `<` 
 
 --- Define the write_markdown function
 function write_markdown(markdown, out)
-    if markdown != ""
-        html = Markdown.parse(markdown) |> Markdown.html
-        # Here is where we replace \(escaped character code) to what it should be in HTML
-        html = replace(html, "\\&lt;", "<")
-        html = replace(html, "\\&gt;", ">")
-        html = replace(html, "\\&#61;", "=")
-        html = replace(html, "\\&quot;", "\"")
-        html = replace(html, "&#36;", "\$")
-        html = replace(html, "\\\$", "&#36;")
-        write(out, "$html\n")
+    if markdown ~= "" then
+        local html = markdown
+        html = string.gsub(html, "<", "&lt;")
+        html = string.gsub(html, ">", "&gt;")
+        html = string.gsub(html, "\"", "&quot;")
+        html = md.markdown(markdown)
+        write(out, html .. "\n")
     end
 end
 ---
@@ -160,30 +158,30 @@ end
 
 --- Define the weave function
 function weave(lines, outputstream, source_dir, inputfilename, has_index)
-    out = outputstream
+    local out = outputstream
 
     get_locations(lines)
 
     @{Set up html}
     @{Set up variables}
 
-    for line_num = 1:length(lines)
-        line = lines[line_num] |> chomp
+    for line_num,line in pairs(lines) do
+        line = chomp(line)
 
-        if startswith(line, "@code_type")
-            command = split(line, " ")
-            global codetype = command[2]
-            global codetype_ext = command[3]
-            continue
-        elseif startswith(line, "@comment_type")
-            continue
+        if startswith(line, "@code_type") then
+            local command = split(line, " ")
+            codetype = command[2]
+            codetype_ext = command[3]
+            goto continue
+        elseif startswith(line, "@comment_type") then
+            goto continue
         end
 
         @{Parse the line}
+        ::continue::
     end
 
-    if has_index
-        include("$gen/index.jl")
+    if has_index then
         write(out, create_index(inputfilename))
     end
 
@@ -196,27 +194,26 @@ end
 In this section, we define the starting structure for the html document. We include some scripts and CSS stylesheets.
 
 --- Set up html
-start_codeblock = "<pre class=\"prettyprint\">\n"
-end_codeblock = "</pre>\n"
+local start_codeblock = "<pre class=\"prettyprint\">\n"
+local end_codeblock = "</pre>\n"
 
-scripts = """<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+local scripts = [[<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
              <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
-             <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: [['\$','\$']]}}); </script>"""
+             <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: [['\$','\$'\]\]}}); </script>]]
 
 @{Get the CSS}
 
-base_html = """<!doctype html>
+local base_html = [[<!doctype html>
                <html>
                <head>
                <meta charset="utf-8">
-               <title>$title</title>
-               $scripts
+               <title> ]] .. title .. [[ </title>
+               ]] .. scripts .. [[
                <style>
-               $css
+               ]] .. css .. [[
                </style>
                </head>
-               <body>
-               """
+               <body>]]
 
 write(out, base_html)
 ---
@@ -231,22 +228,22 @@ There are three special stylesheets the user can define:
 * `additions.css`: This css will be added in addition to the default css
 
 --- Get the CSS
-css = ""
-files = readdir(source_dir) # All the files in the current directory
-if "default.css" in files
-    css = readall("$source_dir/default.css") # Read the user's default.css
+local css = ""
+local files = readdir(source_dir) -- All the files in the current directory
+if files["default.css"] ~= nil then
+    css = readall(source_dir .. "/default.css") -- Read the user's default.css
 else
-    css = readall("$gen/default.css") # Use the default css
+    css = readall(gen .. "/default.css") -- Use the default css
 end
 
-if "colorscheme.css" in files
-    css *= readall("$source_dir/colorscheme.css") # Read the user's colorscheme.css
+if files["colorscheme.css"] ~= nil then
+    css = css .. readall(source_dir .. "/colorscheme.css") -- Read the user's colorscheme.css
 else
-    css *= readall("$gen/colorscheme.css") # Use the default colorscheme
+    css = css .. readall(gen .. "/colorscheme.css") -- Use the default colorscheme
 end
 
-if "additions.css" in files
-    css *= readall("$source_dir/additions.css") # Read the user's additions.css
+if files["additions.css"] ~= nil then
+    css = css .. readall(source_dir .. "/additions.css") -- Read the user's additions.css
 end
 ---
 
@@ -255,12 +252,12 @@ end
 We initialize some variables here before beginning to parse.
 
 --- Set up variables
-sectionnum = 0 # Which section number we are currently parsing
-in_codeblock = false # Whether or not we are parsing a some code
-in_prose = false # Whether or not we are parsing prose
-markdown = "" # This variable holds the current markdown that needs to be transformed to html
+local sectionnum = 0 -- Which section number we are currently parsing
+local in_codeblock = false -- Whether or not we are parsing a some code
+local in_prose = false -- Whether or not we are parsing prose
+local markdown = "" -- This variable holds the current markdown that needs to be transformed to html
 
-cur_codeblock_name = "" # The name of the current codeblock begin parsed
+local cur_codeblock_name = "" -- The name of the current codeblock begin parsed
 ---
 
 @s
@@ -268,30 +265,30 @@ cur_codeblock_name = "" # The name of the current codeblock begin parsed
 This is where the real stuff happens.
 
 --- Parse the line
-if line == ""
-    # This was a blank line
-    if in_codeblock
+if line == "" then
+    -- This was a blank line
+    if in_codeblock then
         write(out, "\n")
     else
-        markdown *= "\n" # Tell markdown this was a blank line
+        markdown = markdown .. "\n" -- Tell markdown this was a blank line
     end
-    continue
+    goto continue
 end
 
-if startswith(line, "codetype") # Ignore this line
-    continue
+if startswith(line, "codetype") then -- Ignore this line
+    goto continue
 end
 
-if ismatch(r"^---.+$", line) # Codeblock began
+if string.match(line, "^%-%-%-.+$") then -- Codeblock began
     @{Begin codeblock}
-elseif ismatch(r"^---$", line) # Codeblock ended
+elseif string.match(line, "^%-%-%-$") then -- Codeblock ended
     @{End codeblock}
-elseif startswith(line, "@s") && !in_codeblock # Section began
+elseif startswith(line, "@s") and not in_codeblock then -- Section began
     @{Create a new section}
-elseif startswith(line, "@title") # Title created
+elseif startswith(line, "@title") then -- Title created
     @{Create the title}
 else
-    if in_codeblock
+    if in_codeblock then
         @{Write out the line of code}
     else
         @{Add the line to the markdown}
@@ -305,37 +302,42 @@ When a code block begins, we need to write out the name of the code block in {} 
 write it in bold. We also wrap the title, codeblock, and any links that come afterward in a div.
 
 --- Begin codeblock
-# A code block just began
+-- A code block just began
 in_prose = false
 in_codeblock = true
-# Write the current markdown
+-- Write the current markdown
 write_markdown(markdown, out)
-# Reset the markdown
+-- Reset the markdown
 markdown = ""
 
 write(out, "<div class=\"codeblock\">\n")
-name = strip(line[4:end]) # The codeblock name
+local name = strip(string.sub(line, 4, #line)) -- The codeblock name
 
-adding = false # Whether or not this block is a +=
+local adding = false -- Whether or not this block is a +=
 
-if contains(name, "+=")
-    name = strip(name[1:search(name, "+")[end]-1]) # Remove the += from the name
+if string.match(name, "+=") then
+    local plus_index = name:match'^.*()%+'
+    name = strip(string.sub(name, 1, plus_index-1))
     adding = true
 end
 
 cur_codeblock_name = name
-file = ismatch(r"^.+\w\.\w+$", name) # Whether or not this name is a file name
+file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file name
 
-definition_location = block_locations[name][1]
-output = "$name <a href=\"#$definition_location\">$definition_location</a>" # Add the link to the definition location
-output = "{$output} $(adding ? "+" : "")≡" # Add the = or +=
+local definition_location = block_locations[name][1]
+local output = name .. " <a href=\"#" .. definition_location .. "\">" .. definition_location .. "</a>" -- Add the link to the definition location
+local plus = ""
+if adding then
+    plus = "+"
+end
+output = "{" .. output .. "} " .. plus .. "≡" -- Add the = or +=
 
-if file
-    output = "<strong>$output</strong>" # If the name is a file, make it bold
+if file then
+    output = "<strong>" .. output .. "</strong>" -- If the name is a file, make it bold
 end
 
-write(out, "<p class=\"notp\" id=\"$name$sectionnum\"><span class=\"codeblock_name\">$output</span></p>\n")
-# We can now begin pretty printing the code that comes next
+write(out, "<p class=\"notp\" id=\"" .. name .. sectionnum .. "\"><span class=\"codeblock_name\">" .. output .. "</span></p>\n")
+-- We can now begin pretty printing the code that comes next
 write(out, start_codeblock)
 ---
 
@@ -346,18 +348,18 @@ and we have to write any links to places where this code block is used. Luckily,
 thanks to the `block_locations` and `block_use_locations` dictionaries.
 
 --- End codeblock
-# A code block just ended
+-- A code block just ended
 in_prose = true
 in_codeblock = false
 
-# First start by ending the pretty printing
+-- First start by ending the pretty printing
 write(out, end_codeblock)
-# This was stored when the code block began
-name = cur_codeblock_name
+-- This was stored when the code block began
+local name = cur_codeblock_name
 
 @{Write any "see also" links}
 @{Write any "used in" links}
-# Close the "codeblock" div
+-- Close the "codeblock" div
 write(out, "</div>\n")
 ---
 
@@ -370,25 +372,29 @@ current section, we don't want to write that out.
 We also have to perform a few extra checks to make sure we get our grammar right.
 
 --- Write any "see also" links
-locations = block_locations[name]
-if length(locations) > 1
-    links = "" # This will hold the html for the links
-    loopnum = 0
-    for i = 2:length(locations)
-        location = locations[i]
-        if location != sectionnum
-            loopnum += 1
-            punc = "" # We might need a comma or 'and'
-            if loopnum > 1 && loopnum < length(locations)-1
+local locations = block_locations[name]
+if #locations > 1 then
+    local links = "" -- This will hold the html for the links
+    local loopnum = 0
+    for i = 2,#locations do
+        local location = locations[i]
+        if location ~= sectionnum then
+            loopnum = loopnum + 1
+            local punc = "" -- We might need a comma or 'and'
+            if loopnum > 1 and loopnum < #locations-1 then
                 punc = ","
-            elseif loopnum == length(locations)-1 && loopnum > 1
+            elseif loopnum == #locations-1 and loopnum > 1 then
                 punc = " and"
             end
-            links *= "$punc <a href=\"#$location\">$location</a>"
+            links = links .. punc .. " <a href=\"#" .. location .. "\">" .. location .. "</a>"
         end
     end
-    if loopnum > 0
-        write(out, "<p class=\"seealso\">See also section$(loopnum > 1 ? "s" : "") $links.</p>\n")
+    if loopnum > 0 then
+        local plural = ""
+        if loopnum > 1 then
+            plural = "s"
+        end
+        write(out, "<p class=\"seealso\">See also section" .. plural .. links .. ".</p>\n")
     end
 end
 ---
@@ -398,21 +404,25 @@ end
 When writing the links that tell you which section this code was used in, we do something very similar to before.
 
 --- Write any "used in" links
-# Top level codeblocks such as files are never used, so we have to check here
-if haskey(block_use_locations, name)
-    locations = block_use_locations[name]
-    output = "<p class=\"seealso\">This code is used in section$(length(locations) > 1 ? "s" : "")"
-    for i in 1:length(locations)
-        location = locations[i]
-        punc = ""
-        if i > 1 && i < length(locations)
+-- Top level codeblocks such as files are never used, so we have to check here
+if block_use_locations[name] ~= nil then
+    local locations = block_use_locations[name]
+    local plural = ""
+    if #locations > 1 then
+        plural = "s"
+    end
+    local output = "<p class=\"seealso\">This code is used in section" .. plural
+    for i = 1,#locations do
+        local location = locations[i]
+        local punc = ""
+        if i > 1 and i < #locations then
             punc = ","
-        elseif i == length(locations) && i != 1
+        elseif i == #locations and i ~= 1 then
             punc = " and"
         end
-        output *= "$punc <a href=\"#$location\">$location</a>"
+        output = output .. punc .. " <a href=\"#" .. location .. "\">" .. location .. "</a>"
     end
-    output *= ".</p>\n"
+    output = output .. ".</p>\n"
     write(out, output)
 end
 ---
@@ -423,21 +433,25 @@ Now that all the codeblock stuff is finished, we should check for commands used 
 section with `@s`.
 
 --- Create a new section
-if sectionnum != 1
-    # Every section is part of a div. Here we close the last one, and open a new one
+if sectionnum ~= 1 then
+    -- Every section is part of a div. Here we close the last one, and open a new one
     write(out, "</div>")
 end
 write(out, "<div class=\"section\">\n")
 
-# Write the markdown. It is possible that the last section had no code and was only prose.
+-- Write the markdown. It is possible that the last section had no code and was only prose.
 write_markdown(markdown, out)
-# Reset the markdown
+-- Reset the markdown
 markdown = ""
 
 in_section = true
-sectionnum += 1
-heading_title = strip(line[3:end])
-write(out, "<p class=\"notp\" id=\"$sectionnum\"><h4 $(heading_title == "" ? "class=\"noheading\"" : "")>$sectionnum. $heading_title</h4></p>\n")
+sectionnum = sectionnum + 1
+heading_title = strip(string.sub(line, 3, #line))
+local class = ""
+if heading_title == "" then
+    class = "class=\"noheading\""
+end
+write(out, "<p class=\"notp\" id=\"" .. sectionnum .. "\"><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4></p>\n")
 ---
 
 @s
@@ -445,7 +459,8 @@ write(out, "<p class=\"notp\" id=\"$sectionnum\"><h4 $(heading_title == "" ? "cl
 Here we do a simple check for the `@title`
 
 --- Create the title
-write(out, "<h1>$(strip(line[7:end]))</h1>\n")
+local title = strip(string.sub(line, 7, #line))
+write(out, "<h1>" .. title .. "</h1>\n")
 ---
 
 @s
@@ -454,21 +469,21 @@ At any point when the user types a section link into either prose or code, it ne
 Here we detect that.
 
 --- Link any sections in the line
-while ismatch(r"@{.*?}", line)
-    if !startswith(strip(line), "@{") && in_codeblock
+while string.match(line, "@{.*}") do
+    if not startswith(strip(line), "@{") and in_codeblock then
         break
     end
-    m = match(r"@{.*?}", line)
-    name = line[m.offset + 2:m.offset + length(m.match)-2] # Get the name in curly brackets
-    location = block_locations[name][1]
-    if in_codeblock
-        anchor = " <a href=\"#$location\">$location</a>"
-        links = "<span class=\"nocode\">{$name$anchor}</span>" # The nocode is so that this is not pretty printed
-        line = replace(line, m.match, links)
+    local m = string.match(line, "@{.*}")
+    local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
+    local location = block_locations[name][1]
+    if in_codeblock then
+        local anchor = " <a href=\"#" .. location .. "\">" .. location .. "</a>"
+        local links = "<span class=\"nocode\">{" .. name .. anchor .. "}</span>" -- The nocode is so that this is not pretty printed
+        line = string.gsub(line, literalize(m), links)
     else
-        anchor = "[$location](#$location)"
-        links = "{$name$anchor}"
-        line = replace(line, m.match, links)
+        local anchor = "[" .. location .. "](#" .. location .. ")"
+        local links = "{" .. name .. anchor .. "}"
+        line = string.gsub(line, literalize(m), links)
     end
 end
 ---
@@ -480,19 +495,19 @@ is should also be possible to have \(html character) inside a string without it 
 we make sure the character is not inside a string before escaping it.
 
 --- Write out the line of code
-line = replace(line, "&", "&amp;")
-line = replace(line, "<", "&lt;")
-line = replace(line, ">", "&gt;")
+line = string.gsub(line, "&", "&amp;")
+line = string.gsub(line, "<", "&lt;")
+line = string.gsub(line, ">", "&gt;")
 @{Link any sections in the line}
-push!(code_lines, Uint16(line_num))
-write(out, "$line\n")
+code_lines[#code_lines + 1] = line_num
+write(out, line .. "\n")
 ---
 
 @s
 
 --- Add the line to the markdown
 @{Link any sections in the line}
-markdown *= line * "\n"
+markdown = markdown .. line .. "\n"
 ---
 
 @s

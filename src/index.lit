@@ -1,5 +1,5 @@
-@code_type Julia jl
-@comment_type #
+@code_type Lua lua
+@comment_type --
 @title Index
 
 @s Introduction
@@ -17,26 +17,36 @@ not from prose).
 
 The overall structure of the program will look like this:
 
---- index.jl
-@{Create the Tag type}
-
+--- index.lua
 function section_for_linenum(linenum)
     @{Get the section number given a line number}
 end
 
+-- Sort a table
+function pairsByKeys (t, f)
+    local a = {}
+    for n in pairs(t) do table.insert(a, n) end
+    table.sort(a, f)
+    local i = 0      -- iterator variable
+    local iter = function ()   -- iterator function
+        i = i + 1
+        if a[i] == nil then return nil
+        else return a[i], t[a[i]]
+        end
+    end
+    return iter
+end
+
 function create_index(inputfile)
-    try
-        run(`which ctags`)
-    catch
-        println("You do not have ctags installed and it is required for making an index.")
-        println("If you do not want to make an index use the -noindex flag.")
+    if run("which ctags") == nil then
+        print("You do not have ctags installed and it is required for making an index.")
+        print("If you do not want to receive this message use the -noindex flag.")
         return ""
     end
-        
-    supported_languages = split(lowercase(readall(`ctags --list-languages`)), "\n")
-    if !(lowercase(codetype) in supported_languages)
-        println("$codetype is not supported by your version of ctags.")
-        println("Please use -noindex if you would not like to create an index.")
+
+    if run("ctags --list-languages") == nil then
+        print("You have an old version of ctags installed, please update to exuberant or universal ctags if you want an index.")
+        print("If you do not want to receive this message use the -noindex flag.")
         return ""
     end
 
@@ -48,27 +58,16 @@ end
 
 @s
 
-We create a type called `Tag` to hold the information from one line of a tags file. The information
-stored in an Tag is 
-
-* `name`: The identifier name
-* `type`: The type of the identifier i.e. `function`, `local`, `macro`...
-* `line_num`: The line number the identifier is declared on
-
---- Create the Tag type
-type Tag
-    name::String
-    tag_type::String
-    line_num::Int
-end
----
-
-@s
-
 Next we run Ctags on the inputfile, using `--language-force` to specify the language.
 
 --- Run Ctags on the lit file
-tags_str = readall(`ctags -x --language-force=$(lowercase(codetype)) $inputfile`)
+tags_str = run("ctags -x --language-force=" .. string.lower(codetype) .. " " .. inputfile)
+
+if tags_str == "" then
+    print(codetype .. " is not supported by your version of ctags.")
+    print("Please use -noindex if you would not like to create an index.")
+    return ""
+end
 ---
 
 @s
@@ -79,22 +78,23 @@ array.
 
 --- Run Ctags on the lit file +=
 tags_arr = split(tags_str, "\n")
-tags = Tag[]
+tags = {}
 
-for tag in tags_arr
-    if tag != ""
-        words = split(tag, r"\s+")
-        line_num = parse(Int, words[3])
+for _,tag in pairs(tags_arr) do
+    if tag ~= "" then
+        words = split(tag, "%s+")
+        line_num = tonumber(words[3])
 
-        if !(line_num in code_lines)
-            continue
+        if code_lines[line_num] == nil then
+            goto continue
         end
 
         name = words[1]
         tag_type = words[2]
         
-        push!(tags, Tag(name, tag_type, line_num))
+        tags[#tags + 1] = {name, tag_type, line_num}
     end
+    ::continue::
 end
 ---
 
@@ -105,11 +105,11 @@ to help us do this. This function takes in a line number and returns the section
 `section_linenums` array defined in `weave` to help.
 
 --- Get the section number given a line number
-for i = 1:length(section_linenums)
-    if i == length(section_linenums)
+for i = 1,#section_linenums do
+    if i == #section_linenums then
         return i
     end
-    if linenum < section_linenums[i + 1]
+    if linenum < section_linenums[i + 1] then
         return i
     end
 end
@@ -120,28 +120,31 @@ end
 Now that we have all the tags, we can begin to create the HTML for the index.
 
 --- Create the HTML for the index
-html = "<h3>Index</h3>\n"
-html *= "<h5>Identifiers Used</h5>\n"
-html *= "<ul class=\"two-col\">\n"
+local html = "<h3>Index</h3>\n"
+html = html .. "<h5>Identifiers Used</h5>\n"
+html = html .. "<ul class=\"two-col\">\n"
 
-for tag in tags
-    section_num = section_for_linenum(tag.line_num)
-    html *= "<li><code>$(tag.name)</code>: <em>$(tag.tag_type)</em> <a href=\"#$section_num\">$section_num</a></li>\n"
+for _,tag in pairs(tags) do
+    local section_num = section_for_linenum(tag[3])
+    html = html .. "<li><code>" .. tag[1] .. "</code>: <em>" .. tag[2] .. "</em> <a href=\"#" .. section_num .. "\">" .. section_num .. "</a></li>\n"
 end
-html *= "</ul>"
+html = html .. "</ul>"
 
-html *= "<h5>Code Blocks</h5>\n"
-html *= "<ul class=\"two-col\">\n"
+html = html .. "<h5>Code Blocks</h5>\n"
+html = html .. "<ul class=\"two-col\">\n"
 
-# Sort the block_locations dictionary so that the codeblocks come in order
-for (name, locations) in sort(collect(block_locations))
-    html *= "<li><code>$(name)</code>"
-    for i = 1:length(locations)
-        location = locations[i]
-        p = i == 1 ? " " : ", "
-        html *= "$p<a href=\"#$(location)\">$(location)</a>"
+-- Sort the block_locations dictionary so that the codeblocks come in order
+for name,locations in pairsByKeys(block_locations) do
+    html = html .. "<li><code>" .. name .. "</code>"
+    for i = 1,#locations do
+        local location = locations[i]
+        local p = ", "
+        if i == 1 then
+            p = " "
+        end
+        html = html .. p .. "<a href=\"#" .. location .. "\">" .. location .. "</a>"
     end
-    html *= "</li>\n"
+    html = html .. "</li>\n"
 end
-html *= "</ul>"
+html = html .. "</ul>"
 ---

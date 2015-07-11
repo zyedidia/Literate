@@ -1,7 +1,8 @@
 .PHONY: examples
 
 examples: wc.lit hangman.lit
-	../bin/lit *.lit
+	../bin/lit wc.lit
+	../bin/lit -noindex hangman.lit
 	gcc wc.c -o wc
 
 wc: wc.c

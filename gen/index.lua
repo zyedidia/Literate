@@ -41,7 +41,7 @@ function create_index(inputfile)
 -- Run Ctags on the lit file
 tags_str = run("ctags -x --language-force=" .. string.lower(codetype) .. " " .. inputfile)
 
-if tags_str == nil then
+if tags_str == "" then
     print(codetype .. " is not supported by your version of ctags.")
     print("Please use -noindex if you would not like to create an index.")
     return ""

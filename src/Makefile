@@ -1,13 +1,9 @@
-.PHONY: src
-
-src: weave.lit tangle.lit literate.lit index.lit
-	../bin/lit -code --out-dir=../gen weave.lit tangle.lit index.lit
-	../bin/lit -code --out-dir=../bin literate.lit
+src:
+	../bin/lit -code --out-dir=../gen/ *.lit
+	mv ../gen/lit.lua ../bin/
 	mv ../bin/lit ../bin/.lit.bak
-	mv ../bin/lit.jl ../bin/lit
+	mv ../bin/lit.lua ../bin/lit
 	chmod +x ../bin/lit
 
 clean:
-	rm -f *.jl
-	rm -f *.html
-	rm -f ../gen/*.html
+	rm -f *.html ../gen/*.html *.lua
