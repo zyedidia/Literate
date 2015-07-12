@@ -5,4 +5,4 @@ examples/*.c
 examples/*.pdf
 examples/wc
 
-bin/.lit.bak
+gen/lua

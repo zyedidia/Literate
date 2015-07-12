@@ -13,18 +13,18 @@ Here is the structure:
 
 --- lit.lua
 #!/usr/bin/env lua
-gen = "../gen"
+gen = "."
 package.path = "../?.lua;" .. package.path
 
-require "../gen/stringutil"
-require "../gen/fileutil"
+require "stringutil"
+require "fileutil"
 
-require "../gen/weave"
-require "../gen/tangle"
+require "weave"
+require "tangle"
 
-require "../gen/index"
+require "index"
 
-md = require("../gen/markdown")
+md = require("markdown")
 
 @{Parse the arguments}
 if #inputfiles == 0 then

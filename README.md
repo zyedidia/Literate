@@ -6,7 +6,7 @@ The goal of this project is to create a modern literate programming system which
 
 This is a very early version. More documentation will be coming soon.
 
-You also need [Lua] (http://www.lua.org/download.html) to run the compiler.
+The compiler is made with Lua. When you download the repository, run `./install.sh platform` where platform one of the following supported platforms: `aix` `bsd` `c89` `generic` `linux` `macosx` `mingw` `posix` `solaris` and a local version of lua will be installed and used for Lit.
 
 # Usage
 
