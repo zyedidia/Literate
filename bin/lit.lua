@@ -1,16 +1,16 @@
 #!/usr/bin/env lua
-gen = "."
+gen = "../gen"
 package.path = "../?.lua;" .. package.path
 
-require "stringutil"
-require "fileutil"
+require "../gen/stringutil"
+require "../gen/fileutil"
 
-require "weave"
-require "tangle"
+require "../gen/weave"
+require "../gen/tangle"
 
-require "index"
+require "../gen/index"
 
-md = require("markdown")
+md = require("../gen/markdown")
 
 -- Parse the arguments
 html = false
