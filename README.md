@@ -6,7 +6,7 @@ The goal of this project is to create a modern literate programming system which
 
 This is a very early version. More documentation will be coming soon.
 
-You also need [julia] (http://julialang.org/) to run the compiler.
+You also need [Lua] (http://www.lua.org/download.html) to run the compiler.
 
 # Usage
 
@@ -27,3 +27,4 @@ $ lit [-html] [-code] examples/wc.lit
 ### Inspired from CWEB
 * Automatically generates hyperlinks between code sections
 * Formatted output similar to CWEB
+* Creates an index with identifiers used (You need to have exuberant or universal ctags installed to use this feature)
