@@ -233,13 +233,13 @@ local files = readdir(source_dir) -- All the files in the current directory
 if files["default.css"] ~= nil then
     css = readall(source_dir .. "/default.css") -- Read the user's default.css
 else
-    css = readall(source_dir .. "/" .. gen .. "/default.css") -- Use the default css
+    css = readall(gen .. "/default.css") -- Use the default css
 end
 
 if files["colorscheme.css"] ~= nil then
     css = css .. readall(source_dir .. "/colorscheme.css") -- Read the user's colorscheme.css
 else
-    css = css .. readall(source_dir .. "/" .. gen .. "/colorscheme.css") -- Use the default colorscheme
+    css = css .. readall(gen .. "/colorscheme.css") -- Use the default colorscheme
 end
 
 if files["additions.css"] ~= nil then
