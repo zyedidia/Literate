@@ -6,7 +6,19 @@ The goal of this project is to create a modern literate programming system which
 
 This is a very early version. More documentation will be coming soon.
 
+# Installation
+
 The compiler is made with Lua. When you download the repository, run `./install.sh platform` where platform one of the following supported platforms: `aix` `bsd` `c89` `generic` `linux` `macosx` `mingw` `posix` `solaris` and a local version of lua will be installed and used for Lit.
+
+For example:
+
+```
+$ git clone https://github.com/zyedidia/Literate
+$ cd Literate
+$ ./install.sh macosx
+```
+
+In addition, if you would like an index to be generated, you must have exuberant or [universal ctags] (https://github.com/universal-ctags/ctags) installed. You can find instructions for installing with homebrew [here] (https://github.com/universal-ctags/homebrew-universal-ctags).
 
 # Usage
 
