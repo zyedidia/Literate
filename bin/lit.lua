@@ -1,16 +1,16 @@
 #!/usr/bin/env lua
-gen = "../gen"
-package.path = "../?.lua;" .. package.path
+gen = arg[1]
+package.path = gen .. "/?.lua;" .. package.path
 
-require "../gen/stringutil"
-require "../gen/fileutil"
+require("stringutil")
+require("fileutil")
 
-require "../gen/weave"
-require "../gen/tangle"
+require("weave")
+require("tangle")
 
-require "../gen/index"
+require("index")
 
-md = require("../gen/markdown")
+md = require("markdown")
 
 -- Parse the arguments
 html = false
@@ -20,7 +20,7 @@ index = true
 
 inputfiles = {}
 
-for i=1,#arg do
+for i=2,#arg do
     argument = arg[i]
     if argument == "-h" then
         print("Usage: lit [-noindex] [-html] [-code] [--out-dir=dir] [file ...]")
