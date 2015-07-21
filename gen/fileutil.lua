@@ -7,7 +7,7 @@ function run(cmd)
 end
 -- The write function
 function write(output, str)
-    if output == "stdout" then
+    if output == "STDOUT" then
         io.write(str)
     else
         output:write(str)

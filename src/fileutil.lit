@@ -36,11 +36,11 @@ end
 
 @s
 
-This function writes a string either to *stdout* or to a file depending on the input parameter.
+This function writes a string either to *STDOUT* or to a file depending on the input parameter.
 
 --- The write function
 function write(output, str)
-    if output == "stdout" then
+    if output == "STDOUT" then
         io.write(str)
     else
         output:write(str)
