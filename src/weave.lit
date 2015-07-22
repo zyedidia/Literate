@@ -30,6 +30,8 @@ block_locations = {} -- String => (Number => Number)
 block_use_locations = {} -- String => (Number => Number)
 ---
 
+@s
+
 We also define `codetype` and `codetype_ext` to hold the name and extension of the language the user is using.
 
 --- Declare a few globals +=
@@ -275,7 +277,7 @@ if line == "" then
     goto continue
 end
 
-if startswith(line, "codetype") then -- Ignore this line
+if startswith(line, "@codetype") then -- Ignore this line
     goto continue
 end
 

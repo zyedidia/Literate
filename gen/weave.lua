@@ -145,7 +145,7 @@ if line == "" then
     goto continue
 end
 
-if startswith(line, "codetype") then -- Ignore this line
+if startswith(line, "@codetype") then -- Ignore this line
     goto continue
 end
 
