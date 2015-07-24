@@ -1,5 +1,5 @@
--- Define the tangle function
 
+-- Define the tangle function
 comment_type = ""
 function tangle(lines)
     local codeblocks = {} -- String => String
@@ -10,8 +10,8 @@ function tangle(lines)
         if startswith(line, "@comment_type") then
             comment_type = strip(string.sub(line, 15, #line))
         elseif startswith(line, "---") and not string.match(line, "^---$") then
--- Get the block name
 
+-- Get the block name
 local block_name = strip(string.sub(line, 4, #line))
 
 local add_to_block = false -- Whether or not this definition has a +=
@@ -20,8 +20,8 @@ if string.match(block_name, "+=") then
     block_name = strip(string.sub(block_name, 1, plus_index-1))
     add_to_block = true
 end
--- Get the code
 
+-- Get the code
 local code = ""
 while true do
     line_num = line_num + 1
@@ -33,13 +33,13 @@ while true do
         code = code .. "\n"
     end
 end
--- Add the code to the dict
 
+-- Add the code to the dict
 if add_to_block then
     if codeblocks[block_name] ~= nil then
         codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
     else
-        print(line_num .. ":Unknown block name: " .. block_name)
+        print("Tangle error: line " .. line_num .. ": Unknown block name: " .. block_name)
         os.exit()
     end
 else
@@ -49,10 +49,12 @@ end
         end
     end
 
--- Write the code
 
+-- Write the code
+found_file = false
 for i,name in pairs(block_names) do
     if string.match(basename(name), "^.+%w%.%w+$") then
+        found_file = true
         if stdin then
             outstream = "STDOUT"
             print("\n---- " .. basename(name) .. " ----\n")
@@ -65,13 +67,16 @@ for i,name in pairs(block_names) do
         end
     end
 end
+if not found_file then
+    print("Tangle error: no file name found. Not writing any code file.")
 end
--- Define the write_code function
+end
 
+-- Define the write_code function
 function write_code(block_name, codeblocks, outstream)
     local code = codeblocks[block_name]
     if code == nil then
-        print("Unknown block name: " .. block_name)
+        print("Tangle error: Unknown block name: " .. block_name)
         os.exit()
     end
     local lines = split(code, "\n")

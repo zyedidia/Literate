@@ -1,6 +1,6 @@
 function section_for_linenum(linenum)
--- Get the section number given a line number
 
+-- Get the section number given a line number
 for i = 1,#section_linenums do
     if i == #section_linenums then
         return i
@@ -39,8 +39,8 @@ function create_index(inputfile)
         return ""
     end
 
--- Run Ctags on the lit file
 
+-- Run Ctags on the lit file
 tags_str = run("ctags -x --language-force=" .. string.lower(codetype) .. " " .. inputfile)
 
 if tags_str == "" then
@@ -68,8 +68,8 @@ for _,tag in pairs(tags_arr) do
     end
     ::continue::
 end
--- Create the HTML for the index
 
+-- Create the HTML for the index
 local html = "<h3>Index</h3>\n"
 html = html .. "<h5>Identifiers Used</h5>\n"
 html = html .. "<ul class=\"two-col\">\n"

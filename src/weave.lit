@@ -322,12 +322,12 @@ end
 cur_codeblock_name = name
 file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file name
 
-local definition_location = block_locations[name][1]
-
 if block_locations[name] == nil then
-    print(line_num .. ":Unknown block name " .. name)
+    print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
     os.exit()
 end
+
+local definition_location = block_locations[name][1]
 
 local output = name .. " <a href=\"#" .. definition_location .. "\">" .. definition_location .. "</a>" -- Add the link to the definition location
 local plus = ""
@@ -378,7 +378,7 @@ We also have to perform a few extra checks to make sure we get our grammar right
 --- Write any "see also" links
 local locations = block_locations[name]
 if block_locations[name] == nil then
-    print(line_num .. ":Unknown block name " .. name)
+    print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
     os.exit()
 end
 
@@ -484,11 +484,11 @@ while string.match(line, "@{.*}") do
     end
     local m = string.match(line, "@{.*}")
     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
-    local location = block_locations[name][1]
     if block_locations[name] == nil then
-        print(line_num .. ":Unknown block name " .. name)
+        print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
         os.exit()
     end
+    local location = block_locations[name][1]
 
     if in_codeblock then
         local anchor = " <a href=\"#" .. location .. "\">" .. location .. "</a>"

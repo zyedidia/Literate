@@ -12,8 +12,8 @@ require("index")
 
 md = require("markdown")
 
--- Parse the arguments
 
+-- Parse the arguments
 html = false
 code = false
 outdir = "."
@@ -44,8 +44,8 @@ if not html and not code then
     code = true
 end
 if #inputfiles == 0 then
--- Use STDIN and STDOUT
 
+-- Use STDIN and STDOUT
 lines = lines_from()
 stdin = true
 if html then
@@ -56,8 +56,8 @@ if code then
     tangle(lines)
 end
 else
--- Weave and/or tangle the input files
 
+-- Weave and/or tangle the input files
 for num,file in pairs(inputfiles) do
     local lines = lines_from(file)
     local source_dir = dirname(file)

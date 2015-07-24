@@ -91,7 +91,7 @@ if add_to_block then
     if codeblocks[block_name] ~= nil then
         codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
     else
-        print(line_num .. ":Unknown block name: " .. block_name)
+        print("Tangle error: line " .. line_num .. ": Unknown block name: " .. block_name)
         os.exit()
     end
 else
@@ -109,7 +109,7 @@ recursively following links until it is done.
 function write_code(block_name, codeblocks, outstream)
     local code = codeblocks[block_name]
     if code == nil then
-        print("Unknown block name: " .. block_name)
+        print("Tangle error: Unknown block name: " .. block_name)
         os.exit()
     end
     local lines = split(code, "\n")
@@ -137,8 +137,10 @@ Here we check if the name is a file with the regular expression `^.+%w%.%w+$`. I
 write all the links that are in that codeblock.
 
 --- Write the code
+found_file = false
 for i,name in pairs(block_names) do
     if string.match(basename(name), "^.+%w%.%w+$") then
+        found_file = true
         if stdin then
             outstream = "STDOUT"
             print("\n---- " .. basename(name) .. " ----\n")
@@ -150,5 +152,8 @@ for i,name in pairs(block_names) do
             outstream:close()
         end
     end
+end
+if not found_file then
+    print("Tangle error: no file name found. Not writing any code file.")
 end
 ---

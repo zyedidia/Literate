@@ -1,5 +1,5 @@
--- Declare a few globals
 
+-- Declare a few globals
 title = ""
 block_locations = {} -- String => (Number => Number)
 block_use_locations = {} -- String => (Number => Number)
@@ -9,8 +9,8 @@ codetype_ext = ""
 
 code_lines = {} -- Number => Number
 section_linenums = {} -- Number => Number
--- Define the get_locations function
 
+-- Define the get_locations function
 function get_locations(lines)
     local sectionnum = 0   -- Which section is currently being parsed
     local in_codeblock = false   -- Whether we are parsing a codeblock or not
@@ -19,38 +19,38 @@ function get_locations(lines)
         line = chomp(line) -- Use chomp to remove the \n
 
         if startswith(line, "@title") then
--- Initialize the title variable
 
+-- Initialize the title variable
 title = strip(string.sub(line, 7, #line))
         elseif startswith(line, "@s") then
             section_linenums[#section_linenums + 1] = line_num
             sectionnum = sectionnum + 1
         elseif startswith(line, "---") then
--- A codeblock has been defined
 
+-- A codeblock has been defined
 in_codeblock = true
 if string.match(line, "^%-%-%-$") then
     in_codeblock = false
     goto continue
 end
--- Get the block name
 
+-- Get the block name
 local block_name = strip(string.sub(line, 4, #line)) -- Remove the '---'
 
 if string.match(block_name, "+=") then
     local plus_index = block_name:match'^.*()%+' -- Get the index of the "+" (the [end] is to get the last occurrence)
     block_name = strip(string.sub(block_name, 1, plus_index-1)) -- Remove the "+=" and strip any whitespace
 end
--- Add the locations to the dict
 
+-- Add the locations to the dict
 if block_locations[block_name] == nil then -- If this block has not been defined in the dict yet
     block_locations[block_name] = {sectionnum} -- Create a new slot for it and add the current section num
 elseif block_locations[block_name][sectionnum] == nil then -- If the current section num isn't already in the array
     block_locations[block_name][#block_locations[block_name] + 1] = sectionnum -- Add it
 end
         elseif in_codeblock and startswith(strip(line), "@{") then
--- A codeblock has been used
 
+-- A codeblock has been used
 line = strip(line)
 local block_name = string.sub(line, 3, #line - 1) -- Substring to just get the block name
 
@@ -64,8 +64,8 @@ end
         ::continue::
     end
 end
--- Define the write_markdown function
 
+-- Define the write_markdown function
 function write_markdown(markdown, out)
     if markdown ~= "" then
         local html = markdown
@@ -76,15 +76,15 @@ function write_markdown(markdown, out)
         write(out, html .. "\n")
     end
 end
--- Define the weave function
 
+-- Define the weave function
 function weave(lines, outputstream, source_dir, inputfilename, has_index)
     local out = outputstream
 
     get_locations(lines)
 
--- Set up html
 
+-- Set up html
 local start_codeblock = "<pre class=\"prettyprint\">\n"
 local end_codeblock = "</pre>\n"
 
@@ -92,8 +92,8 @@ local scripts = [[<script src="https://cdn.rawgit.com/google/code-prettify/maste
              <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
              <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: ]] .. "[['$','$']]}}); </script>\n"
 
--- Get the CSS
 
+-- Get the CSS
 local css = ""
 local files = readdir(source_dir) -- All the files in the current directory
 if files["default.css"] ~= nil then
@@ -125,8 +125,8 @@ local base_html = [[<!doctype html>
                <body>]]
 
 write(out, base_html)
--- Set up variables
 
+-- Set up variables
 local sectionnum = 0 -- Which section number we are currently parsing
 local in_codeblock = false -- Whether or not we are parsing a some code
 local in_prose = false -- Whether or not we are parsing prose
@@ -146,8 +146,8 @@ local cur_codeblock_name = "" -- The name of the current codeblock begin parsed
             goto continue
         end
 
--- Parse the line
 
+-- Parse the line
 if line == "" then
     -- This was a blank line
     if in_codeblock then
@@ -163,8 +163,8 @@ if startswith(line, "@codetype") then -- Ignore this line
 end
 
 if string.match(line, "^%-%-%-.+$") then -- Codeblock began
--- Begin codeblock
 
+-- Begin codeblock
 -- A code block just began
 in_prose = false
 in_codeblock = true
@@ -187,12 +187,12 @@ end
 cur_codeblock_name = name
 file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file name
 
-local definition_location = block_locations[name][1]
-
 if block_locations[name] == nil then
-    print(line_num .. ":Unknown block name " .. name)
+    print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
     os.exit()
 end
+
+local definition_location = block_locations[name][1]
 
 local output = name .. " <a href=\"#" .. definition_location .. "\">" .. definition_location .. "</a>" -- Add the link to the definition location
 local plus = ""
@@ -209,8 +209,8 @@ write(out, "<p class=\"notp\" id=\"" .. name .. sectionnum .. "\"><span class=\"
 -- We can now begin pretty printing the code that comes next
 write(out, start_codeblock)
 elseif string.match(line, "^%-%-%-$") then -- Codeblock ended
--- End codeblock
 
+-- End codeblock
 -- A code block just ended
 in_prose = true
 in_codeblock = false
@@ -220,11 +220,11 @@ write(out, end_codeblock)
 -- This was stored when the code block began
 local name = cur_codeblock_name
 
--- Write any "see also" links
 
+-- Write any "see also" links
 local locations = block_locations[name]
 if block_locations[name] == nil then
-    print(line_num .. ":Unknown block name " .. name)
+    print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
     os.exit()
 end
 
@@ -252,8 +252,8 @@ if #locations > 1 then
         write(out, "<p class=\"seealso\">See also section" .. plural .. links .. ".</p>\n")
     end
 end
--- Write any "used in" links
 
+-- Write any "used in" links
 -- Top level codeblocks such as files are never used, so we have to check here
 if block_use_locations[name] ~= nil then
     local locations = block_use_locations[name]
@@ -278,8 +278,8 @@ end
 -- Close the "codeblock" div
 write(out, "</div>\n")
 elseif startswith(line, "@s") and not in_codeblock then -- Section began
--- Create a new section
 
+-- Create a new section
 if sectionnum ~= 1 then
     -- Every section is part of a div. Here we close the last one, and open a new one
     write(out, "</div>")
@@ -300,30 +300,30 @@ if heading_title == "" then
 end
 write(out, "<p class=\"notp\" id=\"" .. sectionnum .. "\"><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4></p>\n")
 elseif startswith(line, "@title") then -- Title created
--- Create the title
 
+-- Create the title
 local title = strip(string.sub(line, 7, #line))
 write(out, "<h1>" .. title .. "</h1>\n")
 else
     if in_codeblock then
--- Write out the line of code
 
+-- Write out the line of code
 line = string.gsub(line, "&", "&amp;")
 line = string.gsub(line, "<", "&lt;")
 line = string.gsub(line, ">", "&gt;")
--- Link any sections in the line
 
+-- Link any sections in the line
 while string.match(line, "@{.*}") do
     if not startswith(strip(line), "@{") and in_codeblock then
         break
     end
     local m = string.match(line, "@{.*}")
     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
-    local location = block_locations[name][1]
     if block_locations[name] == nil then
-        print(line_num .. ":Unknown block name " .. name)
+        print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
         os.exit()
     end
+    local location = block_locations[name][1]
 
     if in_codeblock then
         local anchor = " <a href=\"#" .. location .. "\">" .. location .. "</a>"
@@ -338,21 +338,21 @@ end
 code_lines[line_num] = true
 write(out, line .. "\n")
     else
+
 -- Add the line to the markdown
 
 -- Link any sections in the line
-
 while string.match(line, "@{.*}") do
     if not startswith(strip(line), "@{") and in_codeblock then
         break
     end
     local m = string.match(line, "@{.*}")
     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
-    local location = block_locations[name][1]
     if block_locations[name] == nil then
-        print(line_num .. ":Unknown block name " .. name)
+        print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
         os.exit()
     end
+    local location = block_locations[name][1]
 
     if in_codeblock then
         local anchor = " <a href=\"#" .. location .. "\">" .. location .. "</a>"
@@ -370,8 +370,8 @@ end
         ::continue::
     end
 
--- Clean up
 
+-- Clean up
 write_markdown(markdown, out)
 
 if has_index then
