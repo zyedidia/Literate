@@ -74,6 +74,9 @@ while true do
     if line == nil then break end
     if chomp(line) == "---" then break end
     code = code .. line
+    if stdin then
+        code = code .. "\n"
+    end
 end
 ---
 
@@ -113,7 +116,7 @@ function write_code(block_name, codeblocks, outstream)
 
     if comment_type ~= "" then
         if not string.match(block_name, "^.+%w%.%w+$") then
-            write(outstream, comment_type .. " " .. block_name .. "\n")
+            write(outstream, "\n" .. comment_type .. " " .. block_name .. "\n")
         end
     end
 

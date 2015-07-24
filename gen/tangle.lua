@@ -1,4 +1,5 @@
 -- Define the tangle function
+
 comment_type = ""
 function tangle(lines)
     local codeblocks = {} -- String => String
@@ -10,6 +11,7 @@ function tangle(lines)
             comment_type = strip(string.sub(line, 15, #line))
         elseif startswith(line, "---") and not string.match(line, "^---$") then
 -- Get the block name
+
 local block_name = strip(string.sub(line, 4, #line))
 
 local add_to_block = false -- Whether or not this definition has a +=
@@ -19,6 +21,7 @@ if string.match(block_name, "+=") then
     add_to_block = true
 end
 -- Get the code
+
 local code = ""
 while true do
     line_num = line_num + 1
@@ -26,8 +29,12 @@ while true do
     if line == nil then break end
     if chomp(line) == "---" then break end
     code = code .. line
+    if stdin then
+        code = code .. "\n"
+    end
 end
 -- Add the code to the dict
+
 if add_to_block then
     if codeblocks[block_name] ~= nil then
         codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
@@ -43,6 +50,7 @@ end
     end
 
 -- Write the code
+
 for i,name in pairs(block_names) do
     if string.match(basename(name), "^.+%w%.%w+$") then
         if stdin then
@@ -59,6 +67,7 @@ for i,name in pairs(block_names) do
 end
 end
 -- Define the write_code function
+
 function write_code(block_name, codeblocks, outstream)
     local code = codeblocks[block_name]
     if code == nil then
@@ -69,7 +78,7 @@ function write_code(block_name, codeblocks, outstream)
 
     if comment_type ~= "" then
         if not string.match(block_name, "^.+%w%.%w+$") then
-            write(outstream, comment_type .. " " .. block_name .. "\n")
+            write(outstream, "\n" .. comment_type .. " " .. block_name .. "\n")
         end
     end
 
