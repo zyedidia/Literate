@@ -5,7 +5,7 @@
 @s Introduction
 Weave is the part of `Literate` which takes a `.lit` file and generates HTML for it to be viewed in a browser.
 It creates the structure for the webpage and adds the useful links from and to sections. Weave must also transform
-the prose from text to markdown. To do this, we use Julia's Markdown capabilities.
+the prose from text to markdown. To do this, we use Lua's Markdown capabilities.
 
 Generally, the strategy is to parse each line, and make some transformation on it to turn it into html.
 
@@ -183,10 +183,6 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
         ::continue::
     end
 
-    if has_index then
-        write(out, create_index(inputfilename))
-    end
-
     @{Clean up}
 end
 ---
@@ -327,6 +323,12 @@ cur_codeblock_name = name
 file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file name
 
 local definition_location = block_locations[name][1]
+
+if block_locations[name] == nil then
+    print(line_num .. ":Unknown block name " .. name)
+    os.exit()
+end
+
 local output = name .. " <a href=\"#" .. definition_location .. "\">" .. definition_location .. "</a>" -- Add the link to the definition location
 local plus = ""
 if adding then
@@ -375,6 +377,11 @@ We also have to perform a few extra checks to make sure we get our grammar right
 
 --- Write any "see also" links
 local locations = block_locations[name]
+if block_locations[name] == nil then
+    print(line_num .. ":Unknown block name " .. name)
+    os.exit()
+end
+
 if #locations > 1 then
     local links = "" -- This will hold the html for the links
     local loopnum = 0
@@ -478,6 +485,11 @@ while string.match(line, "@{.*}") do
     local m = string.match(line, "@{.*}")
     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
     local location = block_locations[name][1]
+    if block_locations[name] == nil then
+        print(line_num .. ":Unknown block name " .. name)
+        os.exit()
+    end
+
     if in_codeblock then
         local anchor = " <a href=\"#" .. location .. "\">" .. location .. "</a>"
         local links = "<span class=\"nocode\">{" .. name .. anchor .. "}</span>" -- The nocode is so that this is not pretty printed
@@ -501,7 +513,7 @@ line = string.gsub(line, "&", "&amp;")
 line = string.gsub(line, "<", "&lt;")
 line = string.gsub(line, ">", "&gt;")
 @{Link any sections in the line}
-code_lines[#code_lines + 1] = line_num
+code_lines[line_num] = true
 write(out, line .. "\n")
 ---
 
@@ -514,9 +526,14 @@ markdown = markdown .. line .. "\n"
 
 @s
 
-Finally, we clean up at the end. We write any last bits of markdown, and write the closing HTML.
+Finally, we clean up at the end. We write any last bits of markdown, make the index if necessary, and write the closing HTML.
 
 --- Clean up
 write_markdown(markdown, out)
+
+if has_index then
+    write(out, create_index(inputfilename))
+end
+
 write(out, "</body>\n</html>\n")
 ---

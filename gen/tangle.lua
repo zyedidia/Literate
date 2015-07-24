@@ -29,7 +29,12 @@ while true do
 end
 -- Add the code to the dict
 if add_to_block then
-    codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
+    if codeblocks[block_name] ~= nil then
+        codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
+    else
+        print(line_num .. ":Unknown block name: " .. block_name)
+        os.exit()
+    end
 else
     block_names[#block_names + 1] = block_name
     codeblocks[block_name] = code
@@ -49,6 +54,10 @@ end
 -- Define the write_code function
 function write_code(block_name, codeblocks, outstream)
     local code = codeblocks[block_name]
+    if code == nil then
+        print("Unknown block name: " .. block_name)
+        os.exit()
+    end
     local lines = split(code, "\n")
 
     if comment_type ~= "" then
@@ -60,7 +69,7 @@ function write_code(block_name, codeblocks, outstream)
     for line_num,line in pairs(lines) do
         if startswith(strip(line), "@{") then
             line = strip(line)
-            write_code(string.sub(line, 3, #line - 1), codeblocks, outstream)
+            write_code(string.sub(line, 3, line:find("}[^}]*$") - 1), codeblocks, outstream)
         else
             write(outstream, line .. "\n")
         end

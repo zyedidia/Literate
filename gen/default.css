@@ -70,6 +70,9 @@ p:not(.notp) {
 /*     padding: 0; */
 /*     vertical-align: top; */
 /* } */
+.two-col {
+    list-style-type: none;
+}
 .two-col li:before {
     content: '-';
     padding: 5px;

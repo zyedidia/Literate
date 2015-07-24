@@ -174,6 +174,12 @@ cur_codeblock_name = name
 file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file name
 
 local definition_location = block_locations[name][1]
+
+if block_locations[name] == nil then
+    print(line_num .. ":Unknown block name " .. name)
+    os.exit()
+end
+
 local output = name .. " <a href=\"#" .. definition_location .. "\">" .. definition_location .. "</a>" -- Add the link to the definition location
 local plus = ""
 if adding then
@@ -201,6 +207,11 @@ local name = cur_codeblock_name
 
 -- Write any "see also" links
 local locations = block_locations[name]
+if block_locations[name] == nil then
+    print(line_num .. ":Unknown block name " .. name)
+    os.exit()
+end
+
 if #locations > 1 then
     local links = "" -- This will hold the html for the links
     local loopnum = 0
@@ -288,6 +299,11 @@ while string.match(line, "@{.*}") do
     local m = string.match(line, "@{.*}")
     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
     local location = block_locations[name][1]
+    if block_locations[name] == nil then
+        print(line_num .. ":Unknown block name " .. name)
+        os.exit()
+    end
+
     if in_codeblock then
         local anchor = " <a href=\"#" .. location .. "\">" .. location .. "</a>"
         local links = "<span class=\"nocode\">{" .. name .. anchor .. "}</span>" -- The nocode is so that this is not pretty printed
@@ -298,7 +314,7 @@ while string.match(line, "@{.*}") do
         line = string.gsub(line, literalize(m), links)
     end
 end
-code_lines[#code_lines + 1] = line_num
+code_lines[line_num] = true
 write(out, line .. "\n")
     else
 -- Add the line to the markdown
@@ -310,6 +326,11 @@ while string.match(line, "@{.*}") do
     local m = string.match(line, "@{.*}")
     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
     local location = block_locations[name][1]
+    if block_locations[name] == nil then
+        print(line_num .. ":Unknown block name " .. name)
+        os.exit()
+    end
+
     if in_codeblock then
         local anchor = " <a href=\"#" .. location .. "\">" .. location .. "</a>"
         local links = "<span class=\"nocode\">{" .. name .. anchor .. "}</span>" -- The nocode is so that this is not pretty printed
@@ -326,11 +347,12 @@ end
         ::continue::
     end
 
-    if has_index then
-        write(out, create_index(inputfilename))
-    end
-
 -- Clean up
 write_markdown(markdown, out)
+
+if has_index then
+    write(out, create_index(inputfilename))
+end
+
 write(out, "</body>\n</html>\n")
 end
