@@ -45,6 +45,7 @@ end
 if #inputfiles == 0 then
 -- Use STDIN and STDOUT
 lines = lines_from()
+stdin = true
 if html then
     weave(lines, "STDOUT", ".", "none", index)
 end

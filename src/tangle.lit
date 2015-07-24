@@ -136,9 +136,16 @@ write all the links that are in that codeblock.
 --- Write the code
 for i,name in pairs(block_names) do
     if string.match(basename(name), "^.+%w%.%w+$") then
-        outstream = io.open(outdir .. "/" .. strip(name), "w")
+        if stdin then
+            outstream = "STDOUT"
+            print("\n---- " .. basename(name) .. " ----\n")
+        else
+            outstream = io.open(outdir .. "/" .. strip(name), "w")
+        end
         write_code(name, codeblocks, outstream)
-        outstream:close()
+        if not stdin then
+            outstream:close()
+        end
     end
 end
 ---
