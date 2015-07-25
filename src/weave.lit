@@ -13,6 +13,7 @@ The structure of the file looks like this:
 
 --- weave.lua
 @{Declare a few globals}
+@{Define the contains function}
 @{Define the get_locations function}
 @{Define the write_markdown function}
 @{Define the weave function}
@@ -225,22 +226,32 @@ There are three special stylesheets the user can define:
 * `colorscheme.css`: This will replace the the colorscheme for pretty printing code. You can get color themes [here](http://jmblog.github.io/color-themes-for-google-code-prettify/)
 * `additions.css`: This css will be added in addition to the default css
 
+--- Define the contains function
+function contains(tbl, item)
+    for key, value in pairs(tbl) do
+        if value == item then return key end
+    end
+    return false
+end
+---
+
 --- Get the CSS
 local css = ""
 local files = readdir(source_dir) -- All the files in the current directory
-if files["default.css"] ~= nil then
+
+if contains(files, "default.css") then
     css = readall(source_dir .. "/default.css") -- Read the user's default.css
 else
     css = readall(gen .. "/default.css") -- Use the default css
 end
 
-if files["colorscheme.css"] ~= nil then
+if contains(files, "colorscheme.css") then
     css = css .. readall(source_dir .. "/colorscheme.css") -- Read the user's colorscheme.css
 else
     css = css .. readall(gen .. "/colorscheme.css") -- Use the default colorscheme
 end
 
-if files["additions.css"] ~= nil then
+if contains(files, "additions.css") then
     css = css .. readall(source_dir .. "/additions.css") -- Read the user's additions.css
 end
 ---

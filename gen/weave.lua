@@ -10,6 +10,14 @@ codetype_ext = ""
 code_lines = {} -- Number => Number
 section_linenums = {} -- Number => Number
 
+-- Define the contains function
+function contains(tbl, item)
+    for key, value in pairs(tbl) do
+        if value == item then return key end
+    end
+    return false
+end
+
 -- Define the get_locations function
 function get_locations(lines)
     local sectionnum = 0   -- Which section is currently being parsed
@@ -96,19 +104,20 @@ local scripts = [[<script src="https://cdn.rawgit.com/google/code-prettify/maste
 -- Get the CSS
 local css = ""
 local files = readdir(source_dir) -- All the files in the current directory
-if files["default.css"] ~= nil then
+
+if contains(files, "default.css") then
     css = readall(source_dir .. "/default.css") -- Read the user's default.css
 else
     css = readall(gen .. "/default.css") -- Use the default css
 end
 
-if files["colorscheme.css"] ~= nil then
+if contains(files, "colorscheme.css") then
     css = css .. readall(source_dir .. "/colorscheme.css") -- Read the user's colorscheme.css
 else
     css = css .. readall(gen .. "/colorscheme.css") -- Use the default colorscheme
 end
 
-if files["additions.css"] ~= nil then
+if contains(files, "additions.css") then
     css = css .. readall(source_dir .. "/additions.css") -- Read the user's additions.css
 end
 
