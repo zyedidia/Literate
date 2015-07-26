@@ -103,10 +103,11 @@ end
 @s
 
 Now we define the `write_code` function which takes the `block_name`, `codeblocks`, and `outstream` and writes the code,
-recursively following links until it is done.
+recursively following links until it is done. We also keep trying of the leading whitespace so that we correctly indent
+the code that is generated based on how the `@{name}` was indented.
 
 --- Define the write_code function
-function write_code(block_name, codeblocks, outstream)
+function write_code(block_name, leading_whitespace, codeblocks, outstream)
     local code = codeblocks[block_name]
     if code == nil then
         print("Tangle error: Unknown block name: " .. block_name)
@@ -116,16 +117,17 @@ function write_code(block_name, codeblocks, outstream)
 
     if comment_type ~= "" then
         if not string.match(block_name, "^.+%w%.%w+$") then
-            write(outstream, "\n" .. comment_type .. " " .. block_name .. "\n")
+            write(outstream, "\n" .. leading_whitespace .. comment_type .. " " .. block_name .. "\n")
         end
     end
 
     for line_num,line in pairs(lines) do
         if startswith(strip(line), "@{") then
+            myleading_whitespace = string.match(line, "^(.-)[^%s]")
             line = strip(line)
-            write_code(string.sub(line, 3, line:find("}[^}]*$") - 1), codeblocks, outstream)
+            write_code(string.sub(line, 3, line:find("}[^}]*$") - 1), leading_whitespace .. myleading_whitespace, codeblocks, outstream)
         else
-            write(outstream, line .. "\n")
+            write(outstream, leading_whitespace .. line .. "\n")
         end
     end
 end
@@ -147,7 +149,7 @@ for i,name in pairs(block_names) do
         else
             outstream = io.open(outdir .. "/" .. strip(name), "w")
         end
-        write_code(name, codeblocks, outstream)
+        write_code(name, "", codeblocks, outstream)
         if not stdin then
             outstream:close()
         end

@@ -46,33 +46,33 @@ end
 if #inputfiles == 0 then
 
 -- Use STDIN and STDOUT
-lines = lines_from()
-stdin = true
-if html then
-    weave(lines, "STDOUT", ".", "none", index)
-end
-
-if code then
-    tangle(lines)
-end
-else
-
--- Weave and/or tangle the input files
-for num,file in pairs(inputfiles) do
-    local lines = lines_from(file)
-    local source_dir = dirname(file)
-    if source_dir == "" then
-        source_dir = "."
-    end
+    lines = lines_from()
+    stdin = true
     if html then
-        local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
-        weave(lines, outputstream, source_dir, file, index)
-        outputstream:close()
+        weave(lines, "STDOUT", ".", "none", index)
     end
+    
     if code then
         tangle(lines)
     end
-end
-end
+    else
 
--- vim: set ft=lua:
+-- Weave and/or tangle the input files
+    for num,file in pairs(inputfiles) do
+        local lines = lines_from(file)
+        local source_dir = dirname(file)
+        if source_dir == "" then
+            source_dir = "."
+        end
+        if html then
+            local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
+            weave(lines, outputstream, source_dir, file, index)
+            outputstream:close()
+        end
+        if code then
+            tangle(lines)
+        end
+    end
+    end
+    
+    -- vim: set ft=lua:

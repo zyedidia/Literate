@@ -506,8 +506,8 @@ while string.match(line, "@{.*}") do
         local links = "<span class=\"nocode\">{" .. name .. anchor .. "}</span>" -- The nocode is so that this is not pretty printed
         line = string.gsub(line, literalize(m), links)
     else
-        local anchor = "[" .. location .. "](#" .. location .. ")"
-        local links = "{" .. name .. anchor .. "}"
+        local anchor = " [" .. location .. "](#" .. location .. ")"
+        local links = "{`" .. name .. "`" .. anchor .. "}"
         line = string.gsub(line, literalize(m), links)
     end
 end

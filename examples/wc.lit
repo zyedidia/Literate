@@ -5,7 +5,7 @@
 
 @s An example of Literate programming
 
-This example is a close adaptation of a tutorial example for Knuth and Levy's `CWEB` programming system,
+This @{Functions} example is a close adaptation of a tutorial example for Knuth and Levy's `CWEB` programming system,
 translated from `CWEB` to the `Literate` programming system. 
 That example in turn is based on a program by Klaus Guntermann and Joachim Schrod 
 [*TUGboat* **7** (1986), 134–137] for a version of the "word count" program from `UNIX`.
