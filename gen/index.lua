@@ -1,6 +1,6 @@
 function section_for_linenum(linenum)
 
--- Get the section number given a line number
+    -- Get the section number given a line number
     for i = 1,#section_linenums do
         if i == #section_linenums then
             return i
@@ -9,38 +9,38 @@ function section_for_linenum(linenum)
             return i
         end
     end
-    end
-    
-    -- Sort a table
-    function pairsByKeys (t, f)
-        local a = {}
-        for n in pairs(t) do table.insert(a, n) end
-        table.sort(a, f)
-        local i = 0      -- iterator variable
-        local iter = function ()   -- iterator function
-            i = i + 1
-            if a[i] == nil then return nil
-            else return a[i], t[a[i]]
-            end
-        end
-        return iter
-    end
-    
-    function create_index(inputfile)
-        if run("which ctags") == nil then
-            print("You do not have ctags installed and it is required for making an index.")
-            print("If you do not want to receive this message use the -noindex flag.")
-            return ""
-        end
-    
-        if run("ctags --list-languages") == nil then
-            print("You have an old version of ctags installed, please update to exuberant or universal ctags if you want an index.")
-            print("If you do not want to receive this message use the -noindex flag.")
-            return ""
-        end
-    
+end
 
--- Run Ctags on the lit file
+-- Sort a table
+function pairsByKeys (t, f)
+    local a = {}
+    for n in pairs(t) do table.insert(a, n) end
+    table.sort(a, f)
+    local i = 0      -- iterator variable
+    local iter = function ()   -- iterator function
+        i = i + 1
+        if a[i] == nil then return nil
+        else return a[i], t[a[i]]
+        end
+    end
+    return iter
+end
+
+function create_index(inputfile)
+    if run("which ctags") == nil then
+        print("You do not have ctags installed and it is required for making an index.")
+        print("If you do not want to receive this message use the -noindex flag.")
+        return ""
+    end
+
+    if run("ctags --list-languages") == nil then
+        print("You have an old version of ctags installed, please update to exuberant or universal ctags if you want an index.")
+        print("If you do not want to receive this message use the -noindex flag.")
+        return ""
+    end
+
+
+    -- Run Ctags on the lit file
     tags_str = run("ctags -x --language-force=" .. string.lower(codetype) .. " " .. inputfile)
     
     if tags_str == "" then
@@ -69,7 +69,7 @@ function section_for_linenum(linenum)
         ::continue::
     end
 
--- Create the HTML for the index
+    -- Create the HTML for the index
     local html = "<h3>Index</h3>\n"
     html = html .. "<h5>Identifiers Used</h5>\n"
     html = html .. "<ul class=\"two-col\">\n"
@@ -97,5 +97,5 @@ function section_for_linenum(linenum)
         html = html .. "</li>\n"
     end
     html = html .. "</ul>"
-        return html
-    end
+    return html
+end

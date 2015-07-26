@@ -348,7 +348,7 @@ end
 output = "{" .. output .. "} " .. plus .. "≡" -- Add the = or +=
 
 if file then
-    output = "<strong>" .. output .. "</strong>" -- If the name is a file, make it bold
+    output = "<b>" .. output .. "</b>" -- If the name is a file, make it bold
 end
 
 write(out, "<p class=\"notp\" id=\"" .. name .. sectionnum .. "\"><span class=\"codeblock_name\">" .. output .. "</span></p>\n")

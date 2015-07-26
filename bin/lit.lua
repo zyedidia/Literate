@@ -45,7 +45,7 @@ if not html and not code then
 end
 if #inputfiles == 0 then
 
--- Use STDIN and STDOUT
+    -- Use STDIN and STDOUT
     lines = lines_from()
     stdin = true
     if html then
@@ -55,9 +55,9 @@ if #inputfiles == 0 then
     if code then
         tangle(lines)
     end
-    else
+else
 
--- Weave and/or tangle the input files
+    -- Weave and/or tangle the input files
     for num,file in pairs(inputfiles) do
         local lines = lines_from(file)
         local source_dir = dirname(file)
@@ -73,6 +73,6 @@ if #inputfiles == 0 then
             tangle(lines)
         end
     end
-    end
-    
-    -- vim: set ft=lua:
+end
+
+-- vim: set ft=lua:
