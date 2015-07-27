@@ -23,8 +23,8 @@ we start looping through each line. We use `line_num` because if we report any e
 Then we check if the line is either a codeblock beginning or ending, and if so we add the code for it to the dictionaries.
 
 --- Define the tangle function
-comment_type = ""
 function tangle(lines)
+    comment_type = ""
     local codeblocks = {} -- String => String
     local block_names = {} -- Number => String
     
