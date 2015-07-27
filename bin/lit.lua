@@ -47,6 +47,12 @@ if #inputfiles == 0 then
 
     -- Use STDIN and STDOUT
     lines = lines_from()
+    
+    complete_source = ""
+    for i=1,#lines do
+        complete_source = complete_source .. lines[i] .. "\n"
+    end
+    
     stdin = true
     if html then
         weave(lines, "STDOUT", ".", "none", index)
@@ -60,6 +66,12 @@ else
     -- Weave and/or tangle the input files
     for num,file in pairs(inputfiles) do
         local lines = lines_from(file)
+    
+        complete_source = ""
+        for i=1,#lines do
+            complete_source = complete_source .. lines[i] .. "\n"
+        end
+    
         local source_dir = dirname(file)
         if source_dir == "" then
             source_dir = "."

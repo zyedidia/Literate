@@ -105,6 +105,12 @@ output to `STDOUT`.
 
 --- Use STDIN and STDOUT
 lines = lines_from()
+
+complete_source = ""
+for i=1,#lines do
+    complete_source = complete_source .. lines[i] .. "\n"
+end
+
 stdin = true
 if html then
     weave(lines, "STDOUT", ".", "none", index)
@@ -122,6 +128,12 @@ If input files were given, we should loop through each one and tangle/weave it.
 --- Weave and/or tangle the input files
 for num,file in pairs(inputfiles) do
     local lines = lines_from(file)
+
+    complete_source = ""
+    for i=1,#lines do
+        complete_source = complete_source .. lines[i] .. "\n"
+    end
+
     local source_dir = dirname(file)
     if source_dir == "" then
         source_dir = "."
