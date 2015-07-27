@@ -1,5 +1,5 @@
-@code_type Lua lua
-@comment_type --
+@code_type lua .lua
+@comment_type -- %s
 @title File Util
 
 @s Introduction

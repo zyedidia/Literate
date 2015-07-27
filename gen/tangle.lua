@@ -83,7 +83,8 @@ function write_code(block_name, leading_whitespace, codeblocks, outstream)
 
     if comment_type ~= "" then
         if not string.match(block_name, "^.+%w%.%w+$") then
-            write(outstream, "\n" .. leading_whitespace .. comment_type .. " " .. block_name .. "\n")
+            comment = string.gsub(comment_type, "%%s", block_name)
+            write(outstream, "\n" .. leading_whitespace .. comment .. "\n")
         end
     end
 

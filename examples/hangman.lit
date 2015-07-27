@@ -1,5 +1,5 @@
-@code_type Julia jl
-@comment_type #
+@code_type julia .jl
+@comment_type # %s
 
 @title Hangman
 

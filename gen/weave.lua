@@ -149,7 +149,7 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
         if startswith(line, "@code_type") then
             local command = split(line, " ")
             codetype = command[2]
-            codetype_ext = command[3]
+            codetype_ext = string.sub(command[3], 2, #command[3])
             goto continue
         elseif startswith(line, "@comment_type") then
             goto continue
