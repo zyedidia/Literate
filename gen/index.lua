@@ -41,7 +41,9 @@ function create_index(inputfile)
 
 
     -- Run Ctags on the lit file
-    tags_str = run("ctags -x --language-force=" .. string.lower(codetype) .. " " .. inputfile)
+    tangle_result = run("cat " .. inputfile .. " | lit -code > out.txt")
+    tags_str = run("ctags -x --" .. string.lower(codetype) .. "-kinds=+abcdefghijklmnopqrxtuvwxyzABCDEFGHIJKLMNOPQRXTUVWXYZ  --language-force=" .. string.lower(codetype) .. " out.txt 2>/dev/null")
+    run("rm out.txt")
     
     if tags_str == "" then
         print(codetype .. " is not supported by your version of ctags.")
@@ -55,11 +57,14 @@ function create_index(inputfile)
     for _,tag in pairs(tags_arr) do
         if tag ~= "" then
             words = split(tag, "%s+")
-            line_num = tonumber(words[3])
     
-            if code_lines[line_num] == nil then
+            line = tag:match("out.txt%s+([^%s].-)$")
+    
+            if code_lines[line] == nil then
                 goto continue
             end
+    
+            line_num = code_lines[line]
     
             local name = words[1]
             tag_type = words[2]

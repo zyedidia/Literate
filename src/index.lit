@@ -61,7 +61,9 @@ end
 Next we run Ctags on the inputfile, using `--language-force` to specify the language.
 
 --- Run Ctags on the lit file
-tags_str = run("ctags -x --language-force=" .. string.lower(codetype) .. " " .. inputfile)
+tangle_result = run("cat " .. inputfile .. " | lit -code > out.txt")
+tags_str = run("ctags -x --" .. string.lower(codetype) .. "-kinds=+abcdefghijklmnopqrxtuvwxyzABCDEFGHIJKLMNOPQRXTUVWXYZ  --language-force=" .. string.lower(codetype) .. " out.txt 2>/dev/null")
+run("rm out.txt")
 
 if tags_str == "" then
     print(codetype .. " is not supported by your version of ctags.")
@@ -73,7 +75,7 @@ end
 @s
 
 Now we also want to parse the tags and create an array of `Tags`. Before adding the tag to the array,
-we check if it was a false positive by making sure the line number is contained in the `code_lines`
+we check if it was a false positive by making sure the line is contained in the `code_lines`
 array.
 
 --- Run Ctags on the lit file +=
@@ -83,11 +85,14 @@ tags = {}
 for _,tag in pairs(tags_arr) do
     if tag ~= "" then
         words = split(tag, "%s+")
-        line_num = tonumber(words[3])
 
-        if code_lines[line_num] == nil then
+        line = tag:match("out.txt%s+([^%s].-)$")
+
+        if code_lines[line] == nil then
             goto continue
         end
+
+        line_num = code_lines[line]
 
         local name = words[1]
         tag_type = words[2]

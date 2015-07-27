@@ -520,11 +520,11 @@ is should also be possible to have \(html character) inside a string without it 
 we make sure the character is not inside a string before escaping it.
 
 --- Write out the line of code
+code_lines[line:gsub("%s+", " ")] = line_num
 line = string.gsub(line, "&", "&amp;")
 line = string.gsub(line, "<", "&lt;")
 line = string.gsub(line, ">", "&gt;")
 @{Link any sections in the line}
-code_lines[line_num] = true
 write(out, line .. "\n")
 ---
 

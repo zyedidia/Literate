@@ -317,6 +317,7 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
             if in_codeblock then
 
                 -- Write out the line of code
+                code_lines[line:gsub("%s+", " ")] = line_num
                 line = string.gsub(line, "&", "&amp;")
                 line = string.gsub(line, "<", "&lt;")
                 line = string.gsub(line, ">", "&gt;")
@@ -344,7 +345,6 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
                         line = string.gsub(line, literalize(m), links)
                     end
                 end
-                code_lines[line_num] = true
                 write(out, line .. "\n")
             else
 
