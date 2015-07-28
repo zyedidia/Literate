@@ -41,8 +41,8 @@ function create_index(inputfile)
 
 
     -- Run Ctags on the lit file
-    tangle_result = run("echo '" .. complete_source:gsub("'", "'\"'\"'") .. "' | lit -code > out.txt")
-    tags_str = run("ctags -x --" .. string.lower(codetype) .. "-kinds=+abcdefghijklmnopqrxtuvwxyzABCDEFGHIJKLMNOPQRXTUVWXYZ  --language-force=" .. string.lower(codetype) .. " out.txt 2>/dev/null")
+    local tangle_result = run("echo '" .. complete_source:gsub("'", "'\"'\"'") .. "' | lit -code > out.txt")
+    local tags_str = run("ctags -x --" .. string.lower(codetype) .. "-kinds=+abcdefghijklmnopqrxtuvwxyzABCDEFGHIJKLMNOPQRXTUVWXYZ  --language-force=" .. string.lower(codetype) .. " out.txt 2>/dev/null")
     run("rm out.txt")
     
     if tags_str == "" then
@@ -51,23 +51,23 @@ function create_index(inputfile)
         return ""
     end
     
-    tags_arr = split(tags_str, "\n")
-    tags = {}
+    local tags_arr = split(tags_str, "\n")
+    local tags = {}
     
     for _,tag in pairs(tags_arr) do
         if tag ~= "" then
-            words = split(tag, "%s+")
+            local words = split(tag, "%s+")
     
-            line = tag:match("out.txt%s+([^%s].-)$")
+            local line = tag:match("out.txt%s+([^%s].-)$")
     
             if code_lines[line] == nil then
                 goto continue
             end
     
-            line_num = code_lines[line]
+            local line_num = code_lines[line]
     
             local name = words[1]
-            tag_type = words[2]
+            local tag_type = words[2]
             
             tags[#tags + 1] = {name, tag_type, line_num}
         end

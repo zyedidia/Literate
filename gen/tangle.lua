@@ -1,7 +1,7 @@
 
 -- Define the tangle function
-comment_type = ""
 function tangle(lines)
+    comment_type = ""
     local codeblocks = {} -- String => String
     local block_names = {} -- Number => String
     
