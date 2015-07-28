@@ -1,5 +1,5 @@
-@code_type Lua lua
-@comment_type --
+@code_type lua .lua
+@comment_type -- %s
 @title Weave
 
 @s Introduction
@@ -12,39 +12,10 @@ Generally, the strategy is to parse each line, and make some transformation on i
 The structure of the file looks like this:
 
 --- weave.lua
-@{Declare a few globals}
+@{Define the contains function}
 @{Define the get_locations function}
 @{Define the write_markdown function}
 @{Define the weave function}
----
-
-@s
-
-The global variables defined here will hold the results of the first pass to get the locations of code blocks and other
-useful information like the number of sections and the title.
-
-
---- Declare a few globals
-title = ""
-block_locations = {} -- String => (Number => Number)
-block_use_locations = {} -- String => (Number => Number)
----
-
-@s
-
-We also define `codetype` and `codetype_ext` to hold the name and extension of the language the user is using.
-
---- Declare a few globals +=
-codetype = ""
-codetype_ext = ""
----
-
-Finally we define an array for holding the line numbers (in the lit file) on which there was code, and an array for
-holding the line numbers each section starts on.
-
---- Declare a few globals +=
-code_lines = {} -- Number => Number
-section_linenums = {} -- Number => Number
 ---
 
 @s
@@ -173,7 +144,7 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
         if startswith(line, "@code_type") then
             local command = split(line, " ")
             codetype = command[2]
-            codetype_ext = command[3]
+            codetype_ext = string.sub(command[3], 2, #command[3])
             goto continue
         elseif startswith(line, "@comment_type") then
             goto continue
@@ -225,22 +196,32 @@ There are three special stylesheets the user can define:
 * `colorscheme.css`: This will replace the the colorscheme for pretty printing code. You can get color themes [here](http://jmblog.github.io/color-themes-for-google-code-prettify/)
 * `additions.css`: This css will be added in addition to the default css
 
+--- Define the contains function
+function contains(tbl, item)
+    for key, value in pairs(tbl) do
+        if value == item then return key end
+    end
+    return false
+end
+---
+
 --- Get the CSS
 local css = ""
 local files = readdir(source_dir) -- All the files in the current directory
-if files["default.css"] ~= nil then
+
+if contains(files, "default.css") then
     css = readall(source_dir .. "/default.css") -- Read the user's default.css
 else
     css = readall(gen .. "/default.css") -- Use the default css
 end
 
-if files["colorscheme.css"] ~= nil then
+if contains(files, "colorscheme.css") then
     css = css .. readall(source_dir .. "/colorscheme.css") -- Read the user's colorscheme.css
 else
     css = css .. readall(gen .. "/colorscheme.css") -- Use the default colorscheme
 end
 
-if files["additions.css"] ~= nil then
+if contains(files, "additions.css") then
     css = css .. readall(source_dir .. "/additions.css") -- Read the user's additions.css
 end
 ---
@@ -322,12 +303,12 @@ end
 cur_codeblock_name = name
 file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file name
 
-local definition_location = block_locations[name][1]
-
 if block_locations[name] == nil then
-    print(line_num .. ":Unknown block name " .. name)
+    print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
     os.exit()
 end
+
+local definition_location = block_locations[name][1]
 
 local output = name .. " <a href=\"#" .. definition_location .. "\">" .. definition_location .. "</a>" -- Add the link to the definition location
 local plus = ""
@@ -337,7 +318,7 @@ end
 output = "{" .. output .. "} " .. plus .. "≡" -- Add the = or +=
 
 if file then
-    output = "<strong>" .. output .. "</strong>" -- If the name is a file, make it bold
+    output = "<b>" .. output .. "</b>" -- If the name is a file, make it bold
 end
 
 write(out, "<p class=\"notp\"><span class=\"codeblock_name\">" .. output .. "</span></p>\n")
@@ -378,7 +359,7 @@ We also have to perform a few extra checks to make sure we get our grammar right
 --- Write any "see also" links
 local locations = block_locations[name]
 if block_locations[name] == nil then
-    print(line_num .. ":Unknown block name " .. name)
+    print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
     os.exit()
 end
 
@@ -486,19 +467,19 @@ while string.match(line, "@{.*}") do
     end
     local m = string.match(line, "@{.*}")
     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
-    local location = block_locations[name][1]
     if block_locations[name] == nil then
-        print(line_num .. ":Unknown block name " .. name)
+        print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
         os.exit()
     end
+    local location = block_locations[name][1]
 
     if in_codeblock then
         local anchor = " <a href=\"#" .. location .. "\">" .. location .. "</a>"
         local links = "<span class=\"nocode\">{" .. name .. anchor .. "}</span>" -- The nocode is so that this is not pretty printed
         line = string.gsub(line, literalize(m), links)
     else
-        local anchor = "[" .. location .. "](#" .. location .. ")"
-        local links = "{" .. name .. anchor .. "}"
+        local anchor = " [" .. location .. "](#" .. location .. ")"
+        local links = "{`" .. name .. "`" .. anchor .. "}"
         line = string.gsub(line, literalize(m), links)
     end
 end
@@ -511,11 +492,11 @@ is should also be possible to have \(html character) inside a string without it 
 we make sure the character is not inside a string before escaping it.
 
 --- Write out the line of code
+code_lines[line:gsub("%s+", " ")] = line_num
 line = string.gsub(line, "&", "&amp;")
 line = string.gsub(line, "<", "&lt;")
 line = string.gsub(line, ">", "&gt;")
 @{Link any sections in the line}
-code_lines[line_num] = true
 write(out, line .. "\n")
 ---
 

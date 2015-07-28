@@ -1,5 +1,5 @@
-@code_type Lua lua
-@comment_type --
+@code_type lua .lua
+@comment_type -- %s
 @title Tangle
 
 @s Introduction
@@ -23,8 +23,8 @@ we start looping through each line. We use `line_num` because if we report any e
 Then we check if the line is either a codeblock beginning or ending, and if so we add the code for it to the dictionaries.
 
 --- Define the tangle function
-comment_type = ""
 function tangle(lines)
+    comment_type = ""
     local codeblocks = {} -- String => String
     local block_names = {} -- Number => String
     
@@ -74,6 +74,9 @@ while true do
     if line == nil then break end
     if chomp(line) == "---" then break end
     code = code .. line
+    if stdin then
+        code = code .. "\n"
+    end
 end
 ---
 
@@ -88,7 +91,7 @@ if add_to_block then
     if codeblocks[block_name] ~= nil then
         codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
     else
-        print(line_num .. ":Unknown block name: " .. block_name)
+        print("Tangle error: line " .. line_num .. ": Unknown block name: " .. block_name)
         os.exit()
     end
 else
@@ -100,29 +103,32 @@ end
 @s
 
 Now we define the `write_code` function which takes the `block_name`, `codeblocks`, and `outstream` and writes the code,
-recursively following links until it is done.
+recursively following links until it is done. We also keep trying of the leading whitespace so that we correctly indent
+the code that is generated based on how the `@{name}` was indented.
 
 --- Define the write_code function
-function write_code(block_name, codeblocks, outstream)
+function write_code(block_name, leading_whitespace, codeblocks, outstream)
     local code = codeblocks[block_name]
     if code == nil then
-        print("Unknown block name: " .. block_name)
+        print("Tangle error: Unknown block name: " .. block_name)
         os.exit()
     end
     local lines = split(code, "\n")
 
     if comment_type ~= "" then
         if not string.match(block_name, "^.+%w%.%w+$") then
-            write(outstream, comment_type .. " " .. block_name .. "\n")
+            comment = string.gsub(comment_type, "%%s", block_name)
+            write(outstream, "\n" .. leading_whitespace .. comment .. "\n")
         end
     end
 
     for line_num,line in pairs(lines) do
         if startswith(strip(line), "@{") then
+            myleading_whitespace = string.match(line, "^(.-)[^%s]")
             line = strip(line)
-            write_code(string.sub(line, 3, line:find("}[^}]*$") - 1), codeblocks, outstream)
+            write_code(string.sub(line, 3, line:find("}[^}]*$") - 1), leading_whitespace .. myleading_whitespace, codeblocks, outstream)
         else
-            write(outstream, line .. "\n")
+            write(outstream, leading_whitespace .. line .. "\n")
         end
     end
 end
@@ -134,11 +140,23 @@ Here we check if the name is a file with the regular expression `^.+%w%.%w+$`. I
 write all the links that are in that codeblock.
 
 --- Write the code
+found_file = false
 for i,name in pairs(block_names) do
     if string.match(basename(name), "^.+%w%.%w+$") then
-        outstream = io.open(outdir .. "/" .. strip(name), "w")
-        write_code(name, codeblocks, outstream)
-        outstream:close()
+        found_file = true
+        if stdin then
+            outstream = "STDOUT"
+            print("\n---- " .. basename(name) .. " ----\n")
+        else
+            outstream = io.open(outdir .. "/" .. strip(name), "w")
+        end
+        write_code(name, "", codeblocks, outstream)
+        if not stdin then
+            outstream:close()
+        end
     end
+end
+if not found_file then
+    print("Tangle error: no file name found. Not writing any code file.")
 end
 ---

@@ -1,5 +1,5 @@
-@code_type c c
-@comment_type //
+@code_type c .c
+@comment_type /* %s */
 
 @title WC
 

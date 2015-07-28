@@ -1,3 +1,4 @@
+
 -- The run function
 function run(cmd)
     local handle = io.popen(cmd)
@@ -5,6 +6,7 @@ function run(cmd)
     handle:close()
     return result
 end
+
 -- The write function
 function write(output, str)
     if output == "STDOUT" then
@@ -13,12 +15,14 @@ function write(output, str)
         output:write(str)
     end
 end
+
 -- The file_exists function
 function file_exists(file)
     local f = io.open(file, "rb")
     if f then f:close() end
     return f ~= nil
 end
+
 -- The lines_from function
 function lines_from(file)
     if file ~= nil then
@@ -39,6 +43,7 @@ function lines_from(file)
     end
     return lines
 end
+
 -- The readall function
 function readall(file)
     local f = io.open(file, "rb")
@@ -50,11 +55,13 @@ function readall(file)
     f:close()
     return content
 end
+
 -- The readdir function
 function readdir(dir)
     files = run("ls")
     return split(files, "\n")
 end
+
 -- The dirname function
 function dirname(path)
     if path:match(".-/.-") then
@@ -64,10 +71,12 @@ function dirname(path)
         return ''
     end
 end
+
 -- The basename function
 function basename(path)
     return string.gsub(path, "(.*/)(.*)", "%2")
 end
+
 -- The name function
 function name(path)
     local filename = basename(path)
