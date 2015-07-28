@@ -191,7 +191,7 @@ if file then
     output = "<strong>" .. output .. "</strong>" -- If the name is a file, make it bold
 end
 
-write(out, "<p class=\"notp\" id=\"" .. name .. sectionnum .. "\"><span class=\"codeblock_name\">" .. output .. "</span></p>\n")
+write(out, "<p class=\"notp\"><span class=\"codeblock_name\">" .. output .. "</span></p>\n")
 -- We can now begin pretty printing the code that comes next
 write(out, start_codeblock)
 elseif string.match(line, "^%-%-%-$") then -- Codeblock ended
@@ -262,11 +262,13 @@ end
 write(out, "</div>\n")
 elseif startswith(line, "@s") and not in_codeblock then -- Section began
 -- Create a new section
-if sectionnum ~= 1 then
+if sectionnum > 1 then
     -- Every section is part of a div. Here we close the last one, and open a new one
     write(out, "</div>")
 end
-write(out, "<div class=\"section\">\n")
+if sectionnum > 0 then
+    write(out, "<div class=\"section\">\n")
+end
 
 -- Write the markdown. It is possible that the last section had no code and was only prose.
 write_markdown(markdown, out)
@@ -280,7 +282,7 @@ local class = ""
 if heading_title == "" then
     class = "class=\"noheading\""
 end
-write(out, "<p class=\"notp\" id=\"" .. sectionnum .. "\"><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4></p>\n")
+write(out, "<p class=\"notp\" id=\"" .. sectionnum .. "\"></p><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4>\n")
 elseif startswith(line, "@title") then -- Title created
 -- Create the title
 local title = strip(string.sub(line, 7, #line))
@@ -349,6 +351,8 @@ end
 
 -- Clean up
 write_markdown(markdown, out)
+-- Close the last section's div
+write(out, "</div>")
 
 if has_index then
     write(out, create_index(inputfilename))
