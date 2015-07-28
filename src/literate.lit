@@ -105,6 +105,7 @@ output to `STDOUT`.
 
 --- Use STDIN and STDOUT
 lines = lines_from()
+@{Declare a few globals}
 
 complete_source = ""
 for i=1,#lines do
@@ -127,6 +128,8 @@ If input files were given, we should loop through each one and tangle/weave it.
 
 --- Weave and/or tangle the input files
 for num,file in pairs(inputfiles) do
+    @{Declare a few globals}
+
     local lines = lines_from(file)
 
     complete_source = ""
@@ -147,4 +150,34 @@ for num,file in pairs(inputfiles) do
         tangle(lines)
     end
 end
+---
+
+@s
+We declare a few globals here so that they will be reset every time a new file is
+parsed. These globals are useful for weave.
+
+The global variables defined here will hold the results of the first pass to get the locations of code blocks and other
+useful information like the number of sections and the title.
+
+--- Declare a few globals
+title = ""
+block_locations = {} -- String => (Number => Number)
+block_use_locations = {} -- String => (Number => Number)
+---
+
+@s
+
+We also define `codetype` and `codetype_ext` to hold the name and extension of the language the user is using.
+
+--- Declare a few globals +=
+codetype = ""
+codetype_ext = ""
+---
+
+Finally we define an array for holding the line numbers (in the lit file) on which there was code, and an array for
+holding the line numbers each section starts on.
+
+--- Declare a few globals +=
+code_lines = {} -- Number => Number
+section_linenums = {} -- Number => Number
 ---

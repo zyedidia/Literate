@@ -1,15 +1,4 @@
 
--- Declare a few globals
-title = ""
-block_locations = {} -- String => (Number => Number)
-block_use_locations = {} -- String => (Number => Number)
-
-codetype = ""
-codetype_ext = ""
-
-code_lines = {} -- Number => Number
-section_linenums = {} -- Number => Number
-
 -- Define the contains function
 function contains(tbl, item)
     for key, value in pairs(tbl) do

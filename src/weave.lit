@@ -12,40 +12,10 @@ Generally, the strategy is to parse each line, and make some transformation on i
 The structure of the file looks like this:
 
 --- weave.lua
-@{Declare a few globals}
 @{Define the contains function}
 @{Define the get_locations function}
 @{Define the write_markdown function}
 @{Define the weave function}
----
-
-@s
-
-The global variables defined here will hold the results of the first pass to get the locations of code blocks and other
-useful information like the number of sections and the title.
-
-
---- Declare a few globals
-title = ""
-block_locations = {} -- String => (Number => Number)
-block_use_locations = {} -- String => (Number => Number)
----
-
-@s
-
-We also define `codetype` and `codetype_ext` to hold the name and extension of the language the user is using.
-
---- Declare a few globals +=
-codetype = ""
-codetype_ext = ""
----
-
-Finally we define an array for holding the line numbers (in the lit file) on which there was code, and an array for
-holding the line numbers each section starts on.
-
---- Declare a few globals +=
-code_lines = {} -- Number => Number
-section_linenums = {} -- Number => Number
 ---
 
 @s
