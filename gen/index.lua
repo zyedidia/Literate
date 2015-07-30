@@ -45,7 +45,9 @@ function create_index(inputfile)
     local tags_str = run("ctags -x --" .. string.lower(codetype) .. "-kinds=+abcdefghijklmnopqrxtuvwxyzABCDEFGHIJKLMNOPQRXTUVWXYZ  --language-force=" .. string.lower(codetype) .. " out.txt 2>/dev/null")
     run("rm out.txt")
     
-    if tags_str == "" then
+    local supported_languages = split(run("ctags --list-languages"), "\n")
+    
+    if not contains_str(supported_languages, codetype) then
         print(codetype .. " is not supported by your version of ctags.")
         print("Please use -noindex if you would not like to create an index.")
         return ""

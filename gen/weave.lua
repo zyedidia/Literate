@@ -7,6 +7,13 @@ function contains(tbl, item)
     return false
 end
 
+function contains_str(tbl, str)
+for key, value in pairs(tbl) do
+    if string.lower(value) == string.lower(str) then return key end
+end
+return false
+end
+
 -- Define the get_locations function
 function get_locations(lines)
     local sectionnum = 0   -- Which section is currently being parsed
