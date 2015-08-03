@@ -42,6 +42,13 @@ function create_index(inputfile)
 
 
     -- Run Ctags on the lit file
+    local supported_languages = split(run("ctags --list-languages"), "\n")
+    
+    if not contains_str(supported_languages, codetype) then
+        -- print(codetype .. " is not supported by your version of ctags.")
+        noctags = true
+    end
+    
     local tangle_result = run("echo '" .. complete_source:gsub("'", "'\"'\"'") .. "' | lit -code > out.txt")
     local tags_str = run("ctags -x --" .. string.lower(codetype) .. "-kinds=+abcdefghijklmnopqrxtuvwxyzABCDEFGHIJKLMNOPQRXTUVWXYZ  --language-force=" .. string.lower(codetype) .. " out.txt 2>/dev/null")
     run("rm out.txt")
