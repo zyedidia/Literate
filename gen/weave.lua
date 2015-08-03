@@ -163,10 +163,6 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
             goto continue
         end
         
-        if startswith(line, "@codetype") then -- Ignore this line
-            goto continue
-        end
-        
         if string.match(line, "^%-%-%-.+$") then -- Codeblock began
 
             -- Begin codeblock
@@ -306,11 +302,22 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
                 class = "class=\"noheading\""
             end
             write(out, "<p class=\"notp\" id=\"" .. sectionnum .. "\"></p><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4>\n")
-        elseif startswith(line, "@title") then -- Title created
+        elseif startswith(line, "@title") and not in_codeblock then -- Title created
 
             -- Create the title
             local title = strip(string.sub(line, 7, #line))
             write(out, "<h1>" .. title .. "</h1>\n")
+        elseif startswith(line, "@include_html") and not in_codeblock then -- Inline the html given
+            print("yes")
+
+            -- Inline the html in the specified file
+            file = source_dir .. "/" .. line:sub(15)
+            if not file_exists(file) then
+                print("Weave error: line " .. line_num .. ": Included file ".. file .. " does not exist.")
+                exit()
+            end
+            write(out, readall(file))
+            goto continue
         else
             if in_codeblock then
 

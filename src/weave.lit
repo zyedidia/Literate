@@ -270,18 +270,17 @@ if line == "" then
     goto continue
 end
 
-if startswith(line, "@codetype") then -- Ignore this line
-    goto continue
-end
-
 if string.match(line, "^%-%-%-.+$") then -- Codeblock began
     @{Begin codeblock}
 elseif string.match(line, "^%-%-%-$") then -- Codeblock ended
     @{End codeblock}
 elseif startswith(line, "@s") and not in_codeblock then -- Section began
     @{Create a new section}
-elseif startswith(line, "@title") then -- Title created
+elseif startswith(line, "@title") and not in_codeblock then -- Title created
     @{Create the title}
+elseif startswith(line, "@include_html") and not in_codeblock then -- Inline the html given
+    print("yes")
+    @{Inline the html in the specified file}
 else
     if in_codeblock then
         @{Write out the line of code}
@@ -473,6 +472,42 @@ write(out, "<h1>" .. title .. "</h1>\n")
 
 @s
 
+If the line starts with `@include_html <file>` we should inline the html contained in `<file>` in the final output.
+
+--- Inline the html in the specified file
+file = source_dir .. "/" .. line:sub(15)
+if not file_exists(file) then
+    print("Weave error: line " .. line_num .. ": Included file ".. file .. " does not exist.")
+    exit()
+end
+write(out, readall(file))
+goto continue
+---
+
+@s
+
+Here we write actually write the line to html if it is in a codeblock. We must first escape certain HTML special characters. It
+is should also be possible to have \(html character) inside a string without it getting replaced with the actual character. So
+we make sure the character is not inside a string before escaping it.
+
+--- Write out the line of code
+code_lines[line:gsub("%s+", " ")] = line_num
+line = string.gsub(line, "&", "&amp;")
+line = string.gsub(line, "<", "&lt;")
+line = string.gsub(line, ">", "&gt;")
+@{Link any sections in the line}
+write(out, line .. "\n")
+---
+
+@s
+
+--- Add the line to the markdown
+@{Link any sections in the line}
+markdown = markdown .. line .. "\n"
+---
+
+@s
+
 At any point when the user types a section link into either prose or code, it needs to be styled and link to the correct place.
 Here we detect that.
 
@@ -499,28 +534,6 @@ while string.match(line, "@{.*}") do
         line = string.gsub(line, literalize(m), links)
     end
 end
----
-
-@s
-
-Here we write actually write the line to html if it is in a codeblock. We must first escape certain HTML special characters. It
-is should also be possible to have \(html character) inside a string without it getting replaced with the actual character. So
-we make sure the character is not inside a string before escaping it.
-
---- Write out the line of code
-code_lines[line:gsub("%s+", " ")] = line_num
-line = string.gsub(line, "&", "&amp;")
-line = string.gsub(line, "<", "&lt;")
-line = string.gsub(line, ">", "&gt;")
-@{Link any sections in the line}
-write(out, line .. "\n")
----
-
-@s
-
---- Add the line to the markdown
-@{Link any sections in the line}
-markdown = markdown .. line .. "\n"
 ---
 
 @s
