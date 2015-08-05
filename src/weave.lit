@@ -503,9 +503,7 @@ end
 
 @s
 
-Here we write actually write the line to html if it is in a codeblock. We must first escape certain HTML special characters. It
-is should also be possible to have \(html character) inside a string without it getting replaced with the actual character. So
-we make sure the character is not inside a string before escaping it.
+Here we write actually write the line to html if it is in a codeblock. We must first escape certain HTML special characters.
 
 --- Write out the line of code
 code_lines[line:gsub("%s+", " ")] = line_num
