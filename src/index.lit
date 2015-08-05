@@ -136,7 +136,7 @@ end
 Now that we have all the tags, we can begin to create the HTML for the index.
 
 --- Create the HTML for the index
-local html = "<h3>Index</h3>\n"
+local html = ""
 if #tags > 0 then
     html = html .. "<h5>Identifiers Used</h5>\n"
     html = html .. "<ul class=\"two-col\">\n"
@@ -148,21 +148,24 @@ if #tags > 0 then
     html = html .. "</ul>"
 end
 
-html = html .. "<h5>Code Blocks</h5>\n"
-html = html .. "<ul class=\"two-col\">\n"
+if next(block_locations) ~= nil then
+    html = html .. "<h5>Code Blocks</h5>\n"
+    html = html .. "<ul class=\"two-col\">\n"
 
--- Sort the block_locations dictionary so that the codeblocks come in order
-for name,locations in pairsByKeys(block_locations) do
-    html = html .. "<li><code>" .. name .. "</code>"
-    for i = 1,#locations do
-        local location = locations[i]
-        local p = ", "
-        if i == 1 then
-            p = " "
+    -- Sort the block_locations dictionary so that the codeblocks come in order
+    for name,locations in pairsByKeys(block_locations) do
+        html = html .. "<li><code>" .. name .. "</code>"
+        for i = 1,#locations do
+            local location = locations[i]
+            local p = ", "
+            if i == 1 then
+                p = " "
+            end
+            html = html .. p .. "<a href=\"#" .. location .. "\">" .. location .. "</a>"
         end
-        html = html .. p .. "<a href=\"#" .. location .. "\">" .. location .. "</a>"
+        html = html .. "</li>\n"
     end
-    html = html .. "</li>\n"
+    html = html .. "</ul>"
+    html = "<h3>Index</h3>\n" .. html
 end
-html = html .. "</ul>"
 ---
