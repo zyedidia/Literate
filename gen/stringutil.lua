@@ -1,4 +1,3 @@
-
 -- The startswith function
 function startswith(str, start)
     return string.sub(str, 1, string.len(start)) == start
@@ -38,3 +37,5 @@ end
 function literalize(str)
     return str:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", function(c) return "%" .. c end)
 end
+
+
