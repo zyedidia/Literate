@@ -12,7 +12,6 @@ require("index")
 
 md = require("markdown")
 
-
 -- Parse the arguments
 html = false
 code = false
@@ -43,11 +42,10 @@ if not html and not code then
     html = true
     code = true
 end
-if #inputfiles == 0 then
 
+if #inputfiles == 0 then
     -- Use STDIN and STDOUT
     lines = lines_from()
-
     -- Declare a few globals
     title = ""
     block_locations = {} -- String => (Number => Number)
@@ -58,6 +56,7 @@ if #inputfiles == 0 then
     
     code_lines = {} -- Number => Number
     section_linenums = {} -- Number => Number
+
     
     complete_source = ""
     for i=1,#lines do
@@ -72,11 +71,10 @@ if #inputfiles == 0 then
     if code then
         tangle(lines)
     end
-else
 
+else
     -- Weave and/or tangle the input files
     for num,file in pairs(inputfiles) do
-
         -- Declare a few globals
         title = ""
         block_locations = {} -- String => (Number => Number)
@@ -87,6 +85,7 @@ else
         
         code_lines = {} -- Number => Number
         section_linenums = {} -- Number => Number
+
     
         local lines = lines_from(file)
     
@@ -108,6 +107,8 @@ else
             tangle(lines)
         end
     end
+
 end
 
 -- vim: set ft=lua:
+

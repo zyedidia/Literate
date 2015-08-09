@@ -1,4 +1,3 @@
-
 -- The run function
 function run(cmd)
     local handle = io.popen(cmd)
@@ -82,3 +81,5 @@ function name(path)
     local filename = basename(path)
     return filename:match"(.*)%..*"
 end
+
+

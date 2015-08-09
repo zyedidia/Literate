@@ -538,6 +538,26 @@ end
 
 @s
 
+Here we write actually write the line to html if it is in a codeblock. We must first escape certain HTML special characters.
+
+--- Write out the line of code
+code_lines[line:gsub("%s+", " ")] = line_num
+line = string.gsub(line, "&", "&amp;")
+line = string.gsub(line, "<", "&lt;")
+line = string.gsub(line, ">", "&gt;")
+@{Link any sections in the line}
+write(out, line .. "\n")
+---
+
+@s
+
+--- Add the line to the markdown
+@{Link any sections in the line}
+markdown = markdown .. line .. "\n"
+---
+
+@s
+
 Finally, we clean up at the end. We write any last bits of markdown, make the index if necessary, and write the closing HTML.
 
 --- Clean up

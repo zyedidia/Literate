@@ -1,5 +1,4 @@
 function section_for_linenum(linenum)
-
     -- Get the section number given a line number
     for i = 1,#section_linenums do
         if i == #section_linenums then
@@ -9,6 +8,7 @@ function section_for_linenum(linenum)
             return i
         end
     end
+
 end
 
 -- Sort a table
@@ -39,7 +39,6 @@ function create_index(inputfile)
         -- print("If you do not want to receive this message use the -noindex flag.")
         noctags = true
     end
-
 
     -- Run Ctags on the lit file
     local supported_languages = split(run("ctags --list-languages"), "\n")
@@ -86,7 +85,7 @@ function create_index(inputfile)
     end
 
     -- Create the HTML for the index
-    local html = "<h3>Index</h3>\n"
+    local html = ""
     if #tags > 0 then
         html = html .. "<h5>Identifiers Used</h5>\n"
         html = html .. "<ul class=\"two-col\">\n"
@@ -98,22 +97,27 @@ function create_index(inputfile)
         html = html .. "</ul>"
     end
     
-    html = html .. "<h5>Code Blocks</h5>\n"
-    html = html .. "<ul class=\"two-col\">\n"
+    if next(block_locations) ~= nil then
+        html = html .. "<h5>Code Blocks</h5>\n"
+        html = html .. "<ul class=\"two-col\">\n"
     
-    -- Sort the block_locations dictionary so that the codeblocks come in order
-    for name,locations in pairsByKeys(block_locations) do
-        html = html .. "<li><code>" .. name .. "</code>"
-        for i = 1,#locations do
-            local location = locations[i]
-            local p = ", "
-            if i == 1 then
-                p = " "
+        -- Sort the block_locations dictionary so that the codeblocks come in order
+        for name,locations in pairsByKeys(block_locations) do
+            html = html .. "<li><code>" .. name .. "</code>"
+            for i = 1,#locations do
+                local location = locations[i]
+                local p = ", "
+                if i == 1 then
+                    p = " "
+                end
+                html = html .. p .. "<a href=\"#" .. location .. "\">" .. location .. "</a>"
             end
-            html = html .. p .. "<a href=\"#" .. location .. "\">" .. location .. "</a>"
+            html = html .. "</li>\n"
         end
-        html = html .. "</li>\n"
+        html = html .. "</ul>"
+        html = "<h3>Index</h3>\n" .. html
     end
-    html = html .. "</ul>"
+
     return html
 end
+

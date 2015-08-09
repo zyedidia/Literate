@@ -1,4 +1,3 @@
-
 -- Define the tangle function
 function tangle(lines)
     comment_type = ""
@@ -10,7 +9,6 @@ function tangle(lines)
         if startswith(line, "@comment_type") then
             comment_type = strip(string.sub(line, 15, #line))
         elseif startswith(line, "---") and not string.match(line, "^---$") then
-
             -- Get the block name
             local block_name = strip(string.sub(line, 4, #line))
             
@@ -46,9 +44,9 @@ function tangle(lines)
                 block_names[#block_names + 1] = block_name
                 codeblocks[block_name] = code
             end
+
         end
     end
-
 
     -- Write the code
     found_file = false
@@ -70,6 +68,7 @@ function tangle(lines)
     if not found_file then
         print("Tangle error: no file name found. Not writing any code file.")
     end
+
 end
 
 -- Define the write_code function
@@ -84,7 +83,7 @@ function write_code(block_name, leading_whitespace, codeblocks, outstream)
     if comment_type ~= "" then
         if not string.match(block_name, "^.+%w%.%w+$") then
             comment = string.gsub(comment_type, "%%s", block_name)
-            write(outstream, "\n" .. leading_whitespace .. comment .. "\n")
+            write(outstream, leading_whitespace .. comment .. "\n")
         end
     end
 
@@ -97,4 +96,8 @@ function write_code(block_name, leading_whitespace, codeblocks, outstream)
             write(outstream, leading_whitespace .. line .. "\n")
         end
     end
+
+    write(outstream, "\n")
 end
+
+
