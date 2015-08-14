@@ -17,14 +17,20 @@ for i=1,#arg do
 end
 
 for i=1,#inputfiles do
-    inputfile = inputfiles[i]
-    lines = lines_from(inputfile)
+    local inputfile = inputfiles[i]
+    local lines = lines_from(inputfile)
 
-    block_names = {}
-    block_defs = {}
+    local block_names = {}
+    local block_defs = {}
+
+    local has_macros = false
 
     for i=1,#lines do
         local line = lines[i]
+
+        if string.match(line, "@d") then
+            has_macros = true
+        end
 
         local block_name = string.match(line, "@<(.-)@>")
 
@@ -65,18 +71,23 @@ for i=1,#inputfiles do
         end
     end
 
-    in_codeblock = false
-    started = false
+    local in_codeblock = false
+    local started = false
 
-    out = ""
+    local out = ""
 
     out = out .."@code_type c c\n"
     out = out .."@title " .. name(inputfile) .. "\n"
 
-    block_num = 0
+    local block_num = 0
+
+    local macro_block_defined = false;
+    local in_macro_block = false;
 
     for i=1,#lines do
         local line = lines[i]
+
+        line = line:gsub("@%+", "")
 
         if string.match(strip(line), "^@ ") or string.match(strip(line), "^@%*") then
             if in_codeblock then
@@ -84,12 +95,36 @@ for i=1,#inputfiles do
             end
             in_codeblock = false
             if string.match(strip(line), "^@ ") then
-                line = strip(line):gsub("^@ (.-)", "@s\n%1")
+                out = out .. "@s\n"
+                line = strip(line:match("^@(.-)$"))
             else
                 started = true
-                line = strip(line):gsub("^@%*(.-)%.(.-)", "@s %1\n%2")
+                out = out .. "@s " .. strip(line):match("^@%*(.-)%..-") .. "\n"
+                line = strip(line:match("^@%*.-%.(.-)"))
+                -- line = strip(line):gsub("^@%*(.-)%.(.-)", "@s %1\n%2")
             end
             line = line .. "\n"
+        end
+
+        if string.match(strip(line), "@d(.-)$") then
+            if not macro_block_defined then
+                macro_block_defined = true
+                out = out .. "--- Macros\n"
+                out = out .. "#define " .. strip(line:match("@d(.-)$"))
+            else
+                if in_macro_block then
+                    out = out .. "#define " .. strip(line:match("@d(.-)$"))
+                else
+                    out = out .. "--- Macros +=\n"
+                    out = out .. "#define " .. strip(line:match("@d(.-)$"))
+                end
+            end
+            out = out .. "\n"
+            in_macro_block = true;
+            line = ""
+        elseif strip(line) ~= "" and in_macro_block then
+            in_macro_block = false;
+            out = out .. "---\n\n"
         end
 
         if string.match(line, "@<(.-)@>=") then
@@ -116,7 +151,13 @@ for i=1,#inputfiles do
         line = line:gsub("@<(.-)@>;", "@{%1}")
         line = line:gsub("@<(.-)@>@;", "@{%1}")
         line = line:gsub("@<(.-)@>", "@{%1}")
-        line = line:gsub("@c", "--- " .. name(inputfile) .. ".c")
+        local macros = ""
+
+        if has_macros then
+            macros = "\n@{Macros}"
+        end
+
+        line = line:gsub("@c", "--- " .. name(inputfile) .. ".c" .. macros)
         line = line:gsub("@/", "")
         line = line:gsub("@%+", " ")
 
