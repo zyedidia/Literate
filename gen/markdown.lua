@@ -1019,11 +1019,11 @@ end
 
 -- Handles emphasis markers (* and _) in the text.
 local function emphasis(text)
-    for _, s in ipairs {"%*%*", "%_%_"} do
+    for _, s in ipairs {"%*%*"} do
         text = text:gsub(s .. "([^%s][%*%_]?)" .. s, "<strong>%1</strong>")
         text = text:gsub(s .. "([^%s][^<>]-[^%s][%*%_]?)" .. s, "<strong>%1</strong>")
     end
-    for _, s in ipairs {"%*", "%_"} do
+    for _, s in ipairs {"%*"} do
         text = text:gsub(s .. "([^%s_])" .. s, "<em>%1</em>")
         text = text:gsub(s .. "(<strong>[^%s_]</strong>)" .. s, "<em>%1</em>")
         text = text:gsub(s .. "([^%s_][^<>_]-[^%s_])" .. s, "<em>%1</em>")

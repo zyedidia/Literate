@@ -76,7 +76,7 @@ for i=1,#inputfiles do
 
     local out = ""
 
-    out = out .."@code_type c c\n"
+    out = out .."@code_type c .c\n"
     out = out .."@title " .. name(inputfile) .. "\n"
 
     local block_num = 0
@@ -133,6 +133,11 @@ for i=1,#inputfiles do
             line = line:gsub("@<(.-)@>=", "--- " .. block_defs[block_num])
         end
 
+        if string.match(line, "@%((.-)@>=") then
+            in_codeblock = true
+            line = line:gsub("@%((.-)@>=", "--- %1")
+        end
+
         if string.match(line, "@c") then
             in_codeblock = true
         end
@@ -158,6 +163,8 @@ for i=1,#inputfiles do
         end
 
         line = line:gsub("@c", "--- " .. name(inputfile) .. ".c" .. macros)
+
+
         line = line:gsub("@/", "")
         line = line:gsub("@%+", " ")
 
