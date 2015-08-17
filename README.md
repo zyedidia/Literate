@@ -1,10 +1,13 @@
 # Literate
 
-Literate (lit for short) is a computer programming system to create literate programs. It works with any language, and can generate HTML pages as output, that can also be converted to pdfs using [wkhtmltopdf] (http://wkhtmltopdf.org/).
+Literate (lit for short) is a computer programming system to create literate programs. It works with any programming language, generates HTML pages as output ([which can be converted to PDF](http://http://wkhtmltopdf.org/)),
+and generates readable code. The code that is generated is indented properly and is commented using the names of codeblocks that you choose.
 
 The goal of this project is to create a modern literate programming system which keeps most, if not all of the features of Knuth and Levy's CWEB system, but simplifies the system and adds even more features.
 
-You can view the main website about Literate [here] (http://cs12students.dce.harvard.edu/~zyedidia/project) including complete [documentation] (http://cs12students.dce.harvard.edu/~zyedidia/project/manual.php).
+Literate source code is readable whether you are looking at the `.lit` file, or the generated HTML.
+
+You can view the main website about Literate [here] (http://zbyedidia.webfactional.com/literate) including complete [documentation] (http://zbyedidia.webfactional.com/literate/manual.php).
 
 # Installation
 
@@ -31,10 +34,11 @@ $ lit [-html] [-code] examples/wc.lit
 # Features
 ### In addition to those of CWEB
 * Markdown based -- very easy to read and write Literate source.
-* Generates readable code in the target language
+* Generates readable and commented code in the target language (the generated code is usable by others)
 * Supports any language including syntax highlighting and pretty printing in HTML
 * Compatible with Vim ([literate.vim] (https://github.com/zyedidia/literate.vim))
-* Highly customizable
+* Highly customizable (you can add your own HTML or CSS)
+* Runs fast -- wc.lit compiled for me in 82ms for both code and HTML output and 10ms for just code output
 
 ### Inspired from CWEB
 * Automatically generates hyperlinks between code sections
