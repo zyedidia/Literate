@@ -57,7 +57,12 @@ end
 
 -- The readdir function
 function readdir(dir)
-    files = run("ls")
+    local files = ""
+    if os.name() == "Windows" then
+        files = run("dir")
+    else
+        files = run("ls")
+    end
     return split(files, "\n")
 end
 
