@@ -9,6 +9,8 @@ Literate source code is readable whether you are looking at the `.lit` file, or 
 
 You can view the main website about Literate [here] (http://zbyedidia.webfactional.com/literate) including complete [documentation] (http://zbyedidia.webfactional.com/literate/manual.php).
 
+If you want to see what features I am working on, check out my [Todolist](src/TodoList.txt).
+
 # Installation
 
 The compiler is made with Lua. When you download the repository, run `./install.sh platform` where platform one of the following supported platforms: `aix` `bsd` `c89` `generic` `linux` `macosx` `mingw` `posix` `solaris` and a local version of lua will be installed and used for Lit.
@@ -39,6 +41,7 @@ $ lit [-html] [-code] examples/wc.lit
 * Compatible with Vim ([literate.vim] (https://github.com/zyedidia/literate.vim))
 * Highly customizable (you can add your own HTML or CSS)
 * Runs fast -- wc.lit compiled for me in 82ms for both code and HTML output and 10ms for just code output
+* Supports tex equations with `$` notation.
 
 ### Inspired from CWEB
 * Automatically generates hyperlinks between code sections
