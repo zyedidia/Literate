@@ -13,21 +13,17 @@ require("index")
 md = require("markdown")
 
 -- Function to identify the os
-binaryformat = package.cpath:match("%p[\\|/]?%p(%a+)")
-if binaryformat == "dll" then
+if package.config:sub(1, 1) == "/" then
+    print("Unix")
+    function os.name()
+        return "Unix"
+    end
+elseif package.config:sub(1, 1) == "\\" then
     function os.name()
         return "Windows"
     end
-elseif binaryformat == "so" then
-    function os.name()
-        return "Linux"
-    end
-elseif binaryformat == "dylib" then
-    function os.name()
-        return "MacOS"
-    end
 end
-binaryformat = nil
+
 
 
 -- Parse the arguments

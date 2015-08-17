@@ -78,7 +78,7 @@ end
 
 -- The basename function
 function basename(path)
-    return string.gsub(path, "(.*/)(.*)", "%2")
+    return string.gsub(path, "(.*[/\\])(.*)", "%2")
 end
 
 -- The name function

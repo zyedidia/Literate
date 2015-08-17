@@ -141,7 +141,7 @@ Basename is the opposite of dirname. For `"path/to/something.lua"`, it returns `
 
 --- The basename function
 function basename(path)
-    return string.gsub(path, "(.*/)(.*)", "%2")
+    return string.gsub(path, "(.*[/\\])(.*)", "%2")
 end
 ---
 
