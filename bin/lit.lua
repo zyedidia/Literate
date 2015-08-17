@@ -14,7 +14,6 @@ md = require("markdown")
 
 -- Function to identify the os
 if package.config:sub(1, 1) == "/" then
-    print("Unix")
     function os.name()
         return "Unix"
     end
@@ -23,7 +22,6 @@ elseif package.config:sub(1, 1) == "\\" then
         return "Windows"
     end
 end
-
 
 
 -- Parse the arguments

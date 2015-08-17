@@ -10,6 +10,7 @@ body {
     padding-bottom: 15px;
 }
 pre.prettyprint {
+    font-family: Monaco, "Lucida Console", monospace;
 	font-size: 11pt;
 	padding: 10px;
 	border-radius: 10px;
@@ -21,7 +22,7 @@ pre.prettyprint {
 	font-size: 11pt;
 }
 .codeblock_name {
-	font-family: Monaco, Menlo;
+	font-family: Monaco, "Lucida Console", monospace;
 	font-size: 11pt;
 	margin-top: 1.25em;
 	display: block;
@@ -50,7 +51,7 @@ h1 {
 	text-align: center;
 }
 code {
-	font-family: Monaco;
+	font-family: Monaco, "Lucida Console", monospace;
 	font-size: 11pt;
 	padding: 2px;
 }
