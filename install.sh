@@ -5,6 +5,7 @@ if [ -z "$1" ]
     exit 0
 fi
 
+rm gen/lua53.exe
 curl -O http://www.lua.org/ftp/lua-5.3.1.tar.gz
 tar -xf lua-5.3.1.tar.gz
 rm lua-5.3.1.tar.gz
