@@ -1,8 +1,8 @@
 #!/bin/bash
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-if [ -f $DIR/../gen/lua ]
+if [ -f $DIR/../lua/lua ]
 then
-    $DIR/../gen/lua $DIR/lit.lua $DIR/../gen $@
+    $DIR/../lua/lua $DIR/lit.lua $DIR/../gen $@
 else
     echo "Lua has not been built. Please run ./install.sh PLATFORM"
 fi
