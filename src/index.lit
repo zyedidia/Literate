@@ -38,20 +38,23 @@ function pairsByKeys (t, f)
 end
 
 function create_index(inputfile)
-    local noctags = false
-    if run("which ctags") == nil then
+    local noctags = os.name() == "Windows"
+    if not noctags and run("which ctags") == nil then
         -- print("You do not have ctags installed and it is required for making an index.")
         -- print("If you do not want to receive this message use the -noindex flag.")
         noctags = true
     end
 
-    if run("ctags --list-languages") == nil then
+    if not noctags and run("ctags --list-languages") == nil then
         -- print("You have an old version of ctags installed, please update to exuberant or universal ctags if you want an index.")
         -- print("If you do not want to receive this message use the -noindex flag.")
         noctags = true
     end
 
-    @{Run Ctags on the lit file}
+    local tags = {}
+    if not noctags then
+        @{Run Ctags on the lit file}
+    end
     @{Create the HTML for the index}
     return html
 end
@@ -88,7 +91,6 @@ we check if it was a false positive by making sure the line is contained in the 
 array.
 
 --- Run Ctags on the lit file +=
-local tags = {}
 if not noctags then
     local tags_arr = split(tags_str, "\n")
 

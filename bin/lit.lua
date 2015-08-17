@@ -12,6 +12,18 @@ require("index")
 
 md = require("markdown")
 
+-- Function to identify the os
+if package.config:sub(1, 1) == "/" then
+    function os.name()
+        return "Unix"
+    end
+elseif package.config:sub(1, 1) == "\\" then
+    function os.name()
+        return "Windows"
+    end
+end
+
+
 -- Parse the arguments
 html = false
 code = false

@@ -26,6 +26,8 @@ require("index")
 
 md = require("markdown")
 
+@{Function to identify the os}
+
 @{Parse the arguments}
 if #inputfiles == 0 then
     @{Use STDIN and STDOUT}
@@ -180,4 +182,22 @@ holding the line numbers each section starts on.
 --- Declare a few globals +=
 code_lines = {} -- Number => Number
 section_linenums = {} -- Number => Number
+---
+
+@s
+
+Lastly, we make a function that will be useful in the future to identify
+what OS we are working with. We determine this by looking at whether
+the OS uses `dll`, `so`, or `dylib` as the shared library extension.
+
+--- Function to identify the os
+if package.config:sub(1, 1) == "/" then
+    function os.name()
+        return "Unix"
+    end
+elseif package.config:sub(1, 1) == "\\" then
+    function os.name()
+        return "Windows"
+    end
+end
 ---
