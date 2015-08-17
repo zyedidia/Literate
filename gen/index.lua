@@ -27,7 +27,7 @@ function pairsByKeys (t, f)
 end
 
 function create_index(inputfile)
-    local noctags = os.name() ~= "Windows"
+    local noctags = os.name() == "Windows"
     if run("which ctags") == nil then
         -- print("You do not have ctags installed and it is required for making an index.")
         -- print("If you do not want to receive this message use the -noindex flag.")
