@@ -156,6 +156,7 @@ for i=1,#inputfiles do
         line = line:gsub("@<(.-)@>;", "@{%1}")
         line = line:gsub("@<(.-)@>@;", "@{%1}")
         line = line:gsub("@<(.-)@>", "@{%1}")
+        line = line:gsub("@%.(.-)@>", "")
         local macros = ""
 
         if has_macros then
