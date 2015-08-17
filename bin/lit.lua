@@ -77,7 +77,8 @@ if #inputfiles == 0 then
     
     stdin = true
     if html then
-        weave(lines, "STDOUT", ".", "none", index)
+        local output = weave(lines, ".", "none", index)
+        write("STDOUT", output)
     end
     
     if code then
@@ -111,8 +112,9 @@ else
             source_dir = "."
         end
         if html then
+            local output = weave(lines, source_dir, file, index)
             local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
-            weave(lines, outputstream, source_dir, file, index)
+            write(outputstream, output)
             outputstream:close()
         end
         if code then

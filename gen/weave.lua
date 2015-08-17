@@ -69,20 +69,20 @@ function get_locations(lines)
 end
 
 -- Define the write_markdown function
-function write_markdown(markdown, out)
+function write_markdown(markdown)
     if markdown ~= "" then
         local html = markdown
         html = string.gsub(html, "<", "&lt;")
         html = string.gsub(html, ">", "&gt;")
         html = string.gsub(html, "\"", "&quot;")
         html = md.markdown(markdown)
-        write(out, html .. "\n")
+        out = out .. html .. "\n"
     end
 end
 
 -- Define the weave function
-function weave(lines, outputstream, source_dir, inputfilename, has_index)
-    local out = outputstream
+function weave(lines, source_dir, inputfilename, has_index)
+    out = ""
 
     get_locations(lines)
 
@@ -127,7 +127,7 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
                    </head>
                    <body>]]
     
-    write(out, base_html)
+    out = out .. base_html
 
     -- Set up variables
     local sectionnum = 0 -- Which section number we are currently parsing
@@ -154,7 +154,7 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
         if line == "" then
             -- This was a blank line
             if in_codeblock then
-                write(out, "\n")
+                out = out .. "\n"
             else
                 markdown = markdown .. "\n" -- Tell markdown this was a blank line
             end
@@ -167,11 +167,11 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
             in_prose = false
             in_codeblock = true
             -- Write the current markdown
-            write_markdown(markdown, out)
+            write_markdown(markdown)
             -- Reset the markdown
             markdown = ""
             
-            write(out, "<div class=\"codeblock\">\n")
+            out = out .. "<div class=\"codeblock\">\n"
             local name = strip(string.sub(line, 4, #line)) -- The codeblock name
             
             local adding = false -- Whether or not this block is a +=
@@ -203,9 +203,9 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
                 output = "<b>" .. output .. "</b>" -- If the name is a file, make it bold
             end
             
-            write(out, "<p class=\"notp\"><span class=\"codeblock_name\">" .. output .. "</span></p>\n")
+            out = out .. "<p class=\"notp\"><span class=\"codeblock_name\">" .. output .. "</span></p>\n"
             -- We can now begin pretty printing the code that comes next
-            write(out, start_codeblock)
+            out = out .. start_codeblock
 
         elseif string.match(line, "^%-%-%-$") then -- Codeblock ended
             -- End codeblock
@@ -214,7 +214,7 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
             in_codeblock = false
             
             -- First start by ending the pretty printing
-            write(out, end_codeblock)
+            out = out .. end_codeblock
             -- This was stored when the code block began
             local name = cur_codeblock_name
             
@@ -246,7 +246,7 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
                     if loopnum > 1 then
                         plural = "s"
                     end
-                    write(out, "<p class=\"seealso\">See also section" .. plural .. links .. ".</p>\n")
+                    out = out .. "<p class=\"seealso\">See also section" .. plural .. links .. ".</p>\n"
                 end
             end
 
@@ -270,24 +270,24 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
                     output = output .. punc .. " <a href=\"#" .. location .. "\">" .. location .. "</a>"
                 end
                 output = output .. ".</p>\n"
-                write(out, output)
+                out = out .. output
             end
 
             -- Close the "codeblock" div
-            write(out, "</div>\n")
+            out = out .. "</div>\n"
 
         elseif startswith(line, "@s") and not in_codeblock then -- Section began
             -- Create a new section
             if sectionnum > 1 then
                 -- Every section is part of a div. Here we close the last one, and open a new one
-                write(out, "</div>")
+                out = out .. "</div>"
             end
             if sectionnum > 0 then
-                write(out, "<div class=\"section\">\n")
+                out = out .. "<div class=\"section\">\n"
             end
             
             -- Write the markdown. It is possible that the last section had no code and was only prose.
-            write_markdown(markdown, out)
+            write_markdown(markdown)
             -- Reset the markdown
             markdown = ""
             
@@ -298,12 +298,12 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
             if heading_title == "" then
                 class = "class=\"noheading\""
             end
-            write(out, "<p class=\"notp\" id=\"" .. sectionnum .. "\"></p><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4>\n")
+            out = out .. "<p class=\"notp\" id=\"" .. sectionnum .. "\"></p><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4>\n"
 
         elseif startswith(line, "@title") and not in_codeblock then -- Title created
             -- Create the title
             local title = strip(string.sub(line, 7, #line))
-            write(out, "<h1>" .. title .. "</h1>\n")
+            out = out .. "<h1>" .. title .. "</h1>\n"
 
         elseif startswith(line, "@include_html") and not in_codeblock then -- Inline the html given
             print("yes")
@@ -313,7 +313,7 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
                 print("Weave error: line " .. line_num .. ": Included file ".. file .. " does not exist.")
                 exit()
             end
-            write(out, readall(file))
+            out = out .. readall(file)
             goto continue
 
         else
@@ -347,7 +347,7 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
                     end
                 end
 
-                write(out, line .. "\n")
+                out = out .. line .. "\n"
 
             else
                 -- Add the line to the markdown
@@ -384,16 +384,18 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
     end
 
     -- Clean up
-    write_markdown(markdown, out)
+    write_markdown(markdown)
     -- Close the last section's div
-    write(out, "</div>")
+    out = out .. "</div>"
     
     if has_index then
-        write(out, create_index(inputfilename))
+        out = out .. create_index(inputfilename)
     end
     
-    write(out, "</body>\n</html>\n")
+    out = out .. "</body>\n</html>\n"
 
+
+    return out
 end
 
 

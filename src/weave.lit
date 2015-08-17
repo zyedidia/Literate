@@ -140,14 +140,14 @@ Markdown will escape any HTML symbols, which is a good thing, but sometimes it i
 from Markdown, so we define a couple things that transform `\<` directly to `<` in the HTML.
 
 --- Define the write_markdown function
-function write_markdown(markdown, out)
+function write_markdown(markdown)
     if markdown ~= "" then
         local html = markdown
         html = string.gsub(html, "<", "&lt;")
         html = string.gsub(html, ">", "&gt;")
         html = string.gsub(html, "\"", "&quot;")
         html = md.markdown(markdown)
-        write(out, html .. "\n")
+        out = out .. html .. "\n"
     end
 end
 ---
@@ -155,8 +155,8 @@ end
 @s
 
 --- Define the weave function
-function weave(lines, outputstream, source_dir, inputfilename, has_index)
-    local out = outputstream
+function weave(lines, source_dir, inputfilename, has_index)
+    out = ""
 
     get_locations(lines)
 
@@ -180,6 +180,8 @@ function weave(lines, outputstream, source_dir, inputfilename, has_index)
     end
 
     @{Clean up}
+
+    return out
 end
 ---
 
@@ -209,7 +211,7 @@ local base_html = [[<!doctype html>
                </head>
                <body>]]
 
-write(out, base_html)
+out = out .. base_html
 ---
 
 @s
@@ -263,7 +265,7 @@ This is where the real stuff happens.
 if line == "" then
     -- This was a blank line
     if in_codeblock then
-        write(out, "\n")
+        out = out .. "\n"
     else
         markdown = markdown .. "\n" -- Tell markdown this was a blank line
     end
@@ -300,11 +302,11 @@ write it in bold. We also wrap the title, codeblock, and any links that come aft
 in_prose = false
 in_codeblock = true
 -- Write the current markdown
-write_markdown(markdown, out)
+write_markdown(markdown)
 -- Reset the markdown
 markdown = ""
 
-write(out, "<div class=\"codeblock\">\n")
+out = out .. "<div class=\"codeblock\">\n"
 local name = strip(string.sub(line, 4, #line)) -- The codeblock name
 
 local adding = false -- Whether or not this block is a +=
@@ -336,9 +338,9 @@ if file then
     output = "<b>" .. output .. "</b>" -- If the name is a file, make it bold
 end
 
-write(out, "<p class=\"notp\"><span class=\"codeblock_name\">" .. output .. "</span></p>\n")
+out = out .. "<p class=\"notp\"><span class=\"codeblock_name\">" .. output .. "</span></p>\n"
 -- We can now begin pretty printing the code that comes next
-write(out, start_codeblock)
+out = out .. start_codeblock
 ---
 
 @s
@@ -353,14 +355,14 @@ in_prose = true
 in_codeblock = false
 
 -- First start by ending the pretty printing
-write(out, end_codeblock)
+out = out .. end_codeblock
 -- This was stored when the code block began
 local name = cur_codeblock_name
 
 @{Write any "see also" links}
 @{Write any "used in" links}
 -- Close the "codeblock" div
-write(out, "</div>\n")
+out = out .. "</div>\n"
 ---
 
 @s
@@ -399,7 +401,7 @@ if #locations > 1 then
         if loopnum > 1 then
             plural = "s"
         end
-        write(out, "<p class=\"seealso\">See also section" .. plural .. links .. ".</p>\n")
+        out = out .. "<p class=\"seealso\">See also section" .. plural .. links .. ".</p>\n"
     end
 end
 ---
@@ -428,7 +430,7 @@ if block_use_locations[name] ~= nil then
         output = output .. punc .. " <a href=\"#" .. location .. "\">" .. location .. "</a>"
     end
     output = output .. ".</p>\n"
-    write(out, output)
+    out = out .. output
 end
 ---
 
@@ -440,14 +442,14 @@ section with `@s`.
 --- Create a new section
 if sectionnum > 1 then
     -- Every section is part of a div. Here we close the last one, and open a new one
-    write(out, "</div>")
+    out = out .. "</div>"
 end
 if sectionnum > 0 then
-    write(out, "<div class=\"section\">\n")
+    out = out .. "<div class=\"section\">\n"
 end
 
 -- Write the markdown. It is possible that the last section had no code and was only prose.
-write_markdown(markdown, out)
+write_markdown(markdown)
 -- Reset the markdown
 markdown = ""
 
@@ -458,7 +460,7 @@ local class = ""
 if heading_title == "" then
     class = "class=\"noheading\""
 end
-write(out, "<p class=\"notp\" id=\"" .. sectionnum .. "\"></p><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4>\n")
+out = out .. "<p class=\"notp\" id=\"" .. sectionnum .. "\"></p><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4>\n"
 ---
 
 @s
@@ -467,7 +469,7 @@ Here we do a simple check for the `@title`
 
 --- Create the title
 local title = strip(string.sub(line, 7, #line))
-write(out, "<h1>" .. title .. "</h1>\n")
+out = out .. "<h1>" .. title .. "</h1>\n"
 ---
 
 @s
@@ -480,7 +482,7 @@ if not file_exists(file) then
     print("Weave error: line " .. line_num .. ": Included file ".. file .. " does not exist.")
     exit()
 end
-write(out, readall(file))
+out = out .. readall(file)
 goto continue
 ---
 
@@ -496,7 +498,7 @@ line = string.gsub(line, "&", "&amp;")
 line = string.gsub(line, "<", "&lt;")
 line = string.gsub(line, ">", "&gt;")
 @{Link any sections in the line}
-write(out, line .. "\n")
+out = out .. line .. "\n"
 ---
 
 @s
@@ -546,7 +548,7 @@ line = string.gsub(line, "&", "&amp;")
 line = string.gsub(line, "<", "&lt;")
 line = string.gsub(line, ">", "&gt;")
 @{Link any sections in the line}
-write(out, line .. "\n")
+out = out .. line .. "\n"
 ---
 
 @s
@@ -561,13 +563,13 @@ markdown = markdown .. line .. "\n"
 Finally, we clean up at the end. We write any last bits of markdown, make the index if necessary, and write the closing HTML.
 
 --- Clean up
-write_markdown(markdown, out)
+write_markdown(markdown)
 -- Close the last section's div
-write(out, "</div>")
+out = out .. "</div>"
 
 if has_index then
-    write(out, create_index(inputfilename))
+    out = out .. create_index(inputfilename)
 end
 
-write(out, "</body>\n</html>\n")
+out = out .. "</body>\n</html>\n"
 ---

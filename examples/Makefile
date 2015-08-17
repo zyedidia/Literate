@@ -2,7 +2,7 @@
 
 examples: wc.lit hangman.lit
 	../bin/lit wc.lit
-	../bin/lit -noindex hangman.lit
+	../bin/lit hangman.lit
 	gcc wc.c -o wc
 
 wc: wc.c
