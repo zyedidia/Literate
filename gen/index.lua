@@ -50,7 +50,7 @@ function create_index(inputfile)
             noctags = true
         end
         
-        local tangle_result = run("echo '" .. complete_source:gsub("'", "'\"'\"'") .. "' | lit -code > out.txt")
+        run("echo '" .. complete_source:gsub("'", "'\"'\"'") .. "' | lit -code > out.txt")
         local tags_str = run("ctags -x --" .. string.lower(codetype) .. "-kinds=+abcdefghijklmnopqrxtuvwxyzABCDEFGHIJKLMNOPQRXTUVWXYZ  --language-force=" .. string.lower(codetype) .. " out.txt 2>/dev/null")
         run("rm out.txt")
         

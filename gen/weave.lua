@@ -7,10 +7,10 @@ function contains(tbl, item)
 end
 
 function contains_str(tbl, str)
-    for key, value in pairs(tbl) do
-        if string.lower(value) == string.lower(str) then return key end
-    end
-    return false
+for key, value in pairs(tbl) do
+    if string.lower(value) == string.lower(str) then return key end
+end
+return false
 end
 
 -- Define the get_locations function
@@ -37,7 +37,7 @@ function get_locations(lines)
             end
             -- Get the block name
             local block_name = strip(string.sub(line, 4, #line)) -- Remove the '---'
-
+            
             if string.match(block_name, "+=") then
                 local plus_index = block_name:match'^.*()%+' -- Get the index of the "+" (the [end] is to get the last occurrence)
                 block_name = strip(string.sub(block_name, 1, plus_index-1)) -- Remove the "+=" and strip any whitespace
@@ -55,7 +55,7 @@ function get_locations(lines)
             -- A codeblock has been used
             line = strip(line)
             local block_name = string.sub(line, 3, #line - 1) -- Substring to just get the block name
-
+            
             -- Pretty much the same as before
             if block_use_locations[block_name] == nil then
                 block_use_locations[block_name] = {sectionnum}
@@ -89,32 +89,32 @@ function weave(lines, source_dir, inputfilename, has_index)
     -- Set up html
     local start_codeblock = "<pre class=\"prettyprint\">\n"
     local end_codeblock = "</pre>\n"
-
+    
     local scripts = [[<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
                  <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
                  <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: ]] .. "[['$','$']]}}); </script>\n"
-
+    
     -- Get the CSS
     local css = ""
     local files = readdir(source_dir) -- All the files in the current directory
-
+    
     if contains(files, "default.css") then
         css = readall(source_dir .. "/default.css") -- Read the user's default.css
     else
         css = readall(gen .. "/default.css") -- Use the default css
     end
-
+    
     if contains(files, "colorscheme.css") then
         css = css .. readall(source_dir .. "/colorscheme.css") -- Read the user's colorscheme.css
     else
         css = css .. readall(gen .. "/colorscheme.css") -- Use the default colorscheme
     end
-
+    
     if contains(files, "additions.css") then
         css = css .. readall(source_dir .. "/additions.css") -- Read the user's additions.css
     end
 
-
+    
     local base_html = [[<!doctype html>
                    <html>
                    <head>
@@ -126,7 +126,7 @@ function weave(lines, source_dir, inputfilename, has_index)
                    </style>
                    </head>
                    <body>]]
-
+    
     out = out .. base_html
 
     -- Set up variables
@@ -134,7 +134,7 @@ function weave(lines, source_dir, inputfilename, has_index)
     local in_codeblock = false -- Whether or not we are parsing a some code
     local in_prose = false -- Whether or not we are parsing prose
     local markdown = "" -- This variable holds the current markdown that needs to be transformed to html
-
+    
     local cur_codeblock_name = "" -- The name of the current codeblock begin parsed
 
 
@@ -160,7 +160,7 @@ function weave(lines, source_dir, inputfilename, has_index)
             end
             goto continue
         end
-
+        
         if string.match(line, "^%-%-%-.+$") then -- Codeblock began
             -- Begin codeblock
             -- A code block just began
@@ -170,39 +170,39 @@ function weave(lines, source_dir, inputfilename, has_index)
             write_markdown(markdown)
             -- Reset the markdown
             markdown = ""
-
+            
             out = out .. "<div class=\"codeblock\">\n"
             local name = strip(string.sub(line, 4, #line)) -- The codeblock name
-
+            
             local adding = false -- Whether or not this block is a +=
-
+            
             if string.match(name, "+=") then
                 local plus_index = name:match'^.*()%+'
                 name = strip(string.sub(name, 1, plus_index-1))
                 adding = true
             end
-
+            
             cur_codeblock_name = name
             file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file name
-
+            
             if block_locations[name] == nil then
                 print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
                 os.exit()
             end
-
+            
             local definition_location = block_locations[name][1]
-
+            
             local output = name .. " <a href=\"#" .. definition_location .. "\">" .. definition_location .. "</a>" -- Add the link to the definition location
             local plus = ""
             if adding then
                 plus = "+"
             end
             output = "{" .. output .. "} " .. plus .. "≡" -- Add the = or +=
-
+            
             if file then
                 output = "<b>" .. output .. "</b>" -- If the name is a file, make it bold
             end
-
+            
             out = out .. "<p class=\"notp\"><span class=\"codeblock_name\">" .. output .. "</span></p>\n"
             -- We can now begin pretty printing the code that comes next
             out = out .. start_codeblock
@@ -212,19 +212,19 @@ function weave(lines, source_dir, inputfilename, has_index)
             -- A code block just ended
             in_prose = true
             in_codeblock = false
-
+            
             -- First start by ending the pretty printing
             out = out .. end_codeblock
             -- This was stored when the code block began
             local name = cur_codeblock_name
-
+            
             -- Write any "see also" links
             local locations = block_locations[name]
             if block_locations[name] == nil then
                 print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
                 os.exit()
             end
-
+            
             if #locations > 1 then
                 local links = "" -- This will hold the html for the links
                 local loopnum = 0
@@ -285,12 +285,12 @@ function weave(lines, source_dir, inputfilename, has_index)
             if sectionnum > 0 then
                 out = out .. "<div class=\"section\">\n"
             end
-
+            
             -- Write the markdown. It is possible that the last section had no code and was only prose.
             write_markdown(markdown)
             -- Reset the markdown
             markdown = ""
-
+            
             in_section = true
             sectionnum = sectionnum + 1
             heading_title = strip(string.sub(line, 3, #line))
@@ -305,16 +305,22 @@ function weave(lines, source_dir, inputfilename, has_index)
             local title = strip(string.sub(line, 7, #line))
             out = out .. "<h1>" .. title .. "</h1>\n"
 
-        elseif startswith(line, "@include_html") and not in_codeblock then -- Inline the html given
-            print("yes")
-            -- Inline the html in the specified file
-            file = source_dir .. "/" .. line:sub(15)
+        elseif startswith(line, "@include") and not in_codeblock then -- Inline the html given
+            -- Include the given file
+            local filename = basename(strip(line:sub(10)))
+            local filetype = filename:match(".*%.(.*)")
+            local file = source_dir .. "/" .. strip(line:sub(10))
             if not file_exists(file) then
                 print("Weave error: line " .. line_num .. ": Included file ".. file .. " does not exist.")
                 exit()
             end
-            out = out .. readall(file)
-            goto continue
+            
+            if filetype == "html" then
+                -- Inline the html in the specified file
+                out = out .. readall(file)
+                goto continue
+
+            end
 
         else
             if in_codeblock then
@@ -335,7 +341,7 @@ function weave(lines, source_dir, inputfilename, has_index)
                         os.exit()
                     end
                     local location = block_locations[name][1]
-
+                
                     if in_codeblock then
                         local anchor = " <a href=\"#" .. location .. "\">" .. location .. "</a>"
                         local links = "<span class=\"nocode\">{" .. name .. anchor .. "}</span>" -- The nocode is so that this is not pretty printed
@@ -363,7 +369,7 @@ function weave(lines, source_dir, inputfilename, has_index)
                         os.exit()
                     end
                     local location = block_locations[name][1]
-
+                
                     if in_codeblock then
                         local anchor = " <a href=\"#" .. location .. "\">" .. location .. "</a>"
                         local links = "<span class=\"nocode\">{" .. name .. anchor .. "}</span>" -- The nocode is so that this is not pretty printed
@@ -387,11 +393,11 @@ function weave(lines, source_dir, inputfilename, has_index)
     write_markdown(markdown)
     -- Close the last section's div
     out = out .. "</div>"
-
+    
     if has_index then
         out = out .. create_index(inputfilename)
     end
-
+    
     out = out .. "</body>\n</html>\n"
 
 

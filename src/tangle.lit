@@ -73,10 +73,7 @@ while true do
     line = lines[line_num]
     if line == nil then break end
     if chomp(line) == "---" then break end
-    code = code .. line
-    if stdin then
-        code = code .. "\n"
-    end
+    code = code .. line .. "\n"
 end
 ---
 

@@ -45,13 +45,20 @@ end
 
 -- The readall function
 function readall(file)
-    local f = io.open(file, "rb")
-    if f == nil then
-        print(file .. " could not be opened")
-        return ""
+    local content = ""
+    if file ~= nil then
+        local f = io.open(file, "rb")
+        if f == nil then
+            print(file .. " could not be opened")
+            return ""
+        end
+        content = f:read("*all")
+        f:close()
+    else
+        for line in io.lines() do 
+            content = content .. line .. "\n"
+        end
     end
-    local content = f:read("*all")
-    f:close()
     return content
 end
 

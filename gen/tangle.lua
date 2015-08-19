@@ -26,10 +26,7 @@ function tangle(lines)
                 line = lines[line_num]
                 if line == nil then break end
                 if chomp(line) == "---" then break end
-                code = code .. line
-                if stdin then
-                    code = code .. "\n"
-                end
+                code = code .. line .. "\n"
             end
 
             -- Add the code to the dict

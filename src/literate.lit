@@ -12,7 +12,6 @@ number of `.lit` files, and if none are specified use `STDIN` and `STDOUT`.
 Here is the structure:
 
 --- lit.lua
-#!/usr/bin/env lua
 gen = arg[1]
 package.path = gen .. "/?.lua;" .. package.path
 
@@ -27,6 +26,7 @@ require("index")
 md = require("markdown")
 
 @{Function to identify the os}
+@{Function to resolve @include statements}
 
 @{Parse the arguments}
 if #inputfiles == 0 then
@@ -34,8 +34,6 @@ if #inputfiles == 0 then
 else
     @{Weave and/or tangle the input files}
 end
-
--- vim: set ft=lua:
 ---
 
 @s
@@ -106,13 +104,12 @@ If no input files were passed in, we should take input from `STDIN` and spit all
 output to `STDOUT`.
 
 --- Use STDIN and STDOUT
-lines = lines_from()
 @{Declare a few globals}
+local source_dir = "."
 
-complete_source = ""
-for i=1,#lines do
-    complete_source = complete_source .. lines[i] .. "\n"
-end
+complete_source = readall()
+complete_source = resolve_includes(complete_source, source_dir)
+local lines = split(complete_source, "\n")
 
 stdin = true
 if html then
@@ -133,17 +130,15 @@ If input files were given, we should loop through each one and tangle/weave it.
 for num,file in pairs(inputfiles) do
     @{Declare a few globals}
 
-    local lines = lines_from(file)
-
-    complete_source = ""
-    for i=1,#lines do
-        complete_source = complete_source .. lines[i] .. "\n"
-    end
-
     local source_dir = dirname(file)
     if source_dir == "" then
         source_dir = "."
     end
+
+    complete_source = readall(file)
+    complete_source = resolve_includes(complete_source, source_dir)
+    local lines = split(complete_source, "\n")
+
     if html then
         local output = weave(lines, source_dir, file, index)
         local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
@@ -184,6 +179,46 @@ holding the line numbers each section starts on.
 --- Declare a few globals +=
 code_lines = {} -- Number => Number
 section_linenums = {} -- Number => Number
+---
+
+@s
+
+We also need to define the `resolve_includes` function which will follow `@include`
+statements and if they are including a `.lit` file it will take the contents of that
+file and inline it.
+
+This function takes in a string with the source of the lit file and gives back a 
+string with all `@include` statements resolved.
+also recursively follow all `@include` statements that are inside the included files
+too.
+
+--- Function to resolve @include statements
+function resolve_includes(source, source_dir)
+    local newSource = ""
+    local lines = split(source, "\n")
+
+    for i=1,#lines do
+        local line = lines[i]
+
+        if startswith(line, "@include") then
+            local filename = basename(strip(line:sub(10)))
+            local filetype = filename:match(".*%.(.*)")
+            local file = source_dir .. "/" .. strip(line:sub(10))
+            if not file_exists(file) then
+                print("Weave error: line " .. i .. ": Included file ".. file .. " does not exist.")
+                exit()
+            end
+
+            if filetype == "lit" then
+                newSource = newSource .. resolve_includes(readall(file), source_dir)
+            end
+        end
+
+        newSource = newSource .. line .. "\n"
+    end
+
+    return newSource
+end
 ---
 
 @s

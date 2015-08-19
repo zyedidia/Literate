@@ -280,9 +280,8 @@ elseif startswith(line, "@s") and not in_codeblock then -- Section began
     @{Create a new section}
 elseif startswith(line, "@title") and not in_codeblock then -- Title created
     @{Create the title}
-elseif startswith(line, "@include_html") and not in_codeblock then -- Inline the html given
-    print("yes")
-    @{Inline the html in the specified file}
+elseif startswith(line, "@include") and not in_codeblock then -- Inline the html given
+    @{Include the given file}
 else
     if in_codeblock then
         @{Write out the line of code}
@@ -474,14 +473,28 @@ out = out .. "<h1>" .. title .. "</h1>\n"
 
 @s
 
-If the line starts with `@include_html <file>` we should inline the html contained in `<file>` in the final output.
+If the line starts with `@include <file>` we should detect what filetype the file is and include it
+based on that.
 
---- Inline the html in the specified file
-file = source_dir .. "/" .. line:sub(15)
+--- Include the given file
+local filename = basename(strip(line:sub(10)))
+local filetype = filename:match(".*%.(.*)")
+local file = source_dir .. "/" .. strip(line:sub(10))
 if not file_exists(file) then
     print("Weave error: line " .. line_num .. ": Included file ".. file .. " does not exist.")
     exit()
 end
+
+if filetype == "html" then
+    @{Inline the html in the specified file}
+end
+---
+
+@s
+
+If `<file>` is an html file, we should inline the html into the output.
+
+--- Inline the html in the specified file
 out = out .. readall(file)
 goto continue
 ---
