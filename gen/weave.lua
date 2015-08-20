@@ -90,7 +90,7 @@ function weave(lines, source_dir, has_index)
     local start_codeblock = "<pre class=\"prettyprint\">\n"
     local end_codeblock = "</pre>\n"
     
-    local scripts = [[<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+    local scripts = [[<script>]] .. readall(gen .. "/run_prettify.js") .. [[</script>
                  <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
                  <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: ]] .. "[['$','$']]}}); </script>\n"
     
