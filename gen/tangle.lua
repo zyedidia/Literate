@@ -31,7 +31,7 @@ function tangle(lines)
                 end
             
                 if startswith(strip(line), "@{") then
-                    name = line:match("@{(.*)}")
+                    local name = line:match("@{(.*)}")
                     codeblock_use_lines[name] = line_num
                 end
             
@@ -66,11 +66,15 @@ function tangle(lines)
                 outstream = "STDOUT"
                 print("\n---- " .. basename(name) .. " ----\n")
             else
-                outstream = io.open(outdir .. "/" .. strip(name), "w")
+                if generate_files then
+                    outstream = io.open(outdir .. "/" .. strip(name), "w")
+                end
             end
             write_code(name, "", codeblocks, outstream)
             if not stdin then
-                outstream:close()
+                if generate_files then
+                    outstream:close()
+                end
             end
         end
     end
@@ -92,7 +96,9 @@ function write_code(block_name, leading_whitespace, codeblocks, outstream)
     if comment_type ~= "" then
         if not string.match(block_name, "^.+%w%.%w+$") then
             comment = string.gsub(comment_type, "%%s", block_name)
-            write(outstream, leading_whitespace .. comment .. "\n")
+            if generate_files then
+                write(outstream, leading_whitespace .. comment .. "\n")
+            end
         end
     end
 
@@ -102,11 +108,15 @@ function write_code(block_name, leading_whitespace, codeblocks, outstream)
             line = strip(line)
             write_code(string.sub(line, 3, line:find("}[^}]*$") - 1), leading_whitespace .. myleading_whitespace, codeblocks, outstream)
         else
-            write(outstream, leading_whitespace .. line .. "\n")
+            if generate_files then
+                write(outstream, leading_whitespace .. line .. "\n")
+            end
         end
     end
 
-    write(outstream, "\n")
+    if generate_files then
+        write(outstream, "\n")
+    end
 end
 
 

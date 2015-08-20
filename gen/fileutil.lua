@@ -7,11 +7,11 @@ function run(cmd)
 end
 
 -- The write function
-function write(output, str)
-    if output == "STDOUT" then
+function write(outstream, str)
+    if outstream == "STDOUT" then
         io.write(str)
     else
-        output:write(str)
+        outstream:write(str)
     end
 end
 

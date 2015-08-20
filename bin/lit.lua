@@ -42,57 +42,6 @@ function resolve_includes(source, source_dir, filename)
             if filetype == "lit" then
                 newSource = newSource .. resolve_includes(readall(file), source_dir, file)
             end
-        elseif startswith(line, "@change") and not startswith(line, "@change_end") then
-            local filename = basename(strip(line:sub(9)))
-            local filetype = filename:match(".*%.(.*)")
-            local file = source_dir .. "/" .. strip(line:sub(9))
-            if not file_exists(file) then
-                print(filename .. ":error:" .. i .. ":Changed file ".. file .. " does not exist.")
-                exit()
-            end
-
-            local search_text = ""
-            local replace_text = ""
-
-            while strip(line) ~= "@change_end" do
-                local in_search_text = false
-                local in_replace_text = false
-
-                if i == #lines + 1 then
-                    print(filename .. ":error:Reached end of file with no @change_end")
-                    exit()
-                end
-                i = i + 1
-                line = lines[i]
-
-                if startswith(strip(line), "@replace") then
-                    in_replace_text = false
-                    in_search_text = true
-                    i = i + 1
-                    line = lines[i]
-                elseif startswith(strip(line), "@with") then
-                    in_search_text = false
-                    in_replace_text = true
-                    i = i + 1
-                    line = lines[i]
-                elseif startswith(strip(line), "@end") then
-                    in_search_text = false
-                    in_replace_text = false
-                    i = i + 1
-                    line = lines[i]
-                end
-
-                if in_search_text then
-                    search_text = search_text .. line
-                elseif in_replace_text then
-                    replace_text = replace_text .. line
-                end
-            end
-            print(search_text .. "\n" .. replace_text)
-
-            if filetype == "lit" then
-                newSource = newSource .. resolve_includes(readall(file):gsub(search_text, replace_text), source_dir, file)
-            end
         end
 
         newSource = newSource .. line .. "\n"
@@ -107,13 +56,14 @@ html = false
 code = false
 outdir = "."
 index = true
+generate_files = true
 
 inputfiles = {}
 
 for i=2,#arg do
     argument = arg[i]
     if argument == "-h" then
-        print("Usage: lit [-noindex] [-html] [-code] [--out-dir=dir] [file ...]")
+        print("Usage: lit [-noindex] [-html] [-code] [--out-dir=dir] [--no-output] [file ...]")
         os.exit()
     elseif argument == "-html" then
         html = true
@@ -123,6 +73,8 @@ for i=2,#arg do
         index = false
     elseif startswith(argument, "--out-dir=") then
         outdir = string.sub(argument, 11, #argument)
+    elseif startswith(argument, "--no-output") then
+        generate_files = false
     else
         inputfiles[#inputfiles + 1] = argument
     end
@@ -157,7 +109,9 @@ if #inputfiles == 0 then
     stdin = true
     if html then
         local output = weave(lines, ".", index)
-        write("STDOUT", output)
+        if generate_files then
+            write("STDOUT", output)
+        end
     end
     
     if code then
@@ -192,9 +146,11 @@ else
     
         if html then
             local output = weave(lines, source_dir, index)
-            local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
-            write(outputstream, output)
-            outputstream:close()
+            if generate_files then
+                local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
+                write(outputstream, output)
+                outputstream:close()
+            end
         end
         if code then
             tangle(lines)
