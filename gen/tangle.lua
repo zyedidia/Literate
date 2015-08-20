@@ -1,5 +1,7 @@
 -- Define the tangle function
 function tangle(lines)
+    codeblock_use_lines = {} -- String => Number
+
     comment_type = ""
     local codeblocks = {} -- String => String
     local block_names = {} -- Number => String
@@ -23,6 +25,16 @@ function tangle(lines)
             local code = ""
             while true do
                 line_num = line_num + 1
+                if line_num > #lines then
+                    print(inputfilename .. ":error:" .. #lines .. ":".. block_name .. " is never closed")
+                    os.exit()
+                end
+            
+                if startswith(strip(line), "@{") then
+                    name = line:match("@{(.*)}")
+                    codeblock_use_lines[name] = line_num
+                end
+            
                 line = lines[line_num]
                 if line == nil then break end
                 if chomp(line) == "---" then break end
@@ -34,7 +46,7 @@ function tangle(lines)
                 if codeblocks[block_name] ~= nil then
                     codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
                 else
-                    print("Tangle error: line " .. line_num .. ": Unknown block name: " .. block_name)
+                    print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. block_name)
                     os.exit()
                 end
             else
@@ -63,7 +75,7 @@ function tangle(lines)
         end
     end
     if not found_file then
-        print("Tangle error: no file name found. Not writing any code file.")
+        print(inputfilename .. ":error:no file name found. Not writing any code file.")
     end
 
 end
@@ -72,7 +84,7 @@ end
 function write_code(block_name, leading_whitespace, codeblocks, outstream)
     local code = codeblocks[block_name]
     if code == nil then
-        print("Tangle error: Unknown block name: " .. block_name)
+        print(inputfilename .. ":error:" .. codeblock_use_lines[block_name] .. ":Unknown block name: " .. block_name)
         os.exit()
     end
     local lines = split(code, "\n")

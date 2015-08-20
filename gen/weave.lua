@@ -81,7 +81,7 @@ function write_markdown(markdown)
 end
 
 -- Define the weave function
-function weave(lines, source_dir, inputfilename, has_index)
+function weave(lines, source_dir, has_index)
     out = ""
 
     get_locations(lines)
@@ -186,7 +186,7 @@ function weave(lines, source_dir, inputfilename, has_index)
             file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file name
             
             if block_locations[name] == nil then
-                print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
+                print(inputfilename .. ":error:" .. line_num .. ": Unknown block name: " .. name)
                 os.exit()
             end
             
@@ -221,7 +221,7 @@ function weave(lines, source_dir, inputfilename, has_index)
             -- Write any "see also" links
             local locations = block_locations[name]
             if block_locations[name] == nil then
-                print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
+                print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. name)
                 os.exit()
             end
             
@@ -311,7 +311,7 @@ function weave(lines, source_dir, inputfilename, has_index)
             local filetype = filename:match(".*%.(.*)")
             local file = source_dir .. "/" .. strip(line:sub(10))
             if not file_exists(file) then
-                print("Weave error: line " .. line_num .. ": Included file ".. file .. " does not exist.")
+                print(inputfilename .. ":error:" .. line_num .. ":Included file ".. file .. " does not exist.")
                 exit()
             end
             
@@ -337,7 +337,7 @@ function weave(lines, source_dir, inputfilename, has_index)
                     local m = string.match(line, "@{.*}")
                     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
                     if block_locations[name] == nil then
-                        print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
+                        print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. name)
                         os.exit()
                     end
                     local location = block_locations[name][1]
@@ -365,7 +365,7 @@ function weave(lines, source_dir, inputfilename, has_index)
                     local m = string.match(line, "@{.*}")
                     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
                     if block_locations[name] == nil then
-                        print("Weave error: line " .. line_num .. ": Unknown block name " .. name)
+                        print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. name)
                         os.exit()
                     end
                     local location = block_locations[name][1]
