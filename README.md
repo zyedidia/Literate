@@ -13,7 +13,8 @@ If you want to see what features I am working on, check out my [Todolist](src/To
 
 # Installation
 
-The compiler is made with Lua. When you download the repository, run `./install.sh platform` where platform one of the following supported platforms: `aix` `bsd` `c89` `generic` `linux` `macosx` `mingw` `posix` `solaris` and a local version of lua will be installed and used for Lit.
+### Unix
+The compiler is made with Lua. When you download the repository, run `./install.sh platform` where platform one of the following supported platforms: `linux` `macosx` `aix` `bsd` `c89` `generic` `posix` `solaris` and a local version of lua will be installed and used for Lit.
 
 For example:
 
@@ -23,15 +24,29 @@ $ cd Literate
 $ ./install.sh macosx
 ```
 
+Then make sure you add `path/to/Literate/bin` to your PATH.
+
 In addition, if you would like an index to be generated, you must have exuberant or [universal ctags] (https://github.com/universal-ctags/ctags) installed. You can find instructions for installing with homebrew [here] (https://github.com/universal-ctags/homebrew-universal-ctags).
+
+### Windows
+Download the zip, or clone the repository, and just add path\to\Literate\bin to your
+PATH. Index generation with ctags does not work with Windows yet.
 
 # Usage
 
 Add `path/to/Literate/bin` to your PATH and then you can generate html and/or code from `.lit` files.
 
 ```
-$ lit [-html] [-code] examples/wc.lit
+$ lit examples/wc.lit
 ```
+
+Additional command line flags are:
+
+* -html: Only generate HTML output
+* -code: Only generate code output
+* -noindex: Do not create an index
+* --out-dir=dir: Put the output files in the specified directory
+* --no-output: Do not generate any files, only show errors
 
 # Features
 ### In addition to those of CWEB
