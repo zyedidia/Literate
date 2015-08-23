@@ -209,19 +209,21 @@ function resolve_includes(source, source_dir, cur_filename)
     local newSource = ""
     local lines = split(source, "\n")
 
+    local line_num = 0
     for i=1,#lines do
-        local line = lines[i]
+        line_num = line_num + 1
+        local line = lines[line_num]
 
         if startswith(line, "@include") then
             local filename = basename(strip(line:sub(10)))
             if strip(filename) == "" then
-                print(cur_filename .. ":error:No filename given to @change")
+                print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
                 os.exit()
             end
             local filetype = filename:match(".*%.(.*)")
             local file = source_dir .. "/" .. strip(line:sub(10))
             if not file_exists(file) then
-                print(cur_filename .. ":error:" .. i .. ":Included file ".. file .. " does not exist.")
+                print(cur_filename .. ":error:" .. line_num .. ":Included file ".. file .. " does not exist.")
                 os.exit()
             end
 
@@ -231,14 +233,14 @@ function resolve_includes(source, source_dir, cur_filename)
         elseif startswith(line, "@change") and not startswith(line, "@change_end") then
             local filename = basename(strip(line:sub(9)))
             if strip(filename) == "" then
-                print(cur_filename .. ":error:No filename given to @change")
+                print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
                 os.exit()
             end
 
             local filetype = filename:match(".*%.(.*)")
             local file = source_dir .. "/" .. strip(line:sub(9))
             if not file_exists(file) then
-                print(cur_filename .. ":error:" .. i .. ":Changed file ".. file .. " does not exist.")
+                print(cur_filename .. ":error:" .. line_num .. ":Changed file ".. file .. " does not exist.")
                 os.exit()
             end
 
@@ -251,23 +253,23 @@ function resolve_includes(source, source_dir, cur_filename)
                 local file_source = readall(file)
 
                 while strip(line) ~= "@change_end" do
-                    if i == #lines + 1 then
-                        print(cur_filename .. ":error:Reached end of file with no @change_end")
+                    if line_num == #lines + 1 then
+                        print(cur_filename .. ":error:" .. #lines .. "Reached end of file with no @change_end")
                         exit()
                     end
-                    i = i + 1
-                    line = lines[i]
+                    line_num = line_num + 1
+                    line = lines[line_num]
 
                     if startswith(strip(line), "@replace") then
                         in_replace_text = false
                         in_search_text = true
-                        i = i + 1
-                        line = lines[i]
+                        line_num = line_num + 1
+                        line = lines[line_num]
                     elseif startswith(strip(line), "@with") then
                         in_search_text = false
                         in_replace_text = true
-                        i = i + 1
-                        line = lines[i]
+                        line_num = line_num + 1
+                        line = lines[line_num]
                     elseif startswith(strip(line), "@end") then
                         in_search_text = false
                         in_replace_text = false
@@ -276,9 +278,9 @@ function resolve_includes(source, source_dir, cur_filename)
                         replace_text = chomp(replace_text)
                         replace_text = replace_text:gsub("%%", "%%%%")
 
-                            file_source = file_source:gsub(search_text, replace_text)
-                            search_text = ""
-                            replace_text = ""
+                        file_source = file_source:gsub(search_text, replace_text)
+                        search_text = ""
+                        replace_text = ""
                     end
 
                     if in_search_text then
@@ -289,14 +291,17 @@ function resolve_includes(source, source_dir, cur_filename)
                 end
 
                 newSource = newSource .. resolve_includes(file_source, source_dir, file)
-
-                if i >= #lines then
-                    break
-                end
             end 
+
+        end
+        
+        if not startswith(line, "@change_end") then
+            newSource = newSource .. line .. "\n"
         end
 
-        newSource = newSource .. line .. "\n"
+        if line_num >= #lines then
+            break
+        end
     end
 
     return newSource
