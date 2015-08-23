@@ -60,57 +60,58 @@ function resolve_includes(source, source_dir, cur_filename)
                 os.exit()
             end
 
-            local search_text = ""
-            local replace_text = ""
-            local in_search_text = false
-            local in_replace_text = false
+            if filetype == "lit" then
+                local search_text = ""
+                local replace_text = ""
+                local in_search_text = false
+                local in_replace_text = false
 
-            local file_source = readall(file)
+                local file_source = readall(file)
 
-            while strip(line) ~= "@change_end" do
-                if i == #lines + 1 then
-                    print(cur_filename .. ":error:Reached end of file with no @change_end")
-                    exit()
-                end
-                i = i + 1
-                line = lines[i]
-
-                if startswith(strip(line), "@replace") then
-                    in_replace_text = false
-                    in_search_text = true
+                while strip(line) ~= "@change_end" do
+                    if i == #lines + 1 then
+                        print(cur_filename .. ":error:Reached end of file with no @change_end")
+                        exit()
+                    end
                     i = i + 1
                     line = lines[i]
-                elseif startswith(strip(line), "@with") then
-                    in_search_text = false
-                    in_replace_text = true
-                    i = i + 1
-                    line = lines[i]
-                elseif startswith(strip(line), "@end") then
-                    in_search_text = false
-                    in_replace_text = false
 
-                    search_text = literalize(chomp(search_text))
-                    replace_text = chomp(replace_text)
+                    if startswith(strip(line), "@replace") then
+                        in_replace_text = false
+                        in_search_text = true
+                        i = i + 1
+                        line = lines[i]
+                    elseif startswith(strip(line), "@with") then
+                        in_search_text = false
+                        in_replace_text = true
+                        i = i + 1
+                        line = lines[i]
+                    elseif startswith(strip(line), "@end") then
+                        in_search_text = false
+                        in_replace_text = false
 
-                    if filetype == "lit" then
-                        file_source = file_source:gsub(search_text, replace_text)
-                        search_text = ""
-                        replace_text = ""
-                    end 
+                        search_text = literalize(chomp(search_text))
+                        replace_text = chomp(replace_text)
+                        replace_text = replace_text:gsub("%%", "%%%%")
+
+                            file_source = file_source:gsub(search_text, replace_text)
+                            search_text = ""
+                            replace_text = ""
+                    end
+
+                    if in_search_text then
+                        search_text = search_text .. line .. "\n"
+                    elseif in_replace_text then
+                        replace_text = replace_text .. line .. "\n"
+                    end
                 end
 
-                if in_search_text then
-                    search_text = search_text .. line .. "\n"
-                elseif in_replace_text then
-                    replace_text = replace_text .. line .. "\n"
+                newSource = newSource .. resolve_includes(file_source, source_dir, file)
+
+                if i >= #lines then
+                    break
                 end
-            end
-
-            newSource = newSource .. resolve_includes(file_source, source_dir, file)
-
-            if i >= #lines then
-                break
-            end
+            end 
         end
 
         newSource = newSource .. line .. "\n"
