@@ -238,6 +238,8 @@ function resolve_includes(source, source_dir, filename)
             local in_search_text = false
             local in_replace_text = false
 
+            local file_source = readall(file)
+
             while strip(line) ~= "@change_end" do
                 if i == #lines + 1 then
                     print(filename .. ":error:Reached end of file with no @change_end")
@@ -259,6 +261,15 @@ function resolve_includes(source, source_dir, filename)
                 elseif startswith(strip(line), "@end") then
                     in_search_text = false
                     in_replace_text = false
+
+                    search_text = literalize(chomp(search_text))
+                    replace_text = chomp(replace_text)
+
+                    if filetype == "lit" then
+                        file_source = file_source:gsub(search_text, replace_text)
+                        search_text = ""
+                        replace_text = ""
+                    end 
                 end
 
                 if in_search_text then
@@ -267,13 +278,8 @@ function resolve_includes(source, source_dir, filename)
                     replace_text = replace_text .. line .. "\n"
                 end
             end
-            search_text = literalize(chomp(search_text))
-            replace_text = chomp(replace_text)
-            print(search_text)
 
-            if filetype == "lit" then
-                newSource = newSource .. resolve_includes(readall(file):gsub(search_text, replace_text), source_dir, file)
-            end 
+            newSource = newSource .. resolve_includes(file_source, source_dir, file)
 
             if i >= #lines then
                 break
