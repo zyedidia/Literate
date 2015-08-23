@@ -23,7 +23,7 @@ elseif package.config:sub(1, 1) == "\\" then
 end
 
 -- Function to resolve @include statements
-function resolve_includes(source, source_dir, filename)
+function resolve_includes(source, source_dir, cur_filename)
     local newSource = ""
     local lines = split(source, "\n")
 
@@ -32,10 +32,14 @@ function resolve_includes(source, source_dir, filename)
 
         if startswith(line, "@include") then
             local filename = basename(strip(line:sub(10)))
+            if strip(filename) == "" then
+                print(cur_filename .. ":error:No filename given to @change")
+                os.exit()
+            end
             local filetype = filename:match(".*%.(.*)")
             local file = source_dir .. "/" .. strip(line:sub(10))
             if not file_exists(file) then
-                print(filename .. ":error:" .. i .. ":Included file ".. file .. " does not exist.")
+                print(cur_filename .. ":error:" .. i .. ":Included file ".. file .. " does not exist.")
                 os.exit()
             end
 
@@ -44,10 +48,15 @@ function resolve_includes(source, source_dir, filename)
             end
         elseif startswith(line, "@change") and not startswith(line, "@change_end") then
             local filename = basename(strip(line:sub(9)))
+            if strip(filename) == "" then
+                print(cur_filename .. ":error:No filename given to @change")
+                os.exit()
+            end
+
             local filetype = filename:match(".*%.(.*)")
             local file = source_dir .. "/" .. strip(line:sub(9))
             if not file_exists(file) then
-                print(filename .. ":error:" .. i .. ":Changed file ".. file .. " does not exist.")
+                print(cur_filename .. ":error:" .. i .. ":Changed file ".. file .. " does not exist.")
                 os.exit()
             end
 
@@ -60,7 +69,7 @@ function resolve_includes(source, source_dir, filename)
 
             while strip(line) ~= "@change_end" do
                 if i == #lines + 1 then
-                    print(filename .. ":error:Reached end of file with no @change_end")
+                    print(cur_filename .. ":error:Reached end of file with no @change_end")
                     exit()
                 end
                 i = i + 1
