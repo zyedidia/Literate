@@ -23,6 +23,14 @@ $ brew tap zyedidia/literate
 $ brew install literate
 ```
 
+If you want the `HEAD` version, you can use:
+
+```
+$ brew install --HEAD literate
+```
+
+If you don't want to use brew, you can install it manually:
+
 The compiler is made with Lua, so please make sure you have lua installed before running Literate. You can download it [here] (http://www.lua.org/download.html). You can also install it with brew, apt-get, and yum.
 Once you have it installed, add `path/to/Literate/bin` to your `$PATH`
 
