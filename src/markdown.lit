@@ -1,14 +1,12 @@
-#!/usr/bin/env lua
+@code_type lua .lua
+@comment_type -- %s
 
---[[
-# markdown.lua -- version 0.40
+@title Markdown
 
-**Author:** Niklas Frykholm, <niklas@frykholm.se>
-**Date:** 31 May 2008
+@s Introduction
 
-See the following page for changes to the original file
-https://github.com/speedata/luamarkdown
-
+This is the code that processes the markdown for Literate. It was written by Niklas Frykholm and distributed under the MIT license. Here
+is his introduction:
 
 This is an implementation of the popular text markup language Markdown in pure Lua.
 Markdown can convert documents written in a simple and easy to read text format
@@ -21,113 +19,10 @@ in Lua's simple regex engine. Therefore this Lua port has been rewritten from th
 up. It is probably not completely bug free. If you notice any bugs, please report them to
 me. A unit test that exposes the error is helpful.
 
-## Usage
-
-    local markdown = require "markdown"
-    markdown.markdown(source)
-
-``markdown.lua`` returns a table with a single function named ``markdown(s)`` which applies the
-Markdown transformation to the specified string.
-
-``markdown.lua`` can also be used directly from the command line:
-
-    lua markdown.lua test.md
-
-Creates a file ``test.html`` with the converted content of ``test.md``. Run:
-
-    lua markdown.lua -h
-
-For a description of the command-line options.
-
-``markdown.lua`` uses the same license as Lua, the MIT license.
-
-## License
-
-Copyright &copy; 2008 Niklas Frykholm.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this
-software and associated documentation files (the "Software"), to deal in the Software
-without restriction, including without limitation the rights to use, copy, modify, merge,
-publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
-to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies
-or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-## Version history
-
--   **0.40** -- 17 Apr 2014
-    - Compatibility for Lua 5.1 and 5.2
--   **0.32** -- 31 May 2008
-    - Fix for links containing brackets
--   **0.31** -- 1 Mar 2008
-    -   Fix for link definitions followed by spaces
--   **0.30** -- 25 Feb 2008
-    -   Consistent behavior with Markdown when the same link reference is reused
--   **0.29** -- 24 Feb 2008
-    -   Fix for <pre> blocks with spaces in them
--   **0.28** -- 18 Feb 2008
-    -   Fix for link encoding
--   **0.27** -- 14 Feb 2008
-    -   Fix for link database links with ()
--   **0.26** -- 06 Feb 2008
-    -   Fix for nested italic and bold markers
--   **0.25** -- 24 Jan 2008
-    -   Fix for encoding of naked <
--   **0.24** -- 21 Jan 2008
-    -   Fix for link behavior.
--   **0.23** -- 10 Jan 2008
-    -   Fix for a regression bug in longer expressions in italic or bold.
--   **0.22** -- 27 Dec 2007
-    -   Fix for crash when processing blocks with a percent sign in them.
--   **0.21** -- 27 Dec 2007
-    -   Fix for combined strong and emphasis tags
--   **0.20** -- 13 Oct 2007
-    -   Fix for < as well in image titles, now matches Dingus behavior
--   **0.19** -- 28 Sep 2007
-    -   Fix for quotation marks " and ampersands & in link and image titles.
--   **0.18** -- 28 Jul 2007
-    -   Does not crash on unmatched tags (behaves like standard markdown)
--   **0.17** -- 12 Apr 2007
-    -   Fix for links with %20 in them.
--   **0.16** -- 12 Apr 2007
-    -   Do not require arg global to exist.
--   **0.15** -- 28 Aug 2006
-    -   Better handling of links with underscores in them.
--   **0.14** -- 22 Aug 2006
-    -   Bug for *`foo()`*
--   **0.13** -- 12 Aug 2006
-    -   Added -l option for including stylesheet inline in document.
-    -   Fixed bug in -s flag.
-    -   Fixed emphasis bug.
--   **0.12** -- 15 May 2006
-    -   Fixed several bugs to comply with MarkdownTest 1.0 <http://six.pairlist.net/pipermail/markdown-discuss/2004-December/000909.html>
--   **0.11** -- 12 May 2006
-    -   Fixed bug for escaping `*` and `_` inside code spans.
-    -   Added license terms.
-    -   Changed join() to table.concat().
--   **0.10** -- 3 May 2006
-    -   Initial public release.
-
-// Niklas
-]]
-
-
+--- markdown
 local unpack = unpack or table.unpack
 
 local span_transform, encode_backslash_escapes, block_transform, blocks_to_html, blocks_to_html
-
-----------------------------------------------------------------------
--- Utility functions
-----------------------------------------------------------------------
 
 -- Returns the result of mapping the values in table t through the function f
 local function map(t, f)
@@ -249,10 +144,6 @@ local function tokenize_html(html)
     return tokens
 end
 
-----------------------------------------------------------------------
--- Hash
-----------------------------------------------------------------------
-
 -- This is used to "hash" data into alphanumeric strings that are unique
 -- in the document. (Note that this is not cryptographic hash, the hash
 -- function is not one-way.) The hash procedure is used to protect parts
@@ -303,10 +194,6 @@ local function hash(s)
     end
     return HASH.table[s]
 end
-
-----------------------------------------------------------------------
--- Protection
-----------------------------------------------------------------------
 
 -- The protection module is used to "protect" parts of a document
 -- so that they are not modified by subsequent processing steps.
@@ -387,10 +274,6 @@ local function unprotect(text)
     return text
 end
 
-
-----------------------------------------------------------------------
--- Block transform
-----------------------------------------------------------------------
 
 -- The block transform functions transform the text on the block level.
 -- They work with the text as an array of lines rather than as individual
@@ -759,10 +642,6 @@ local function print_lines(lines)
     end
 end
 
-----------------------------------------------------------------------
--- Span transform
-----------------------------------------------------------------------
-
 -- Functions for transforming the text at the span level.
 
 -- These characters may need to be escaped because they have a special
@@ -1050,10 +929,6 @@ function span_transform(text)
     return text
 end
 
-----------------------------------------------------------------------
--- Markdown
-----------------------------------------------------------------------
-
 -- Cleanup the text by normalizing some possible variations to make further
 -- processing easier.
 local function cleanup(text)
@@ -1101,7 +976,7 @@ end
 link_database = {}
 
 -- Main markdown processing function
-local function markdown(text)
+function markdown(text)
     init_hash(text)
     init_escape_table()
 
@@ -1112,10 +987,6 @@ local function markdown(text)
     text = unescape_special_chars(text)
     return text
 end
-
-----------------------------------------------------------------------
--- End of module
-----------------------------------------------------------------------
 
 -- Expose markdown function to the world
 md = { markdown = markdown }
@@ -1336,11 +1207,4 @@ Other options:
         io.write(s)
     end
 end
-
--- If we are being run from the command-line, act accordingly
-if arg and arg[0]:find("markdown%.lua$") then
-    run_command_line(arg)
-else
-    return md
-end
-
+---

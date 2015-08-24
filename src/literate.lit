@@ -11,20 +11,7 @@ number of `.lit` files, and if none are specified use `STDIN` and `STDOUT`.
 
 Here is the structure:
 
---- lit.lua
-gen = arg[1]
-package.path = gen .. "/?.lua;" .. package.path
-
-require("stringutil")
-require("fileutil")
-
-require("weave")
-require("tangle")
-
-require("index")
-
-md = require("markdown")
-
+--- lit
 @{Function to identify the os}
 @{Function to resolve @include statements}
 
@@ -69,7 +56,7 @@ If the arguments is not one of these flags, we add the argument to the `inputfil
 array.
 
 --- Parse the arguments +=
-for i=2,#arg do
+for i=1,#arg do
     argument = arg[i]
     if argument == "-h" then
         print("Usage: lit [-noindex] [-html] [-code] [--out-dir=dir] [--no-output] [file ...]")

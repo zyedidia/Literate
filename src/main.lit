@@ -1,0 +1,31 @@
+@code_type lua .lua
+@comment_type -- %s
+
+@include css.lit
+@include markdown.lit
+
+@include stringutil.lit
+@include fileutil.lit
+@include weave.lit
+@include tangle.lit
+@include index.lit
+@include literate.lit
+
+--- lit.lua
+#!/usr/bin/env lua
+
+@{Tomorrow theme CSS}
+@{Default CSS}
+
+@{stringutil}
+@{fileutil}
+
+@{weave}
+@{tangle}
+
+@{index}
+
+@{markdown}
+
+@{lit}
+---

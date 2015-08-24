@@ -9,7 +9,7 @@ to strip paths and get filenames, and functions to read and write to files.
 
 The overall structure will look like this:
 
---- fileutil.lua
+--- fileutil
 @{The run function}
 @{The write function}
 @{The file_exists function}

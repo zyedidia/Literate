@@ -17,7 +17,7 @@ not from prose).
 
 The overall structure of the program will look like this:
 
---- index.lua
+--- index
 function section_for_linenum(linenum)
     @{Get the section number given a line number}
 end

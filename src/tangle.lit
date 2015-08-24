@@ -11,7 +11,7 @@ write out the code, recursively following and links that are used.
 
 Here's what the structure looks like:
 
---- tangle.lua
+--- tangle
 @{Define the tangle function}
 @{Define the write_code function}
 ---
@@ -113,7 +113,7 @@ end
 
 Now we define the `write_code` function which takes the `block_name`, `codeblocks`, and `outstream` and writes the code,
 recursively following links until it is done. We also keep trying of the leading whitespace so that we correctly indent
-the code that is generated based on how the `@{name}` was indented.
+the code that is generated based on how the codeblock name was indented.
 
 --- Define the write_code function
 function write_code(block_name, leading_whitespace, codeblocks, outstream)

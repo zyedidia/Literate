@@ -16,9 +16,9 @@ You can compile this file with `lit wc_ch.lit`. Then you will get two files:
 `wc_ch.html` and `wc.c`.
 
 @replace
-@comment_type // %s
-@with
 @comment_type /* %s */
+@with
+@comment_type // %s
 @end
 
 @change_end

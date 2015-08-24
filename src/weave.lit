@@ -11,7 +11,7 @@ Generally, the strategy is to parse each line, and make some transformation on i
 
 The structure of the file looks like this:
 
---- weave.lua
+--- weave
 @{Define the contains function}
 @{Define the get_locations function}
 @{Define the write_markdown function}
@@ -58,12 +58,19 @@ function get_locations(lines)
     for line_num,line in pairs(lines) do
         line = chomp(line) -- Use chomp to remove the \n
 
+        if startswith(line, "@code_type") then
+            local command = split(line, " ")
+            codetype = command[2]
+            codetype_ext = string.sub(command[3], 2, #command[3])
+            goto continue
+        end
+
         if startswith(line, "@title") then
             @{Initialize the title variable}
         elseif startswith(line, "@s") then
             section_linenums[#section_linenums + 1] = line_num
             sectionnum = sectionnum + 1
-        elseif startswith(line, "---") then
+        elseif line:match("^%-%-%-.*$") then
             @{A codeblock has been defined}
         elseif in_codeblock and startswith(strip(line), "@{") then
             @{A codeblock has been used}
@@ -140,13 +147,13 @@ Markdown will escape any HTML symbols, which is a good thing, but sometimes it i
 from Markdown, so we define a couple things that transform `\<` directly to `<` in the HTML.
 
 --- Define the write_markdown function
-function write_markdown(markdown)
-    if markdown ~= "" then
-        local html = markdown
+function write_markdown(mkdown)
+    if mkdown ~= "" then
+        local html = mkdown
         html = string.gsub(html, "<", "&lt;")
         html = string.gsub(html, ">", "&gt;")
         html = string.gsub(html, "\"", "&quot;")
-        html = md.markdown(markdown)
+        html = markdown(mkdown)
         out = out .. html .. "\n"
     end
 end
@@ -167,9 +174,6 @@ function weave(lines, source_dir, has_index)
         line = chomp(line)
 
         if startswith(line, "@code_type") then
-            local command = split(line, " ")
-            codetype = command[2]
-            codetype_ext = string.sub(command[3], 2, #command[3])
             goto continue
         elseif startswith(line, "@comment_type") then
             goto continue
@@ -190,11 +194,11 @@ end
 In this section, we define the starting structure for the html document. We include some scripts and CSS stylesheets.
 
 --- Set up html
-local start_codeblock = "<pre class=\"prettyprint\">\n"
+local start_codeblock = "<pre class=\"prettyprint lang-" .. codetype .. "\">\n"
 local end_codeblock = "</pre>\n"
 
-local scripts = [[<script>]] .. readall(gen .. "/run_prettify.js") .. [[</script>
-             <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+local scripts = [[<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?lang=]] .. codetype .. [["></script>
+<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
              <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: ]] .. "[['$','$']]}}); </script>\n"
 
 @{Get the CSS}
@@ -230,13 +234,13 @@ local files = readdir(source_dir) -- All the files in the current directory
 if contains(files, "default.css") then
     css = readall(source_dir .. "/default.css") -- Read the user's default.css
 else
-    css = readall(gen .. "/default.css") -- Use the default css
+    css = default_css -- Use the default css
 end
 
 if contains(files, "colorscheme.css") then
     css = css .. readall(source_dir .. "/colorscheme.css") -- Read the user's colorscheme.css
 else
-    css = css .. readall(gen .. "/colorscheme.css") -- Use the default colorscheme
+    css = css .. tomorrow_theme_css -- Use the default colorscheme
 end
 
 if contains(files, "additions.css") then
