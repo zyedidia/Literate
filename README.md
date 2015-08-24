@@ -16,6 +16,13 @@ If you want to see what features I am working on, check out my [Todolist](src/To
 # Installation
 
 ### Unix
+If you're on a Mac and you have brew installed, you can use brew to install literate:
+
+```
+$ brew tap zyedidia/literate
+$ brew install literate
+```
+
 The compiler is made with Lua, so please make sure you have lua installed before running Literate. You can download it [here] (http://www.lua.org/download.html). You can also install it with brew, apt-get, and yum.
 Once you have it installed, add `path/to/Literate/bin` to your `$PATH`
 
