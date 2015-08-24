@@ -331,9 +331,12 @@ function readall(file)
         content = f:read("*all")
         f:close()
     else
-        for line in io.lines() do 
-            content = content .. line .. "\n"
+        local stat,res = pcall(io.read, "*all")
+        if res:match("interrupted") then
+            print("\r")
+            os.exit()
         end
+        content = res
     end
     return content
 end
