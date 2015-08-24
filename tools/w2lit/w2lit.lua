@@ -142,7 +142,9 @@ for i=1,#inputfiles do
         if string.match(line, "@c") then
             in_codeblock = true
         end
-
+        if string.match(line, "@p") then
+            in_codeblock = true
+        end
 
         if not in_codeblock then
             line = line:gsub("{\\sl (.-)}", "*%1*")
@@ -171,6 +173,7 @@ for i=1,#inputfiles do
         end
 
         line = line:gsub("@c", "--- " .. name(inputfile) .. ".c" .. macros)
+        line = line:gsub("@p", "--- " .. name(inputfile) .. ".c" .. macros)
 
 
         line = line:gsub("@/", "")
