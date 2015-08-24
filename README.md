@@ -16,17 +16,8 @@ If you want to see what features I am working on, check out my [Todolist](src/To
 # Installation
 
 ### Unix
-The compiler is made with Lua. When you download the repository, run `./install.sh platform` where platform one of the following supported platforms: `linux` `macosx` `aix` `bsd` `c89` `generic` `posix` `solaris` and a local version of lua will be installed and used for Lit.
-
-For example:
-
-```
-$ git clone https://github.com/zyedidia/Literate
-$ cd Literate
-$ ./install.sh macosx
-```
-
-Then make sure you add `path/to/Literate/bin` to your PATH.
+The compiler is made with Lua, so please make sure you have lua installed before running Literate. You can download it [here] (http://www.lua.org/download.html). You can also install it with brew, apt-get, and yum.
+Once you have it installed, add `path/to/Literate/bin` to your `$PATH`
 
 In addition, if you would like an index to be generated, you must have exuberant or [universal ctags] (https://github.com/universal-ctags/ctags) installed. You can find instructions for installing with homebrew [here] (https://github.com/universal-ctags/homebrew-universal-ctags).
 
