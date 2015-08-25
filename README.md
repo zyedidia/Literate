@@ -32,6 +32,9 @@ $ brew install --HEAD literate
 If you don't want to use brew, you can install it manually:
 
 The compiler is made with Lua, so please make sure you have lua installed before running Literate. You can download it [here] (http://www.lua.org/download.html). You can also install it with brew, apt-get, and yum.
+In addition, there is a script that comes in the zip called `install_lua.sh`. This will install lua for you into the directory of your choice. You can install lua locally
+or you can install it to `/usr/local/bin`
+
 Once you have it installed, add `path/to/Literate/bin` to your `$PATH`
 
 In addition, if you would like an index to be generated, you must have exuberant or [universal ctags] (https://github.com/universal-ctags/ctags) installed. You can find instructions for installing with homebrew [here] (https://github.com/universal-ctags/homebrew-universal-ctags).
