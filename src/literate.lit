@@ -190,12 +190,12 @@ section_linenums = {} -- Number => Number
 
 We also need to define the `resolve_includes` function which will follow `@include`
 statements and if they are including a `.lit` file it will take the contents of that
-file and inline it.
+file and inline it. This function will also follow `@change` statements, which
+are almost the same as `@include` except some changes are performed on the included
+content.
 
 This function takes in a string with the source of the lit file and gives back a 
-string with all `@include` statements resolved.
-also recursively follow all `@include` statements that are inside the included files
-too.
+string with all `@include` and `@change` statements resolved.
 
 --- Function to resolve @include statements
 function resolve_includes(source, source_dir, cur_filename)
@@ -208,22 +208,9 @@ function resolve_includes(source, source_dir, cur_filename)
         local line = lines[line_num]
 
         if startswith(line, "@include") then
-            local filename = basename(strip(line:sub(10)))
-            if strip(filename) == "" then
-                print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
-                os.exit()
-            end
-            local filetype = filename:match(".*%.(.*)")
-            local file = source_dir .. "/" .. strip(line:sub(10))
-            if not file_exists(file) then
-                print(cur_filename .. ":error:" .. line_num .. ":Included file ".. file .. " does not exist.")
-                os.exit()
-            end
-
-            if filetype == "lit" then
-                newSource = newSource .. resolve_includes(readall(file), source_dir, file)
-            end
+            @{@include statement}
         elseif startswith(line, "@change") and not startswith(line, "@change_end") then
+            @{@change statement}
             local filename = basename(strip(line:sub(9)))
             if strip(filename) == "" then
                 print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
@@ -298,6 +285,118 @@ function resolve_includes(source, source_dir, cur_filename)
     end
 
     return newSource
+end
+---
+
+@s
+
+Following an `@include` statement is relatively simple. We check to make sure
+the included file is a `.lit` file, and if it is, we add it to the `newSource`
+and call `resolve_includes()` on the included file to recursively follow all
+the include statements.
+
+--- @include statement
+local filename = basename(strip(line:sub(10)))
+if strip(filename) == "" then
+    print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
+    os.exit()
+end
+local filetype = filename:match(".*%.(.*)")
+local file = source_dir .. "/" .. strip(line:sub(10))
+if not file_exists(file) then
+    print(cur_filename .. ":error:" .. line_num .. ":Included file ".. file .. " does not exist.")
+    os.exit()
+end
+
+if filetype == "lit" then
+    newSource = newSource .. resolve_includes(readall(file), source_dir, file)
+end
+---
+
+@s
+
+Following the `@change` statements is a bit trickier. We do the same filename
+check at the beginning, and the concatenation at the end is recursive, but
+we also have to parse what to search for and what to replace with.
+
+--- @change statement
+local filename = basename(strip(line:sub(9)))
+if strip(filename) == "" then
+    print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
+    os.exit()
+end
+
+local filetype = filename:match(".*%.(.*)")
+local file = source_dir .. "/" .. strip(line:sub(9))
+if not file_exists(file) then
+    print(cur_filename .. ":error:" .. line_num .. ":Changed file ".. file .. " does not exist.")
+    os.exit()
+end
+
+if filetype == "lit" then
+    local search_text = ""
+    local replace_text = ""
+    local in_search_text = false
+    local in_replace_text = false
+
+    local file_source = readall(file)
+
+    @{Parse the change statement}
+
+    newSource = newSource .. resolve_includes(file_source, source_dir, file)
+end 
+---
+
+@s
+
+To parse the change statement, we know the search text will be between
+`@replace` and `@with` and we know the replacement text will be between
+`@with` and `@end`. This syntax makes it easy to follow: `@replace` something
+`@with` something else `@end`.
+
+The strategy here is to keep parsing while we have not found an `@change_end`
+and if we find `@replace`, we begin adding every line found to the search text,
+and if we find `@with`, we add every line found to the replace text. At `@end`,
+we perform the substitution on the file source, and look for more `@replace` ... `@with`
+... `@end` statements.
+
+--- Parse the change statement
+while strip(line) ~= "@change_end" do
+    if line_num == #lines + 1 then
+        print(cur_filename .. ":error:" .. #lines .. "Reached end of file with no @change_end")
+        exit()
+    end
+    line_num = line_num + 1
+    line = lines[line_num]
+
+    if startswith(strip(line), "@replace") then
+        in_replace_text = false
+        in_search_text = true
+        line_num = line_num + 1
+        line = lines[line_num]
+    elseif startswith(strip(line), "@with") then
+        in_search_text = false
+        in_replace_text = true
+        line_num = line_num + 1
+        line = lines[line_num]
+    elseif startswith(strip(line), "@end") then
+        in_search_text = false
+        in_replace_text = false
+
+        search_text = literalize(chomp(search_text))
+        replace_text = chomp(replace_text)
+        replace_text = replace_text:gsub("%%", "%%%%")
+
+        file_source = file_source:gsub(search_text, replace_text)
+        search_text = ""
+        replace_text = ""
+    end
+
+    if in_search_text then
+        search_text = search_text .. line .. "\n"
+    elseif in_replace_text then
+        replace_text = replace_text .. line .. "\n"
+    end
 end
 ---
 

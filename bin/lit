@@ -2289,6 +2289,7 @@ function resolve_includes(source, source_dir, cur_filename)
         local line = lines[line_num]
 
         if startswith(line, "@include") then
+            -- @include statement
             local filename = basename(strip(line:sub(10)))
             if strip(filename) == "" then
                 print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
@@ -2300,11 +2301,77 @@ function resolve_includes(source, source_dir, cur_filename)
                 print(cur_filename .. ":error:" .. line_num .. ":Included file ".. file .. " does not exist.")
                 os.exit()
             end
-
+            
             if filetype == "lit" then
                 newSource = newSource .. resolve_includes(readall(file), source_dir, file)
             end
+
         elseif startswith(line, "@change") and not startswith(line, "@change_end") then
+            -- @change statement
+            local filename = basename(strip(line:sub(9)))
+            if strip(filename) == "" then
+                print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
+                os.exit()
+            end
+            
+            local filetype = filename:match(".*%.(.*)")
+            local file = source_dir .. "/" .. strip(line:sub(9))
+            if not file_exists(file) then
+                print(cur_filename .. ":error:" .. line_num .. ":Changed file ".. file .. " does not exist.")
+                os.exit()
+            end
+            
+            if filetype == "lit" then
+                local search_text = ""
+                local replace_text = ""
+                local in_search_text = false
+                local in_replace_text = false
+            
+                local file_source = readall(file)
+            
+                -- Parse the change statement
+                while strip(line) ~= "@change_end" do
+                    if line_num == #lines + 1 then
+                        print(cur_filename .. ":error:" .. #lines .. "Reached end of file with no @change_end")
+                        exit()
+                    end
+                    line_num = line_num + 1
+                    line = lines[line_num]
+                
+                    if startswith(strip(line), "@replace") then
+                        in_replace_text = false
+                        in_search_text = true
+                        line_num = line_num + 1
+                        line = lines[line_num]
+                    elseif startswith(strip(line), "@with") then
+                        in_search_text = false
+                        in_replace_text = true
+                        line_num = line_num + 1
+                        line = lines[line_num]
+                    elseif startswith(strip(line), "@end") then
+                        in_search_text = false
+                        in_replace_text = false
+                
+                        search_text = literalize(chomp(search_text))
+                        replace_text = chomp(replace_text)
+                        replace_text = replace_text:gsub("%%", "%%%%")
+                
+                        file_source = file_source:gsub(search_text, replace_text)
+                        search_text = ""
+                        replace_text = ""
+                    end
+                
+                    if in_search_text then
+                        search_text = search_text .. line .. "\n"
+                    elseif in_replace_text then
+                        replace_text = replace_text .. line .. "\n"
+                    end
+                end
+
+            
+                newSource = newSource .. resolve_includes(file_source, source_dir, file)
+            end 
+
             local filename = basename(strip(line:sub(9)))
             if strip(filename) == "" then
                 print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
