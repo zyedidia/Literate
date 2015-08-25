@@ -59,7 +59,13 @@ array.
 for i=1,#arg do
     argument = arg[i]
     if argument == "-h" then
-        print("Usage: lit [-noindex] [-html] [-code] [--out-dir=dir] [--no-output] [file ...]")
+        print("Usage: lit [-html] [-code] [-noindex] [--out-dir=<dir>] [--no-output] [file ...]")
+        print("Available options are:")
+        print("   -html:          Only generated HTML output")
+        print("   -code:          Only generated code output")
+        print("   -noindex:       Do not create an index")
+        print("  --out-dir=<dir>: Put the output files in <dir>")
+        print("  --no-output:     Do not create any output files, only report errors")
         os.exit()
     elseif argument == "-html" then
         html = true

@@ -1,7 +1,7 @@
 @code_type lua .lua
 @comment_type -- %s
 
-@include css.lit
+@include html_utils.lit
 @include markdown.lit
 
 @include stringutil.lit
@@ -14,6 +14,7 @@
 --- lit.lua
 #!/usr/bin/env lua
 
+@{Prettify}
 @{Tomorrow theme CSS}
 @{Default CSS}
 
