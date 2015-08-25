@@ -499,7 +499,7 @@ function write_markdown(mkdown)
         html = string.gsub(html, ">", "&gt;")
         html = string.gsub(html, "\"", "&quot;")
         html = markdown(mkdown)
-        out = out .. html .. "\n"
+        out = out .. strip(html)
     end
 end
 
@@ -510,31 +510,31 @@ function weave(lines, source_dir, has_index)
     get_locations(lines)
 
     -- Set up html
-    local start_codeblock = "<pre class=\"prettyprint lang-" .. codetype .. "\">\n"
-    local end_codeblock = "</pre>\n"
+    local start_codeblock = "<pre class=\"prettyprint lang-" .. codetype .. "\">"
+    local end_codeblock = "</pre>"
     
     local scripts = [[<script>]] .. prettify .. [[</script>
     <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
-                 <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: ]] .. "[['$','$']]}}); </script>\n"
+                 <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: ]] .. "[['$','$']]}}); </script>"
     
     -- Get the CSS
     local css = ""
     local files = readdir(source_dir) -- All the files in the current directory
     
     if contains(files, "default.css") then
-        css = readall(source_dir .. "/default.css") -- Read the user's default.css
+        css = readall(source_dir .. "/default.css"):gsub("%s+", "") -- Read the user's default.css
     else
-        css = default_css -- Use the default css
+        css = default_css:gsub("%s+", "") -- Use the default css
     end
     
     if contains(files, "colorscheme.css") then
-        css = css .. readall(source_dir .. "/colorscheme.css") -- Read the user's colorscheme.css
+        css = css .. readall(source_dir .. "/colorscheme.css"):gsub("%s+", "") -- Read the user's colorscheme.css
     else
-        css = css .. tomorrow_theme_css -- Use the default colorscheme
+        css = css .. tomorrow_theme_css:gsub("%s+", "") -- Use the default colorscheme
     end
     
     if contains(files, "additions.css") then
-        css = css .. readall(source_dir .. "/additions.css") -- Read the user's additions.css
+        css = css .. readall(source_dir .. "/additions.css"):gsub("%s+", "") -- Read the user's additions.css
     end
 
     
@@ -591,7 +591,7 @@ function weave(lines, source_dir, has_index)
             -- Reset the markdown
             markdown = ""
             
-            out = out .. "<div class=\"codeblock\">\n"
+            out = out .. "<div class=\"codeblock\">"
             local name = strip(string.sub(line, 4, #line)) -- The codeblock name
             
             local adding = false -- Whether or not this block is a +=
@@ -623,7 +623,7 @@ function weave(lines, source_dir, has_index)
                 output = "<b>" .. output .. "</b>" -- If the name is a file, make it bold
             end
             
-            out = out .. "<p class=\"notp\"><span class=\"codeblock_name\">" .. output .. "</span></p>\n"
+            out = out .. "<p class=\"notp\"><span class=\"codeblock_name\">" .. output .. "</span></p>"
             -- We can now begin pretty printing the code that comes next
             out = out .. start_codeblock
 
@@ -666,7 +666,7 @@ function weave(lines, source_dir, has_index)
                     if loopnum > 1 then
                         plural = "s"
                     end
-                    out = out .. "<p class=\"seealso\">See also section" .. plural .. links .. ".</p>\n"
+                    out = out .. "<p class=\"seealso\">See also section" .. plural .. links .. ".</p>"
                 end
             end
 
@@ -689,12 +689,12 @@ function weave(lines, source_dir, has_index)
                     end
                     output = output .. punc .. " <a href=\"#" .. location .. "\">" .. location .. "</a>"
                 end
-                output = output .. ".</p>\n"
+                output = output .. ".</p>"
                 out = out .. output
             end
 
             -- Close the "codeblock" div
-            out = out .. "</div>\n"
+            out = out .. "</div>"
 
         elseif startswith(line, "@s") and not in_codeblock then -- Section began
             -- Create a new section
@@ -703,7 +703,7 @@ function weave(lines, source_dir, has_index)
                 out = out .. "</div>"
             end
             if sectionnum > 0 then
-                out = out .. "<div class=\"section\">\n"
+                out = out .. "<div class=\"section\">"
             end
             
             -- Write the markdown. It is possible that the last section had no code and was only prose.
@@ -718,12 +718,12 @@ function weave(lines, source_dir, has_index)
             if heading_title == "" then
                 class = "class=\"noheading\""
             end
-            out = out .. "<p class=\"notp\" id=\"" .. sectionnum .. "\"></p><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4>\n"
+            out = out .. "<p class=\"notp\" id=\"" .. sectionnum .. "\"></p><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4>"
 
         elseif startswith(line, "@title") and not in_codeblock then -- Title created
             -- Create the title
             local title = strip(string.sub(line, 7, #line))
-            out = out .. "<h1>" .. title .. "</h1>\n"
+            out = out .. "<h1>" .. title .. "</h1>"
 
         elseif startswith(line, "@include") and not in_codeblock then -- Inline the html given
             -- Include the given file
@@ -818,7 +818,7 @@ function weave(lines, source_dir, has_index)
         out = out .. create_index(inputfilename)
     end
     
-    out = out .. "</body>\n</html>\n"
+    out = out .. "</body></html>"
 
 
     return out
