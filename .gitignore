@@ -10,3 +10,5 @@ tools/w2lit/*.c
 tools/w2lit/a.out
 
 lua/lua
+
+*.swp
