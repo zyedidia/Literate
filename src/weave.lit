@@ -232,19 +232,19 @@ local css = ""
 local files = readdir(source_dir) -- All the files in the current directory
 
 if contains(files, "default.css") then
-    css = readall(source_dir .. "/default.css"):gsub("%s+", "") -- Read the user's default.css
+    css = readall(source_dir .. "/default.css"):gsub("\n+", "") -- Read the user's default.css
 else
-    css = default_css:gsub("%s+", "") -- Use the default css
+    css = default_css:gsub("\n+", "") -- Use the default css
 end
 
 if contains(files, "colorscheme.css") then
-    css = css .. readall(source_dir .. "/colorscheme.css"):gsub("%s+", "") -- Read the user's colorscheme.css
+    css = css .. readall(source_dir .. "/colorscheme.css"):gsub("\n+", "") -- Read the user's colorscheme.css
 else
-    css = css .. tomorrow_theme_css:gsub("%s+", "") -- Use the default colorscheme
+    css = css .. tomorrow_theme_css:gsub("\n+", "") -- Use the default colorscheme
 end
 
 if contains(files, "additions.css") then
-    css = css .. readall(source_dir .. "/additions.css"):gsub("%s+", "") -- Read the user's additions.css
+    css = css .. readall(source_dir .. "/additions.css"):gsub("\n+", "") -- Read the user's additions.css
 end
 ---
 
