@@ -51,7 +51,7 @@ The types of these dictionaries are `Dict{String, Array{Int, 1}}`. We also take 
 to get the @title of the lit file too.
 
 --- Define the get_locations function
-function get_locations(lines)
+function get_locations(lines, source_dir)
     local sectionnum = 0   -- Which section is currently being parsed
     local in_codeblock = false   -- Whether we are parsing a codeblock or not
 
@@ -62,6 +62,32 @@ function get_locations(lines)
             local command = split(line, " ")
             codetype = command[2]
             codetype_ext = string.sub(command[3], 2, #command[3])
+            goto continue
+        end
+
+        if startswith(line, "@add_css") then
+            local file = source_dir .. "/" .. strip(line:sub(9))
+            if not file_exists(file) then
+                print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
+            else
+                default_css = default_css .. readall(file)
+            end
+            goto continue
+        elseif startswith(line, "@overwrite_css") then
+            local file = source_dir .. "/" .. strip(line:sub(15))
+            if not file_exists(file) then
+                print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
+            else
+                default_css = readall(file)
+            end
+            goto continue
+        elseif startswith(line, "@colorscheme") then
+            local file = source_dir .. "/" .. strip(line:sub(13))
+            if not file_exists(file) then
+                print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
+            else
+                colorscheme_css = readall(file)
+            end
             goto continue
         end
 
@@ -165,7 +191,7 @@ end
 function weave(lines, source_dir, has_index)
     out = ""
 
-    get_locations(lines)
+    get_locations(lines, source_dir)
 
     @{Set up html}
     @{Set up variables}
@@ -201,7 +227,8 @@ local scripts = [[<script>]] .. prettify .. [[</script>
 <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
              <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: ]] .. "[['$','$']]}}); </script>"
 
-@{Get the CSS}
+local css = default_css:gsub("\n+", "")
+css = css .. colorscheme_css:gsub("\n+", "")
 
 local base_html = [[<!doctype html>
                <html>
@@ -216,36 +243,6 @@ local base_html = [[<!doctype html>
                <body>]]
 
 out = out .. base_html
----
-
-@s
-
-Getting the CSS is slightly more complex because we allow the user to define their own style sheets in the current directory.
-There are three special stylesheets the user can define:
-
-* `default.css`: This will replace the page's css
-* `colorscheme.css`: This will replace the the colorscheme for pretty printing code. You can get color themes [here](http://jmblog.github.io/color-themes-for-google-code-prettify/)
-* `additions.css`: This css will be added in addition to the default css
-
---- Get the CSS
-local css = ""
-local files = readdir(source_dir) -- All the files in the current directory
-
-if contains(files, "default.css") then
-    css = readall(source_dir .. "/default.css"):gsub("\n+", "") -- Read the user's default.css
-else
-    css = default_css:gsub("\n+", "") -- Use the default css
-end
-
-if contains(files, "colorscheme.css") then
-    css = css .. readall(source_dir .. "/colorscheme.css"):gsub("\n+", "") -- Read the user's colorscheme.css
-else
-    css = css .. tomorrow_theme_css:gsub("\n+", "") -- Use the default colorscheme
-end
-
-if contains(files, "additions.css") then
-    css = css .. readall(source_dir .. "/additions.css"):gsub("\n+", "") -- Read the user's additions.css
-end
 ---
 
 @s
@@ -486,7 +483,6 @@ local filetype = filename:match(".*%.(.*)")
 local file = source_dir .. "/" .. strip(line:sub(10))
 if not file_exists(file) then
     print(inputfilename .. ":" .. line_num .. ":error: Included file ".. file .. " does not exist.")
-    exit()
 end
 
 if filetype == "html" then

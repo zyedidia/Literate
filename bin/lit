@@ -65,7 +65,7 @@ O(e,250):"function"===typeof a&&a()}for(var b=d||document.body,i=b.ownerDocument
 define("google-code-prettify",[],function(){return X})})();return e}();R||O(P,0)})();}()]]
 
 -- Tomorrow theme CSS
-local tomorrow_theme_css = [[/* Tomorrow Theme */
+local colorscheme_css = [[/* Tomorrow Theme */
 /* Original theme - https://github.com/chriskempson/tomorrow-theme */
 .prettyprint {
     background: white;
@@ -456,7 +456,7 @@ return false
 end
 
 -- Define the get_locations function
-function get_locations(lines)
+function get_locations(lines, source_dir)
     local sectionnum = 0   -- Which section is currently being parsed
     local in_codeblock = false   -- Whether we are parsing a codeblock or not
 
@@ -467,6 +467,32 @@ function get_locations(lines)
             local command = split(line, " ")
             codetype = command[2]
             codetype_ext = string.sub(command[3], 2, #command[3])
+            goto continue
+        end
+
+        if startswith(line, "@add_css") then
+            local file = source_dir .. "/" .. strip(line:sub(9))
+            if not file_exists(file) then
+                print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
+            else
+                default_css = default_css .. readall(file)
+            end
+            goto continue
+        elseif startswith(line, "@overwrite_css") then
+            local file = source_dir .. "/" .. strip(line:sub(15))
+            if not file_exists(file) then
+                print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
+            else
+                default_css = readall(file)
+            end
+            goto continue
+        elseif startswith(line, "@colorscheme") then
+            local file = source_dir .. "/" .. strip(line:sub(13))
+            if not file_exists(file) then
+                print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
+            else
+                colorscheme_css = readall(file)
+            end
             goto continue
         end
 
@@ -535,7 +561,7 @@ end
 function weave(lines, source_dir, has_index)
     out = ""
 
-    get_locations(lines)
+    get_locations(lines, source_dir)
 
     -- Set up html
     local start_codeblock = "<pre class=\"prettyprint lang-" .. codetype .. "\">"
@@ -545,26 +571,8 @@ function weave(lines, source_dir, has_index)
     <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
                  <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: ]] .. "[['$','$']]}}); </script>"
     
-    -- Get the CSS
-    local css = ""
-    local files = readdir(source_dir) -- All the files in the current directory
-    
-    if contains(files, "default.css") then
-        css = readall(source_dir .. "/default.css"):gsub("\n+", "") -- Read the user's default.css
-    else
-        css = default_css:gsub("\n+", "") -- Use the default css
-    end
-    
-    if contains(files, "colorscheme.css") then
-        css = css .. readall(source_dir .. "/colorscheme.css"):gsub("\n+", "") -- Read the user's colorscheme.css
-    else
-        css = css .. tomorrow_theme_css:gsub("\n+", "") -- Use the default colorscheme
-    end
-    
-    if contains(files, "additions.css") then
-        css = css .. readall(source_dir .. "/additions.css"):gsub("\n+", "") -- Read the user's additions.css
-    end
-
+    local css = default_css:gsub("\n+", "")
+    css = css .. colorscheme_css:gsub("\n+", "")
     
     local base_html = [[<!doctype html>
                    <html>
@@ -760,7 +768,6 @@ function weave(lines, source_dir, has_index)
             local file = source_dir .. "/" .. strip(line:sub(10))
             if not file_exists(file) then
                 print(inputfilename .. ":" .. line_num .. ":error: Included file ".. file .. " does not exist.")
-                exit()
             end
             
             if filetype == "html" then
@@ -2509,6 +2516,7 @@ else
         if source_dir == "" then
             source_dir = "."
         end
+        print(source_dir)
     
         complete_source = readall(file)
         complete_source = resolve_includes(complete_source, source_dir, file)

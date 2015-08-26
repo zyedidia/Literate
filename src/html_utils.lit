@@ -10,7 +10,7 @@ and the css for the page in general. These get inlined into the HTML during weav
 Here is the CSS for the `Tomorrow` colorscheme:
 
 --- Tomorrow theme CSS
-local tomorrow_theme_css = [[/* Tomorrow Theme */
+local colorscheme_css = [[/* Tomorrow Theme */
 /* Original theme - https://github.com/chriskempson/tomorrow-theme */
 .prettyprint {
     background: white;
