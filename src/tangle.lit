@@ -73,7 +73,7 @@ local code = ""
 while true do
     line_num = line_num + 1
     if line_num > #lines then
-        print(inputfilename .. ":error:" .. #lines .. ":".. block_name .. " is never closed")
+        print(inputfilename .. ":" .. #lines .. ":error: ".. block_name .. " is never closed")
         os.exit()
     end
 
@@ -100,7 +100,7 @@ if add_to_block then
     if codeblocks[block_name] ~= nil then
         codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
     else
-        print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. block_name)
+        print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. block_name)
         os.exit()
     end
 else
@@ -119,7 +119,7 @@ the code that is generated based on how the codeblock name was indented.
 function write_code(block_name, leading_whitespace, codeblocks, outstream)
     local code = codeblocks[block_name]
     if code == nil then
-        print(inputfilename .. ":error:" .. codeblock_use_lines[block_name] .. ":Unknown block name: " .. block_name)
+        print(inputfilename .. ":" .. codeblock_use_lines[block_name] .. ":error: Unknown block name: " .. block_name)
         os.exit()
     end
     local lines = split(code, "\n")
@@ -178,6 +178,6 @@ for i,name in pairs(block_names) do
     end
 end
 if not found_file then
-    print(inputfilename .. ":error:no file name found. Not writing any code file.")
+    print(inputfilename .. ":1:warning: no file name found. Not writing any code file.")
 end
 ---

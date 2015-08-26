@@ -324,7 +324,7 @@ cur_codeblock_name = name
 file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file name
 
 if block_locations[name] == nil then
-    print(inputfilename .. ":error:" .. line_num .. ": Unknown block name: " .. name)
+    print(inputfilename .. ":" .. line_num .. ":error:  Unknown block name: " .. name)
     os.exit()
 end
 
@@ -379,7 +379,7 @@ We also have to perform a few extra checks to make sure we get our grammar right
 --- Write any "see also" links
 local locations = block_locations[name]
 if block_locations[name] == nil then
-    print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. name)
+    print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
     os.exit()
 end
 
@@ -485,7 +485,7 @@ local filename = basename(strip(line:sub(10)))
 local filetype = filename:match(".*%.(.*)")
 local file = source_dir .. "/" .. strip(line:sub(10))
 if not file_exists(file) then
-    print(inputfilename .. ":error:" .. line_num .. ":Included file ".. file .. " does not exist.")
+    print(inputfilename .. ":" .. line_num .. ":error: Included file ".. file .. " does not exist.")
     exit()
 end
 
@@ -538,7 +538,7 @@ while string.match(line, "@{.*}") do
     local m = string.match(line, "@{.*}")
     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
     if block_locations[name] == nil then
-        print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. name)
+        print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
         os.exit()
     end
     local location = block_locations[name][1]

@@ -634,7 +634,7 @@ function weave(lines, source_dir, has_index)
             file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file name
             
             if block_locations[name] == nil then
-                print(inputfilename .. ":error:" .. line_num .. ": Unknown block name: " .. name)
+                print(inputfilename .. ":" .. line_num .. ":error:  Unknown block name: " .. name)
                 os.exit()
             end
             
@@ -669,7 +669,7 @@ function weave(lines, source_dir, has_index)
             -- Write any "see also" links
             local locations = block_locations[name]
             if block_locations[name] == nil then
-                print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. name)
+                print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
                 os.exit()
             end
             
@@ -759,7 +759,7 @@ function weave(lines, source_dir, has_index)
             local filetype = filename:match(".*%.(.*)")
             local file = source_dir .. "/" .. strip(line:sub(10))
             if not file_exists(file) then
-                print(inputfilename .. ":error:" .. line_num .. ":Included file ".. file .. " does not exist.")
+                print(inputfilename .. ":" .. line_num .. ":error: Included file ".. file .. " does not exist.")
                 exit()
             end
             
@@ -785,7 +785,7 @@ function weave(lines, source_dir, has_index)
                     local m = string.match(line, "@{.*}")
                     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
                     if block_locations[name] == nil then
-                        print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. name)
+                        print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
                         os.exit()
                     end
                     local location = block_locations[name][1]
@@ -813,7 +813,7 @@ function weave(lines, source_dir, has_index)
                     local m = string.match(line, "@{.*}")
                     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
                     if block_locations[name] == nil then
-                        print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. name)
+                        print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
                         os.exit()
                     end
                     local location = block_locations[name][1]
@@ -882,7 +882,7 @@ function tangle(lines)
             while true do
                 line_num = line_num + 1
                 if line_num > #lines then
-                    print(inputfilename .. ":error:" .. #lines .. ":".. block_name .. " is never closed")
+                    print(inputfilename .. ":" .. #lines .. ":error: ".. block_name .. " is never closed")
                     os.exit()
                 end
             
@@ -902,7 +902,7 @@ function tangle(lines)
                 if codeblocks[block_name] ~= nil then
                     codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
                 else
-                    print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. block_name)
+                    print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. block_name)
                     os.exit()
                 end
             else
@@ -935,7 +935,7 @@ function tangle(lines)
         end
     end
     if not found_file then
-        print(inputfilename .. ":error:no file name found. Not writing any code file.")
+        print(inputfilename .. ":1:warning: no file name found. Not writing any code file.")
     end
 
 end
@@ -944,7 +944,7 @@ end
 function write_code(block_name, leading_whitespace, codeblocks, outstream)
     local code = codeblocks[block_name]
     if code == nil then
-        print(inputfilename .. ":error:" .. codeblock_use_lines[block_name] .. ":Unknown block name: " .. block_name)
+        print(inputfilename .. ":" .. codeblock_use_lines[block_name] .. ":error: Unknown block name: " .. block_name)
         os.exit()
     end
     local lines = split(code, "\n")
@@ -2320,13 +2320,13 @@ function resolve_includes(source, source_dir, cur_filename)
             -- @include statement
             local filename = basename(strip(line:sub(10)))
             if strip(filename) == "" then
-                print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
+                print(cur_filename .. ":" .. line_num .. ":error: No filename given to @change")
                 os.exit()
             end
             local filetype = filename:match(".*%.(.*)")
             local file = source_dir .. "/" .. strip(line:sub(10))
             if not file_exists(file) then
-                print(cur_filename .. ":error:" .. line_num .. ":Included file ".. file .. " does not exist.")
+                print(cur_filename .. ":" .. line_num .. ":error: Included file ".. file .. " does not exist.")
                 os.exit()
             end
             
@@ -2338,14 +2338,14 @@ function resolve_includes(source, source_dir, cur_filename)
             -- @change statement
             local filename = basename(strip(line:sub(9)))
             if strip(filename) == "" then
-                print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
+                print(cur_filename .. ":" .. line_num .. ":error: No filename given to @change")
                 os.exit()
             end
             
             local filetype = filename:match(".*%.(.*)")
             local file = source_dir .. "/" .. strip(line:sub(9))
             if not file_exists(file) then
-                print(cur_filename .. ":error:" .. line_num .. ":Changed file ".. file .. " does not exist.")
+                print(cur_filename .. ":" .. line_num .. ":error: Changed file ".. file .. " does not exist.")
                 os.exit()
             end
             
@@ -2360,7 +2360,7 @@ function resolve_includes(source, source_dir, cur_filename)
                 -- Parse the change statement
                 while strip(line) ~= "@change_end" do
                     if line_num == #lines + 1 then
-                        print(cur_filename .. ":error:" .. #lines .. "Reached end of file with no @change_end")
+                        print(cur_filename .. ":" .. #lines .. ":error: Reached end of file with no @change_end")
                         exit()
                     end
                     line_num = line_num + 1
