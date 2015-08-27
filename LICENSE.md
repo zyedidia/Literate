@@ -1,4 +1,4 @@
-The Literate.jl package is licensed under the MIT "Expat" License:
+Literate is licensed under the MIT "Expat" License:
 
 > Copyright (c) 2015: Zachary Yedidia.
 >

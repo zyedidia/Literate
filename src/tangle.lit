@@ -11,7 +11,7 @@ write out the code, recursively following and links that are used.
 
 Here's what the structure looks like:
 
---- tangle.lua
+--- tangle
 @{Define the tangle function}
 @{Define the write_code function}
 ---
@@ -24,6 +24,8 @@ Then we check if the line is either a codeblock beginning or ending, and if so w
 
 --- Define the tangle function
 function tangle(lines)
+    codeblock_use_lines = {} -- String => Number
+
     comment_type = ""
     local codeblocks = {} -- String => String
     local block_names = {} -- Number => String
@@ -70,13 +72,20 @@ across the end of the codeblock (signified by `---`).
 local code = ""
 while true do
     line_num = line_num + 1
+    if line_num > #lines then
+        print(inputfilename .. ":error:" .. #lines .. ":".. block_name .. " is never closed")
+        os.exit()
+    end
+
+    if startswith(strip(line), "@{") then
+        local name = line:match("@{(.*)}")
+        codeblock_use_lines[name] = line_num
+    end
+
     line = lines[line_num]
     if line == nil then break end
     if chomp(line) == "---" then break end
-    code = code .. line
-    if stdin then
-        code = code .. "\n"
-    end
+    code = code .. line .. "\n"
 end
 ---
 
@@ -91,7 +100,7 @@ if add_to_block then
     if codeblocks[block_name] ~= nil then
         codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
     else
-        print("Tangle error: line " .. line_num .. ": Unknown block name: " .. block_name)
+        print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. block_name)
         os.exit()
     end
 else
@@ -104,13 +113,13 @@ end
 
 Now we define the `write_code` function which takes the `block_name`, `codeblocks`, and `outstream` and writes the code,
 recursively following links until it is done. We also keep trying of the leading whitespace so that we correctly indent
-the code that is generated based on how the `@{name}` was indented.
+the code that is generated based on how the codeblock name was indented.
 
 --- Define the write_code function
 function write_code(block_name, leading_whitespace, codeblocks, outstream)
     local code = codeblocks[block_name]
     if code == nil then
-        print("Tangle error: Unknown block name: " .. block_name)
+        print(inputfilename .. ":error:" .. codeblock_use_lines[block_name] .. ":Unknown block name: " .. block_name)
         os.exit()
     end
     local lines = split(code, "\n")
@@ -118,7 +127,9 @@ function write_code(block_name, leading_whitespace, codeblocks, outstream)
     if comment_type ~= "" then
         if not string.match(block_name, "^.+%w%.%w+$") then
             comment = string.gsub(comment_type, "%%s", block_name)
-            write(outstream, leading_whitespace .. comment .. "\n")
+            if generate_files then
+                write(outstream, leading_whitespace .. comment .. "\n")
+            end
         end
     end
 
@@ -128,11 +139,15 @@ function write_code(block_name, leading_whitespace, codeblocks, outstream)
             line = strip(line)
             write_code(string.sub(line, 3, line:find("}[^}]*$") - 1), leading_whitespace .. myleading_whitespace, codeblocks, outstream)
         else
-            write(outstream, leading_whitespace .. line .. "\n")
+            if generate_files then
+                write(outstream, leading_whitespace .. line .. "\n")
+            end
         end
     end
 
-    write(outstream, "\n")
+    if generate_files then
+        write(outstream, "\n")
+    end
 end
 ---
 
@@ -150,15 +165,19 @@ for i,name in pairs(block_names) do
             outstream = "STDOUT"
             print("\n---- " .. basename(name) .. " ----\n")
         else
-            outstream = io.open(outdir .. "/" .. strip(name), "w")
+            if generate_files then
+                outstream = io.open(outdir .. "/" .. strip(name), "w")
+            end
         end
         write_code(name, "", codeblocks, outstream)
         if not stdin then
-            outstream:close()
+            if generate_files then
+                outstream:close()
+            end
         end
     end
 end
 if not found_file then
-    print("Tangle error: no file name found. Not writing any code file.")
+    print(inputfilename .. ":error:no file name found. Not writing any code file.")
 end
 ---

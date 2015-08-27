@@ -11,22 +11,9 @@ number of `.lit` files, and if none are specified use `STDIN` and `STDOUT`.
 
 Here is the structure:
 
---- lit.lua
-#!/usr/bin/env lua
-gen = arg[1]
-package.path = gen .. "/?.lua;" .. package.path
-
-require("stringutil")
-require("fileutil")
-
-require("weave")
-require("tangle")
-
-require("index")
-
-md = require("markdown")
-
+--- lit
 @{Function to identify the os}
+@{Function to resolve @include statements}
 
 @{Parse the arguments}
 if #inputfiles == 0 then
@@ -34,8 +21,6 @@ if #inputfiles == 0 then
 else
     @{Weave and/or tangle the input files}
 end
-
--- vim: set ft=lua:
 ---
 
 @s
@@ -51,6 +36,7 @@ html = false
 code = false
 outdir = "."
 index = true
+generate_files = true
 
 inputfiles = {}
 ---
@@ -64,15 +50,22 @@ Next we loop through each argument and check if it is one of the possible flags:
 * `-code`: Only generate code
 * `-noindex`: Don't create an index
 * `--out-dir=dir`: Specify the directory to output html and/or code
+* `--no-output`: With the option enabled, lit will not generate any output files. This is useful if you just want to check errors
 
 If the arguments is not one of these flags, we add the argument to the `inputfiles` 
 array.
 
 --- Parse the arguments +=
-for i=2,#arg do
+for i=1,#arg do
     argument = arg[i]
     if argument == "-h" then
-        print("Usage: lit [-noindex] [-html] [-code] [--out-dir=dir] [file ...]")
+        print("Usage: lit [-html] [-code] [-noindex] [--out-dir=<dir>] [--no-output] [file ...]")
+        print("Available options are:")
+        print("   -html:          Only generated HTML output")
+        print("   -code:          Only generated code output")
+        print("   -noindex:       Do not create an index")
+        print("  --out-dir=<dir>: Put the output files in <dir>")
+        print("  --no-output:     Do not create any output files, only report errors")
         os.exit()
     elseif argument == "-html" then
         html = true
@@ -82,6 +75,8 @@ for i=2,#arg do
         index = false
     elseif startswith(argument, "--out-dir=") then
         outdir = string.sub(argument, 11, #argument)
+    elseif startswith(argument, "--no-output") then
+        generate_files = false
     else
         inputfiles[#inputfiles + 1] = argument
     end
@@ -106,18 +101,21 @@ If no input files were passed in, we should take input from `STDIN` and spit all
 output to `STDOUT`.
 
 --- Use STDIN and STDOUT
-lines = lines_from()
 @{Declare a few globals}
+local source_dir = "."
 
-complete_source = ""
-for i=1,#lines do
-    complete_source = complete_source .. lines[i] .. "\n"
-end
+complete_source = readall()
+complete_source = resolve_includes(complete_source, source_dir, "none")
+local lines = split(complete_source, "\n")
+
+inputfilename = "none"
 
 stdin = true
 if html then
-    local output = weave(lines, ".", "none", index)
-    write("STDOUT", output)
+    local output = weave(lines, ".", index)
+    if generate_files then
+        write("STDOUT", output)
+    end
 end
 
 if code then
@@ -133,22 +131,24 @@ If input files were given, we should loop through each one and tangle/weave it.
 for num,file in pairs(inputfiles) do
     @{Declare a few globals}
 
-    local lines = lines_from(file)
-
-    complete_source = ""
-    for i=1,#lines do
-        complete_source = complete_source .. lines[i] .. "\n"
-    end
+    inputfilename = file
 
     local source_dir = dirname(file)
     if source_dir == "" then
         source_dir = "."
     end
+
+    complete_source = readall(file)
+    complete_source = resolve_includes(complete_source, source_dir, file)
+    local lines = split(complete_source, "\n")
+
     if html then
-        local output = weave(lines, source_dir, file, index)
-        local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
-        write(outputstream, output)
-        outputstream:close()
+        local output = weave(lines, source_dir, index)
+        if generate_files then
+            local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
+            write(outputstream, output)
+            outputstream:close()
+        end
     end
     if code then
         tangle(lines)
@@ -184,6 +184,220 @@ holding the line numbers each section starts on.
 --- Declare a few globals +=
 code_lines = {} -- Number => Number
 section_linenums = {} -- Number => Number
+---
+
+@s
+
+We also need to define the `resolve_includes` function which will follow `@include`
+statements and if they are including a `.lit` file it will take the contents of that
+file and inline it. This function will also follow `@change` statements, which
+are almost the same as `@include` except some changes are performed on the included
+content.
+
+This function takes in a string with the source of the lit file and gives back a 
+string with all `@include` and `@change` statements resolved.
+
+--- Function to resolve @include statements
+function resolve_includes(source, source_dir, cur_filename)
+    local newSource = ""
+    local lines = split(source, "\n")
+
+    local line_num = 0
+    for i=1,#lines do
+        line_num = line_num + 1
+        local line = lines[line_num]
+
+        if startswith(line, "@include") then
+            @{@include statement}
+        elseif startswith(line, "@change") and not startswith(line, "@change_end") then
+            @{@change statement}
+            local filename = basename(strip(line:sub(9)))
+            if strip(filename) == "" then
+                print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
+                os.exit()
+            end
+
+            local filetype = filename:match(".*%.(.*)")
+            local file = source_dir .. "/" .. strip(line:sub(9))
+            if not file_exists(file) then
+                print(cur_filename .. ":error:" .. line_num .. ":Changed file ".. file .. " does not exist.")
+                os.exit()
+            end
+
+            if filetype == "lit" then
+                local search_text = ""
+                local replace_text = ""
+                local in_search_text = false
+                local in_replace_text = false
+
+                local file_source = readall(file)
+
+                while strip(line) ~= "@change_end" do
+                    if line_num == #lines + 1 then
+                        print(cur_filename .. ":error:" .. #lines .. "Reached end of file with no @change_end")
+                        exit()
+                    end
+                    line_num = line_num + 1
+                    line = lines[line_num]
+
+                    if startswith(strip(line), "@replace") then
+                        in_replace_text = false
+                        in_search_text = true
+                        line_num = line_num + 1
+                        line = lines[line_num]
+                    elseif startswith(strip(line), "@with") then
+                        in_search_text = false
+                        in_replace_text = true
+                        line_num = line_num + 1
+                        line = lines[line_num]
+                    elseif startswith(strip(line), "@end") then
+                        in_search_text = false
+                        in_replace_text = false
+
+                        search_text = literalize(chomp(search_text))
+                        replace_text = chomp(replace_text)
+                        replace_text = replace_text:gsub("%%", "%%%%")
+
+                        file_source = file_source:gsub(search_text, replace_text)
+                        search_text = ""
+                        replace_text = ""
+                    end
+
+                    if in_search_text then
+                        search_text = search_text .. line .. "\n"
+                    elseif in_replace_text then
+                        replace_text = replace_text .. line .. "\n"
+                    end
+                end
+
+                newSource = newSource .. resolve_includes(file_source, source_dir, file)
+            end 
+
+        end
+        
+        if not startswith(line, "@change_end") then
+            newSource = newSource .. line .. "\n"
+        end
+
+        if line_num >= #lines then
+            break
+        end
+    end
+
+    return newSource
+end
+---
+
+@s
+
+Following an `@include` statement is relatively simple. We check to make sure
+the included file is a `.lit` file, and if it is, we add it to the `newSource`
+and call `resolve_includes()` on the included file to recursively follow all
+the include statements.
+
+--- @include statement
+local filename = basename(strip(line:sub(10)))
+if strip(filename) == "" then
+    print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
+    os.exit()
+end
+local filetype = filename:match(".*%.(.*)")
+local file = source_dir .. "/" .. strip(line:sub(10))
+if not file_exists(file) then
+    print(cur_filename .. ":error:" .. line_num .. ":Included file ".. file .. " does not exist.")
+    os.exit()
+end
+
+if filetype == "lit" then
+    newSource = newSource .. resolve_includes(readall(file), source_dir, file)
+end
+---
+
+@s
+
+Following the `@change` statements is a bit trickier. We do the same filename
+check at the beginning, and the concatenation at the end is recursive, but
+we also have to parse what to search for and what to replace with.
+
+--- @change statement
+local filename = basename(strip(line:sub(9)))
+if strip(filename) == "" then
+    print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
+    os.exit()
+end
+
+local filetype = filename:match(".*%.(.*)")
+local file = source_dir .. "/" .. strip(line:sub(9))
+if not file_exists(file) then
+    print(cur_filename .. ":error:" .. line_num .. ":Changed file ".. file .. " does not exist.")
+    os.exit()
+end
+
+if filetype == "lit" then
+    local search_text = ""
+    local replace_text = ""
+    local in_search_text = false
+    local in_replace_text = false
+
+    local file_source = readall(file)
+
+    @{Parse the change statement}
+
+    newSource = newSource .. resolve_includes(file_source, source_dir, file)
+end 
+---
+
+@s
+
+To parse the change statement, we know the search text will be between
+`@replace` and `@with` and we know the replacement text will be between
+`@with` and `@end`. This syntax makes it easy to follow: `@replace` something
+`@with` something else `@end`.
+
+The strategy here is to keep parsing while we have not found an `@change_end`
+and if we find `@replace`, we begin adding every line found to the search text,
+and if we find `@with`, we add every line found to the replace text. At `@end`,
+we perform the substitution on the file source, and look for more `@replace` ... `@with`
+... `@end` statements.
+
+--- Parse the change statement
+while strip(line) ~= "@change_end" do
+    if line_num == #lines + 1 then
+        print(cur_filename .. ":error:" .. #lines .. "Reached end of file with no @change_end")
+        exit()
+    end
+    line_num = line_num + 1
+    line = lines[line_num]
+
+    if startswith(strip(line), "@replace") then
+        in_replace_text = false
+        in_search_text = true
+        line_num = line_num + 1
+        line = lines[line_num]
+    elseif startswith(strip(line), "@with") then
+        in_search_text = false
+        in_replace_text = true
+        line_num = line_num + 1
+        line = lines[line_num]
+    elseif startswith(strip(line), "@end") then
+        in_search_text = false
+        in_replace_text = false
+
+        search_text = literalize(chomp(search_text))
+        replace_text = chomp(replace_text)
+        replace_text = replace_text:gsub("%%", "%%%%")
+
+        file_source = file_source:gsub(search_text, replace_text)
+        search_text = ""
+        replace_text = ""
+    end
+
+    if in_search_text then
+        search_text = search_text .. line .. "\n"
+    elseif in_replace_text then
+        replace_text = replace_text .. line .. "\n"
+    end
+end
 ---
 
 @s

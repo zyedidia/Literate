@@ -99,6 +99,7 @@ for i=1,#inputfiles do
                 line = strip(line:match("^@(.-)$"))
             else
                 started = true
+                line = line:gsub("{\\tt (.-)}", "%1")
                 out = out .. "@s " .. strip(line):match("^@%*(.-)%..-") .. "\n"
                 line = strip(strip(line):match("^@%*.-%.(.-)$"))
                 -- line = strip(line):gsub("^@%*(.-)%.(.-)", "@s %1\n%2")
@@ -145,16 +146,20 @@ for i=1,#inputfiles do
             in_codeblock = true
         end
 
-        line = line:gsub("{\\sl (.-)}", "*%1*")
-        line = line:gsub("{\\tt (.-)}", "%1")
-        line = line:gsub("{\\it (.-)}", "*%1")
-        line = line:gsub("\\/", "")
         if not in_codeblock then
+            line = line:gsub("{\\sl (.-)}", "*%1*")
+            line = line:gsub("{\\tt (.-)}", "`%1`")
+            line = line:gsub("{\\it (.-)}", "*%1*")
             line = line:gsub("``(.-)''", "\"%1\"")
             line = line:gsub("`(.-)'", "'%1'")
             line = line:gsub("\\%.{(.-)}", "`%1`")
             line = line:gsub("\\(.-)/", "`%1`")
             line = line:gsub("|(.-)|", "`%1`")
+            line = line:gsub("\\bf(%d+)", "**%1**")
+            line = line:gsub("\\(.-)/", "`%1`")
+            line = line:gsub("\\(.-)\\", "`%1`")
+            line = line:gsub("\\dots", "`...`")
+            line = line:gsub("~", " ")
         end
         line = line:gsub("@<(.-)@>;", "@{%1}")
         line = line:gsub("@<(.-)@>@;", "@{%1}")

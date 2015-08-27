@@ -5,4 +5,10 @@ examples/*.c
 examples/*.pdf
 examples/wc
 
-gen/lua
+tools/w2lit/*.lit
+tools/w2lit/*.c
+tools/w2lit/a.out
+
+lua/lua
+
+*.swp

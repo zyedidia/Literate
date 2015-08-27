@@ -6,7 +6,7 @@
 
 This file provides some useful string functions.
 
---- stringutil.lua
+--- stringutil
 @{The startswith function}
 @{The split function}
 @{The strip function}

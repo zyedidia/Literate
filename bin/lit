@@ -1,8 +1,2594 @@
-#!/bin/bash
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-if [ -f $DIR/../lua/lua ]
-then
-    $DIR/../lua/lua $DIR/lit.lua $DIR/../gen $@
+#!/usr/bin/env lua
+
+--[[
+Author: Zachary Yedidia
+Date: August 25, 2015
+
+Literate is licensed under the MIT "Expat" License:
+
+Copyright (c) 2015: Zachary Yedidia.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+> EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+]]--
+
+-- Prettify
+local prettify = [[!function(){var r=null;
+(function(){function X(e){function j(){try{K.doScroll("left")}catch(e){O(j,50);return}w("poll")}function w(j){if(!(j.type=="readystatechange"&&x.readyState!="complete")&&((j.type=="load"?n:x)[z](i+j.type,w,!1),!m&&(m=!0)))e.call(n,j.type||j)}var Y=x.addEventListener,m=!1,C=!0,t=Y?"addEventListener":"attachEvent",z=Y?"removeEventListener":"detachEvent",i=Y?"":"on";if(x.readyState=="complete")e.call(n,"lazy");else{if(x.createEventObject&&K.doScroll){try{C=!n.frameElement}catch(A){}C&&j()}x[t](i+"DOMContentLoaded",
+w,!1);x[t](i+"readystatechange",w,!1);n[t](i+"load",w,!1)}}function P(){S&&X(function(){var e=Q.length;$(e?function(){for(var j=0;j<e;++j)(function(e){O(function(){n.exports[Q[e] ].apply(n,arguments)},0)})(j)}:void 0)})}for(var n=window,O=n.setTimeout,x=document,K=x.documentElement,L=x.head||x.getElementsByTagName("head")[0]||K,z="",A=x.getElementsByTagName("script"),m=A.length;--m>=0;){var M=A[m],T=M.src.match(/^[^#?]*\/run_prettify\.js(\?[^#]*)?(?:#.*)?$/);if(T){z=T[1]||"";M.parentNode.removeChild(M);
+break}}var S=!0,D=[],N=[],Q=[];z.replace(/[&?]([^&=]+)=([^&]+)/g,function(e,j,w){w=decodeURIComponent(w);j=decodeURIComponent(j);j=="autorun"?S=!/^[0fn]/i.test(w):j=="lang"?D.push(w):j=="skin"?N.push(w):j=="callback"&&Q.push(w)});m=0;for(z=D.length;m<z;++m)(function(){var e=x.createElement("script");e.onload=e.onerror=e.onreadystatechange=function(){if(e&&(!e.readyState||/loaded|complete/.test(e.readyState)))e.onerror=e.onload=e.onreadystatechange=r,--R,R||O(P,0),e.parentNode&&e.parentNode.removeChild(e),
+e=r};e.type="text/javascript";e.src="https://cdn.rawgit.com/google/code-prettify/master/loader/lang-"+encodeURIComponent(D[m])+".js";L.insertBefore(e,L.firstChild)})(D[m]);for(var R=D.length,A=[],m=0,z=N.length;m<z;++m)A.push("https://cdn.rawgit.com/google/code-prettify/master/loader/skins/"+encodeURIComponent(N[m])+".css");A.push("https://cdn.rawgit.com/google/code-prettify/master/loader/prettify.css");(function(e){function j(m){if(m!==w){var n=x.createElement("link");n.rel="stylesheet";n.type="text/css";
+if(m+1<w)n.error=n.onerror=function(){j(m+1)};n.href=e[m];L.appendChild(n)}}var w=e.length;j(0)})(A);var $=function(){window.PR_SHOULD_USE_CONTINUATION=!0;var e;(function(){function j(a){function d(f){var b=f.charCodeAt(0);if(b!==92)return b;var a=f.charAt(1);return(b=i[a])?b:"0"<=a&&a<="7"?parseInt(f.substring(1),8):a==="u"||a==="x"?parseInt(f.substring(2),16):f.charCodeAt(1)}function h(f){if(f<32)return(f<16?"\\x0":"\\x")+f.toString(16);f=String.fromCharCode(f);return f==="\\"||f==="-"||f==="]"||
+f==="^"?"\\"+f:f}function b(f){var b=f.substring(1,f.length-1).match(/\\u[\dA-Fa-f]{4}|\\x[\dA-Fa-f]{2}|\\[0-3][0-7]{0,2}|\\[0-7]{1,2}|\\[\S\s]|[^\\]/g),f=[],a=b[0]==="^",c=["["];a&&c.push("^");for(var a=a?1:0,g=b.length;a<g;++a){var k=b[a];if(/\\[bdsw]/i.test(k))c.push(k);else{var k=d(k),o;a+2<g&&"-"===b[a+1]?(o=d(b[a+2]),a+=2):o=k;f.push([k,o]);o<65||k>122||(o<65||k>90||f.push([Math.max(65,k)|32,Math.min(o,90)|32]),o<97||k>122||f.push([Math.max(97,k)&-33,Math.min(o,122)&-33]))}}f.sort(function(f,
+a){return f[0]-a[0]||a[1]-f[1]});b=[];g=[];for(a=0;a<f.length;++a)k=f[a],k[0]<=g[1]+1?g[1]=Math.max(g[1],k[1]):b.push(g=k);for(a=0;a<b.length;++a)k=b[a],c.push(h(k[0])),k[1]>k[0]&&(k[1]+1>k[0]&&c.push("-"),c.push(h(k[1])));c.push("]");return c.join("")}function e(f){for(var a=f.source.match(/\[(?:[^\\\] ]|\\[\S\s])*]|\\u[\dA-Fa-f]{4}|\\x[\dA-Fa-f]{2}|\\\d+|\\[^\dux]|\(\?[!:=]|[()^]|[^()[\\^]+/g),c=a.length,d=[],g=0,k=0;g<c;++g){var o=a[g];o==="("?++k:"\\"===o.charAt(0)&&(o=+o.substring(1))&&(o<=k?
+d[o]=-1:a[g]=h(o))}for(g=1;g<d.length;++g)-1===d[g]&&(d[g]=++j);for(k=g=0;g<c;++g)o=a[g],o==="("?(++k,d[k]||(a[g]="(?:")):"\\"===o.charAt(0)&&(o=+o.substring(1))&&o<=k&&(a[g]="\\"+d[o]);for(g=0;g<c;++g)"^"===a[g]&&"^"!==a[g+1]&&(a[g]="");if(f.ignoreCase&&F)for(g=0;g<c;++g)o=a[g],f=o.charAt(0),o.length>=2&&f==="["?a[g]=b(o):f!=="\\"&&(a[g]=o.replace(/[A-Za-z]/g,function(a){a=a.charCodeAt(0);return"["+String.fromCharCode(a&-33,a|32)+"]"}));return a.join("")}for(var j=0,F=!1,l=!1,I=0,c=a.length;I<c;++I){var p=
+a[I];if(p.ignoreCase)l=!0;else if(/[a-z]/i.test(p.source.replace(/\\u[\da-f]{4}|\\x[\da-f]{2}|\\[^UXux]/gi,""))){F=!0;l=!1;break}}for(var i={b:8,t:9,n:10,v:11,f:12,r:13},q=[],I=0,c=a.length;I<c;++I){p=a[I];if(p.global||p.multiline)throw Error(""+p);q.push("(?:"+e(p)+")")}return RegExp(q.join("|"),l?"gi":"g")}function m(a,d){function h(a){var c=a.nodeType;if(c==1){if(!b.test(a.className)){for(c=a.firstChild;c;c=c.nextSibling)h(c);c=a.nodeName.toLowerCase();if("br"===c||"li"===c)e[l]="\n",F[l<<1]=j++,
+F[l++<<1|1]=a}}else if(c==3||c==4)c=a.nodeValue,c.length&&(c=d?c.replace(/\r\n?/g,"\n"):c.replace(/[\t\n\r ]+/g," "),e[l]=c,F[l<<1]=j,j+=c.length,F[l++<<1|1]=a)}var b=/(?:^|\s)nocode(?:\s|$)/,e=[],j=0,F=[],l=0;h(a);return{a:e.join("").replace(/\n$/,""),d:F}}function n(a,d,h,b){d&&(a={a:d,e:a},h(a),b.push.apply(b,a.g))}function x(a){for(var d=void 0,h=a.firstChild;h;h=h.nextSibling)var b=h.nodeType,d=b===1?d?a:h:b===3?S.test(h.nodeValue)?a:d:d;return d===a?void 0:d}function C(a,d){function h(a){for(var l=
+a.e,j=[l,"pln"],c=0,p=a.a.match(e)||[],m={},q=0,f=p.length;q<f;++q){var B=p[q],y=m[B],u=void 0,g;if(typeof y==="string")g=!1;else{var k=b[B.charAt(0)];if(k)u=B.match(k[1]),y=k[0];else{for(g=0;g<i;++g)if(k=d[g],u=B.match(k[1])){y=k[0];break}u||(y="pln")}if((g=y.length>=5&&"lang-"===y.substring(0,5))&&!(u&&typeof u[1]==="string"))g=!1,y="src";g||(m[B]=y)}k=c;c+=B.length;if(g){g=u[1];var o=B.indexOf(g),H=o+g.length;u[2]&&(H=B.length-u[2].length,o=H-g.length);y=y.substring(5);n(l+k,B.substring(0,o),h,
+j);n(l+k+o,g,A(y,g),j);n(l+k+H,B.substring(H),h,j)}else j.push(l+k,y)}a.g=j}var b={},e;(function(){for(var h=a.concat(d),l=[],i={},c=0,p=h.length;c<p;++c){var m=h[c],q=m[3];if(q)for(var f=q.length;--f>=0;)b[q.charAt(f)]=m;m=m[1];q=""+m;i.hasOwnProperty(q)||(l.push(m),i[q]=r)}l.push(/[\S\s]/);e=j(l)})();var i=d.length;return h}function t(a){var d=[],h=[];a.tripleQuotedStrings?d.push(["str",/^(?:'''(?:[^'\\]|\\[\S\s]|''?(?=[^']))*(?:'''|$)|"""(?:[^"\\]|\\[\S\s]|""?(?=[^"]))*(?:"""|$)|'(?:[^'\\]|\\[\S\s])*(?:'|$)|"(?:[^"\\]|\\[\S\s])*(?:"|$))/,
+r,"'\""]):a.multiLineStrings?d.push(["str",/^(?:'(?:[^'\\]|\\[\S\s])*(?:'|$)|"(?:[^"\\]|\\[\S\s])*(?:"|$)|`(?:[^\\`]|\\[\S\s])*(?:`|$))/,r,"'\"`"]):d.push(["str",/^(?:'(?:[^\n\r'\\]|\\.)*(?:'|$)|"(?:[^\n\r"\\]|\\.)*(?:"|$))/,r,"\"'"]);a.verbatimStrings&&h.push(["str",/^@"(?:[^"]|"")*(?:"|$)/,r]);var b=a.hashComments;b&&(a.cStyleComments?(b>1?d.push(["com",/^#(?:##(?:[^#]|#(?!##))*(?:###|$)|.*)/,r,"#"]):d.push(["com",/^#(?:(?:define|e(?:l|nd)if|else|error|ifn?def|include|line|pragma|undef|warning)\b|[^\n\r]*)/,
+r,"#"]),h.push(["str",/^<(?:(?:(?:\.\.\/)*|\/?)(?:[\w-]+(?:\/[\w-]+)+)?[\w-]+\.h(?:h|pp|\+\+)?|[a-z]\w*)>/,r])):d.push(["com",/^#[^\n\r]*/,r,"#"]));a.cStyleComments&&(h.push(["com",/^\/\/[^\n\r]*/,r]),h.push(["com",/^\/\*[\S\s]*?(?:\*\/|$)/,r]));if(b=a.regexLiterals){var e=(b=b>1?"":"\n\r")?".":"[\\S\\s]";h.push(["lang-regex",RegExp("^(?:^^\\.?|[+-]|[!=]=?=?|\\#|%=?|&&?=?|\\(|\\*=?|[+\\-]=|->|\\/=?|::?|<<?=?|>>?>?=?|,|;|\\?|@|\\[|~|{|\\^\\^?=?|\\|\\|?=?|break|case|continue|delete|do|else|finally|instanceof|return|throw|try|typeof)\\s*("+
+("/(?=[^/*"+b+"])(?:[^/\\x5B\\x5C"+b+"]|\\x5C"+e+"|\\x5B(?:[^\\x5C\\x5D"+b+"]|\\x5C"+e+")*(?:\\x5D|$))+/")+")")])}(b=a.types)&&h.push(["typ",b]);b=(""+a.keywords).replace(/^ | $/g,"");b.length&&h.push(["kwd",RegExp("^(?:"+b.replace(/[\s,]+/g,"|")+")\\b"),r]);d.push(["pln",/^\s+/,r," \r\n\t\u00a0"]);b="^.[^\\s\\w.$@'\"`/\\\\]*";a.regexLiterals&&(b+="(?!s*/)");h.push(["lit",/^@[$_a-z][\w$@]*/i,r],["typ",/^(?:[@_]?[A-Z]+[a-z][\w$@]*|\w+_t\b)/,r],["pln",/^[$_a-z][\w$@]*/i,r],["lit",/^(?:0x[\da-f]+|(?:\d(?:_\d+)*\d*(?:\.\d*)?|\.\d\+)(?:e[+-]?\d+)?)[a-z]*/i,
+r,"0123456789"],["pln",/^\\[\S\s]?/,r],["pun",RegExp(b),r]);return C(d,h)}function z(a,d,h){function b(a){var c=a.nodeType;if(c==1&&!j.test(a.className))if("br"===a.nodeName)e(a),a.parentNode&&a.parentNode.removeChild(a);else for(a=a.firstChild;a;a=a.nextSibling)b(a);else if((c==3||c==4)&&h){var d=a.nodeValue,i=d.match(m);if(i)c=d.substring(0,i.index),a.nodeValue=c,(d=d.substring(i.index+i[0].length))&&a.parentNode.insertBefore(l.createTextNode(d),a.nextSibling),e(a),c||a.parentNode.removeChild(a)}}
+function e(a){function b(a,c){var d=c?a.cloneNode(!1):a,f=a.parentNode;if(f){var f=b(f,1),h=a.nextSibling;f.appendChild(d);for(var e=h;e;e=h)h=e.nextSibling,f.appendChild(e)}return d}for(;!a.nextSibling;)if(a=a.parentNode,!a)return;for(var a=b(a.nextSibling,0),d;(d=a.parentNode)&&d.nodeType===1;)a=d;c.push(a)}for(var j=/(?:^|\s)nocode(?:\s|$)/,m=/\r\n?|\n/,l=a.ownerDocument,i=l.createElement("li");a.firstChild;)i.appendChild(a.firstChild);for(var c=[i],p=0;p<c.length;++p)b(c[p]);d===(d|0)&&c[0].setAttribute("value",
+d);var n=l.createElement("ol");n.className="linenums";for(var d=Math.max(0,d-1|0)||0,p=0,q=c.length;p<q;++p)i=c[p],i.className="L"+(p+d)%10,i.firstChild||i.appendChild(l.createTextNode("\u00a0")),n.appendChild(i);a.appendChild(n)}function i(a,d){for(var h=d.length;--h>=0;){var b=d[h];U.hasOwnProperty(b)?V.console&&console.warn("cannot override language handler %s",b):U[b]=a}}function A(a,d){if(!a||!U.hasOwnProperty(a))a=/^\s*</.test(d)?"default-markup":"default-code";return U[a]}function D(a){var d=
+a.h;try{var h=m(a.c,a.i),b=h.a;a.a=b;a.d=h.d;a.e=0;A(d,b)(a);var e=/\bMSIE\s(\d+)/.exec(navigator.userAgent),e=e&&+e[1]<=8,d=/\n/g,i=a.a,j=i.length,h=0,l=a.d,n=l.length,b=0,c=a.g,p=c.length,t=0;c[p]=j;var q,f;for(f=q=0;f<p;)c[f]!==c[f+2]?(c[q++]=c[f++],c[q++]=c[f++]):f+=2;p=q;for(f=q=0;f<p;){for(var x=c[f],y=c[f+1],u=f+2;u+2<=p&&c[u+1]===y;)u+=2;c[q++]=x;c[q++]=y;f=u}c.length=q;var g=a.c,k;if(g)k=g.style.display,g.style.display="none";try{for(;b<n;){var o=l[b+2]||j,H=c[t+2]||j,u=Math.min(o,H),E=l[b+
+1],W;if(E.nodeType!==1&&(W=i.substring(h,u))){e&&(W=W.replace(d,"\r"));E.nodeValue=W;var Z=E.ownerDocument,s=Z.createElement("span");s.className=c[t+1];var z=E.parentNode;z.replaceChild(s,E);s.appendChild(E);h<o&&(l[b+1]=E=Z.createTextNode(i.substring(u,o)),z.insertBefore(E,s.nextSibling))}h=u;h>=o&&(b+=2);h>=H&&(t+=2)}}finally{if(g)g.style.display=k}}catch(v){V.console&&console.log(v&&v.stack||v)}}var V=window,G=["break,continue,do,else,for,if,return,while"],J=[[G,"auto,case,char,const,default,double,enum,extern,float,goto,inline,int,long,register,short,signed,sizeof,static,struct,switch,typedef,union,unsigned,void,volatile"],
+"catch,class,delete,false,import,new,operator,private,protected,public,this,throw,true,try,typeof"],K=[J,"alignof,align_union,asm,axiom,bool,concept,concept_map,const_cast,constexpr,decltype,delegate,dynamic_cast,explicit,export,friend,generic,late_check,mutable,namespace,nullptr,property,reinterpret_cast,static_assert,static_cast,template,typeid,typename,using,virtual,where"],Q=[J,"abstract,assert,boolean,byte,extends,final,finally,implements,import,instanceof,interface,null,native,package,strictfp,super,synchronized,throws,transient"],
+L=[J,"abstract,as,base,bool,by,byte,checked,decimal,delegate,descending,dynamic,event,finally,fixed,foreach,from,group,implicit,in,interface,internal,into,is,let,lock,null,object,out,override,orderby,params,partial,readonly,ref,sbyte,sealed,stackalloc,string,select,uint,ulong,unchecked,unsafe,ushort,var,virtual,where"],J=[J,"debugger,eval,export,function,get,null,set,undefined,var,with,Infinity,NaN"],M=[G,"and,as,assert,class,def,del,elif,except,exec,finally,from,global,import,in,is,lambda,nonlocal,not,or,pass,print,raise,try,with,yield,False,True,None"],
+N=[G,"alias,and,begin,case,class,def,defined,elsif,end,ensure,false,in,module,next,nil,not,or,redo,rescue,retry,self,super,then,true,undef,unless,until,when,yield,BEGIN,END"],R=[G,"as,assert,const,copy,drop,enum,extern,fail,false,fn,impl,let,log,loop,match,mod,move,mut,priv,pub,pure,ref,self,static,struct,true,trait,type,unsafe,use"],G=[G,"case,done,elif,esac,eval,fi,function,in,local,set,then,until"],P=/^(DIR|FILE|vector|(de|priority_)?queue|list|stack|(const_)?iterator|(multi)?(set|map)|bitset|u?(int|float)\d*)\b/,
+S=/\S/,T=t({keywords:[K,L,J,"caller,delete,die,do,dump,elsif,eval,exit,foreach,for,goto,if,import,last,local,my,next,no,our,print,package,redo,require,sub,undef,unless,until,use,wantarray,while,BEGIN,END",M,N,G],hashComments:!0,cStyleComments:!0,multiLineStrings:!0,regexLiterals:!0}),U={};i(T,["default-code"]);i(C([],[["pln",/^[^<?]+/],["dec",/^<!\w[^>]*(?:>|$)/],["com",/^<\!--[\S\s]*?(?:--\>|$)/],["lang-",/^<\?([\S\s]+?)(?:\?>|$)/],["lang-",/^<%([\S\s]+?)(?:%>|$)/],["pun",/^(?:<[%?]|[%?]>)/],["lang-",
+/^<xmp\b[^>]*>([\S\s]+?)<\/xmp\b[^>]*>/i],["lang-js",/^<script\b[^>]*>([\S\s]*?)(<\/script\b[^>]*>)/i],["lang-css",/^<style\b[^>]*>([\S\s]*?)(<\/style\b[^>]*>)/i],["lang-in.tag",/^(<\/?[a-z][^<>]*>)/i] ]),["default-markup","htm","html","mxml","xhtml","xml","xsl"]);i(C([["pln",/^\s+/,r," \t\r\n"],["atv",/^(?:"[^"]*"?|'[^']*'?)/,r,"\"'"] ],[["tag",/^^<\/?[a-z](?:[\w-.:]*\w)?|\/?>$/i],["atn",/^(?!style[\s=]|on)[a-z](?:[\w:-]*\w)?/i],["lang-uq.val",/^=\s*([^\s"'>]*(?:[^\s"'/>]|\/(?=\s)))/],["pun",/^[/<->]+/],
+["lang-js",/^on\w+\s*=\s*"([^"]+)"/i],["lang-js",/^on\w+\s*=\s*'([^']+)'/i],["lang-js",/^on\w+\s*=\s*([^\s"'>]+)/i],["lang-css",/^style\s*=\s*"([^"]+)"/i],["lang-css",/^style\s*=\s*'([^']+)'/i],["lang-css",/^style\s*=\s*([^\s"'>]+)/i] ]),["in.tag"]);i(C([],[["atv",/^[\S\s]+/] ]),["uq.val"]);i(t({keywords:K,hashComments:!0,cStyleComments:!0,types:P}),["c","cc","cpp","cxx","cyc","m"]);i(t({keywords:"null,true,false"}),["json"]);i(t({keywords:L,hashComments:!0,cStyleComments:!0,verbatimStrings:!0,types:P}),
+["cs"]);i(t({keywords:Q,cStyleComments:!0}),["java"]);i(t({keywords:G,hashComments:!0,multiLineStrings:!0}),["bash","bsh","csh","sh"]);i(t({keywords:M,hashComments:!0,multiLineStrings:!0,tripleQuotedStrings:!0}),["cv","py","python"]);i(t({keywords:"caller,delete,die,do,dump,elsif,eval,exit,foreach,for,goto,if,import,last,local,my,next,no,our,print,package,redo,require,sub,undef,unless,until,use,wantarray,while,BEGIN,END",hashComments:!0,multiLineStrings:!0,regexLiterals:2}),["perl","pl","pm"]);i(t({keywords:N,
+hashComments:!0,multiLineStrings:!0,regexLiterals:!0}),["rb","ruby"]);i(t({keywords:J,cStyleComments:!0,regexLiterals:!0}),["javascript","js"]);i(t({keywords:"all,and,by,catch,class,else,extends,false,finally,for,if,in,is,isnt,loop,new,no,not,null,of,off,on,or,return,super,then,throw,true,try,unless,until,when,while,yes",hashComments:3,cStyleComments:!0,multilineStrings:!0,tripleQuotedStrings:!0,regexLiterals:!0}),["coffee"]);i(t({keywords:R,cStyleComments:!0,multilineStrings:!0}),["rc","rs","rust"]);
+i(C([],[["str",/^[\S\s]+/] ]),["regex"]);var X=V.PR={createSimpleLexer:C,registerLangHandler:i,sourceDecorator:t,PR_ATTRIB_NAME:"atn",PR_ATTRIB_VALUE:"atv",PR_COMMENT:"com",PR_DECLARATION:"dec",PR_KEYWORD:"kwd",PR_LITERAL:"lit",PR_NOCODE:"nocode",PR_PLAIN:"pln",PR_PUNCTUATION:"pun",PR_SOURCE:"src",PR_STRING:"str",PR_TAG:"tag",PR_TYPE:"typ",prettyPrintOne:function(a,d,e){var b=document.createElement("div");b.innerHTML="<pre>"+a+"</pre>";b=b.firstChild;e&&z(b,e,!0);D({h:d,j:e,c:b,i:1});return b.innerHTML},
+prettyPrint:e=e=function(a,d){function e(){for(var b=V.PR_SHOULD_USE_CONTINUATION?c.now()+250:Infinity;p<j.length&&c.now()<b;p++){for(var d=j[p],m=k,l=d;l=l.previousSibling;){var n=l.nodeType,s=(n===7||n===8)&&l.nodeValue;if(s?!/^\??prettify\b/.test(s):n!==3||/\S/.test(l.nodeValue))break;if(s){m={};s.replace(/\b(\w+)=([\w%+\-.:]+)/g,function(a,b,c){m[b]=c});break}}l=d.className;if((m!==k||f.test(l))&&!w.test(l)){n=!1;for(s=d.parentNode;s;s=s.parentNode)if(g.test(s.tagName)&&s.className&&f.test(s.className)){n=
+!0;break}if(!n){d.className+=" prettyprinted";n=m.lang;if(!n){var n=l.match(q),A;if(!n&&(A=x(d))&&u.test(A.tagName))n=A.className.match(q);n&&(n=n[1])}if(y.test(d.tagName))s=1;else var s=d.currentStyle,v=i.defaultView,s=(s=s?s.whiteSpace:v&&v.getComputedStyle?v.getComputedStyle(d,r).getPropertyValue("white-space"):0)&&"pre"===s.substring(0,3);v=m.linenums;if(!(v=v==="true"||+v))v=(v=l.match(/\blinenums\b(?::(\d+))?/))?v[1]&&v[1].length?+v[1]:!0:!1;v&&z(d,v,s);t={h:n,c:d,j:v,i:s};D(t)}}}p<j.length?
+O(e,250):"function"===typeof a&&a()}for(var b=d||document.body,i=b.ownerDocument||document,b=[b.getElementsByTagName("pre"),b.getElementsByTagName("code"),b.getElementsByTagName("xmp")],j=[],m=0;m<b.length;++m)for(var l=0,n=b[m].length;l<n;++l)j.push(b[m][l]);var b=r,c=Date;c.now||(c={now:function(){return+new Date}});var p=0,t,q=/\blang(?:uage)?-([\w.]+)(?!\S)/,f=/\bprettyprint\b/,w=/\bprettyprinted\b/,y=/pre|xmp/i,u=/^code$/i,g=/^(?:pre|code|xmp)$/i,k={};e()}};typeof define==="function"&&define.amd&&
+define("google-code-prettify",[],function(){return X})})();return e}();R||O(P,0)})();}()]]
+
+-- Tomorrow theme CSS
+local tomorrow_theme_css = [[/* Tomorrow Theme */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+.prettyprint {
+    background: white;
+    font-family: Monaco, 'Bitstream Vera Sans Mono', 'DejaVu Sans Mono', Monaco, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    border: none;
+    padding: 10px;
+    margin-left: 1.5em;
+}
+
+.pln {
+    color: #4d4d4c;
+}
+
+@media screen {
+    .str {
+        color: #718c00;
+    }
+
+    .kwd {
+        color: #8959a8;
+    }
+
+    .com {
+        color: #800;
+    }
+
+    .typ {
+        color: #4271ae;
+    }
+
+    .lit {
+        color: #f5871f;
+    }
+
+    .pun {
+        color: #4d4d4c;
+    }
+
+    .opn {
+        color: #4d4d4c;
+    }
+
+    .clo {
+        color: #4d4d4c;
+    }
+
+    .tag {
+        color: #c82829;
+    }
+
+    .atn {
+        color: #f5871f;
+    }
+
+    .atv {
+        color: #3e999f;
+    }
+
+    .dec {
+        color: #f5871f;
+    }
+
+    .var {
+        color: #c82829;
+    }
+
+    .fun {
+        color: #4271ae;
+    }
+}
+@media print, projection {
+    .str {
+        color: #006600;
+    }
+
+    .kwd {
+        color: #006;
+        font-weight: bold;
+    }
+
+    .com {
+        color: #600;
+        font-style: italic;
+    }
+
+    .typ {
+        color: #404;
+        font-weight: bold;
+    }
+
+    .lit {
+        color: #004444;
+    }
+
+    .pun, .opn, .clo {
+        color: #444400;
+    }
+
+    .tag {
+        color: #006;
+        font-weight: bold;
+    }
+
+    .atn {
+        color: #440044;
+    }
+
+    .atv {
+        color: #006600;
+    }
+}
+/* Specify class=linenums on a pre to get line numbering */
+ol.linenums {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* IE indents via margin-left */
+li.L0,
+li.L1,
+li.L2,
+li.L3,
+li.L4,
+li.L5,
+li.L6,
+li.L7,
+li.L8,
+li.L9 {
+    /* */
+}
+
+/* Alternate shading for lines */
+li.L1,
+li.L3,
+li.L5,
+li.L7,
+li.L9 {
+    /* */
+}]]
+
+-- Default CSS
+local default_css = [[body {
+    margin-left: 4em;
+    margin-right: 4em;
+    font-size: 14pt;
+}
+.section {
+    page-break-inside: avoid;
+}
+.codeblock {
+    padding-bottom: 15px;
+}
+pre.prettyprint {
+    font-family: Monaco, "Lucida Console", monospace;
+    font-size: 11pt;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: #f1f1f1;
+    white-space: pre-wrap;
+}
+.seealso {
+    font-size: 11pt;
+}
+.codeblock_name {
+    font-family: Monaco, "Lucida Console", monospace;
+    font-size: 11pt;
+    margin-top: 1.25em;
+    display: block;
+}
+a:link {
+    color: blue;
+    text-decoration: none;
+}
+a:link:hover {
+    color: blue;
+    text-decoration: underline;
+}
+a:visited {
+    color: blue;
+}
+a:link:active {
+    color: red;
+}
+h4 {
+    padding-right: 1.25em;
+}
+h4.noheading {
+    margin-bottom: 0px;
+}
+h1 {
+    text-align: center;
+}
+code {
+    font-family: Monaco, "Lucida Console", monospace;
+    font-size: 11pt;
+    padding: 2px;
+}
+pre {
+    -moz-tab-size: 4; /* Code for Firefox */
+    -o-tab-size: 4; /* Code for Opera 10.6-12.1 */
+    tab-size: 4;
+}
+p:not(.notp) {
+    margin: 0;
+    text-indent: 2em;
+}
+/* .two-col li { */
+/*     display: inline-block; */
+/*     width: 50%; */
+/*     margin: 0; */
+/*     padding: 0; */
+/*     vertical-align: top; */
+/* } */
+.two-col {
+    list-style-type: none;
+}
+.two-col li:before {
+    content: '-';
+    padding: 5px;
+    margin-right: 5px;
+    color: orange;
+    background-color: white;
+    display: inline-block;
+}]]
+
+
+-- stringutil
+-- The startswith function
+function startswith(str, start)
+    return string.sub(str, 1, string.len(start)) == start
+end
+
+-- The split function
+function split(pString, pPattern)
+    local Table = {}  -- NOTE: use {n = 0} in Lua-5.0
+    local fpat = "(.-)" .. pPattern
+    local last_end = 1
+    local s, e, cap = pString:find(fpat, 1)
+    while s do
+        if s ~= 1 or cap ~= "" then
+            table.insert(Table,cap)
+        end
+        last_end = e+1
+        s, e, cap = pString:find(fpat, last_end)
+    end
+    if last_end <= #pString then
+        cap = pString:sub(last_end)
+        table.insert(Table, cap)
+    end
+    return Table
+end
+
+-- The strip function
+function strip(str)
+    return str:gsub("^%s*(.-)%s*$", "%1")
+end
+
+-- The chomp function
+function chomp(str)
+    return str:gsub("\n$", "")
+end
+
+-- The literalize function
+function literalize(str)
+    return str:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", function(c) return "%" .. c end)
+end
+
+
+-- fileutil
+-- The run function
+function run(cmd)
+    local handle = io.popen(cmd)
+    local result = handle:read("*a")
+    handle:close()
+    return result
+end
+
+-- The write function
+function write(outstream, str)
+    if outstream == "STDOUT" then
+        io.write(str)
+    else
+        outstream:write(str)
+    end
+end
+
+-- The file_exists function
+function file_exists(file)
+    local f = io.open(file, "rb")
+    if f then f:close() end
+    return f ~= nil
+end
+
+-- The lines_from function
+function lines_from(file)
+    if file ~= nil then
+        if not file_exists(file) then 
+            print(file, " does not exist!")
+            return {}
+        end
+    end
+    lines = {}
+    if file ~= nil then
+        for line in io.lines(file, "*L") do 
+            lines[#lines + 1] = line
+        end
+    else
+        for line in io.lines() do 
+            lines[#lines + 1] = line
+        end
+    end
+    return lines
+end
+
+-- The readall function
+function readall(file)
+    local content = ""
+    if file ~= nil then
+        local f = io.open(file, "rb")
+        if f == nil then
+            print(file .. " could not be opened")
+            return ""
+        end
+        content = f:read("*all")
+        f:close()
+    else
+        local stat,res = pcall(io.read, "*all")
+        if res:match("interrupted") then
+            print(" ")
+            os.exit()
+        end
+        content = res
+    end
+    return content
+end
+
+-- The readdir function
+function readdir(dir)
+    local files = ""
+    if os.name() == "Windows" then
+        files = run("dir")
+    else
+        files = run("ls")
+    end
+    return split(files, "\n")
+end
+
+-- The dirname function
+function dirname(path)
+    if path:match(".-/.-") then
+        local name = string.gsub(path, "(.*/)(.*)", "%1")
+        return name
+    else
+        return ''
+    end
+end
+
+-- The basename function
+function basename(path)
+    return string.gsub(path, "(.*[/\\])(.*)", "%2")
+end
+
+-- The name function
+function name(path)
+    local filename = basename(path)
+    return filename:match"(.*)%..*"
+end
+
+
+
+-- weave
+-- Define the contains function
+function contains(tbl, item)
+    for key, value in pairs(tbl) do
+        if value == item then return key end
+    end
+    return false
+end
+
+function contains_str(tbl, str)
+for key, value in pairs(tbl) do
+    if string.lower(value) == string.lower(str) then return key end
+end
+return false
+end
+
+-- Define the get_locations function
+function get_locations(lines)
+    local sectionnum = 0   -- Which section is currently being parsed
+    local in_codeblock = false   -- Whether we are parsing a codeblock or not
+
+    for line_num,line in pairs(lines) do
+        line = chomp(line) -- Use chomp to remove the \n
+
+        if startswith(line, "@code_type") then
+            local command = split(line, " ")
+            codetype = command[2]
+            codetype_ext = string.sub(command[3], 2, #command[3])
+            goto continue
+        end
+
+        if startswith(line, "@title") then
+            -- Initialize the title variable
+            title = strip(string.sub(line, 7, #line))
+
+        elseif startswith(line, "@s") then
+            section_linenums[#section_linenums + 1] = line_num
+            sectionnum = sectionnum + 1
+        elseif line:match("^%-%-%-.*$") then
+            -- A codeblock has been defined
+            in_codeblock = true
+            if string.match(line, "^%-%-%-$") then
+                in_codeblock = false
+                goto continue
+            end
+            -- Get the block name
+            local block_name = strip(string.sub(line, 4, #line))
+            
+            local add_to_block = false -- Whether or not this definition has a +=
+            if string.match(block_name, "+=") then
+                local plus_index = block_name:match'^.*()%+'
+                block_name = strip(string.sub(block_name, 1, plus_index-1))
+                add_to_block = true
+            end
+
+            -- Add the locations to the dict
+            if block_locations[block_name] == nil then -- If this block has not been defined in the dict yet
+                block_locations[block_name] = {sectionnum} -- Create a new slot for it and add the current section num
+            elseif block_locations[block_name][sectionnum] == nil then -- If the current section num isn't already in the array
+                block_locations[block_name][#block_locations[block_name] + 1] = sectionnum -- Add it
+            end
+
+
+        elseif in_codeblock and startswith(strip(line), "@{") then
+            -- A codeblock has been used
+            line = strip(line)
+            local block_name = string.sub(line, 3, #line - 1) -- Substring to just get the block name
+            
+            -- Pretty much the same as before
+            if block_use_locations[block_name] == nil then
+                block_use_locations[block_name] = {sectionnum}
+            elseif block_use_locations[block_name][sectionnum] == nil then
+                block_use_locations[block_name][#block_use_locations[block_name] + 1] = sectionnum
+            end
+
+        end
+        ::continue::
+    end
+end
+
+-- Define the write_markdown function
+function write_markdown(mkdown)
+    if mkdown ~= "" then
+        local html = mkdown
+        html = string.gsub(html, "<", "&lt;")
+        html = string.gsub(html, ">", "&gt;")
+        html = string.gsub(html, "\"", "&quot;")
+        html = markdown(mkdown)
+        out = out .. strip(html)
+    end
+end
+
+-- Define the weave function
+function weave(lines, source_dir, has_index)
+    out = ""
+
+    get_locations(lines)
+
+    -- Set up html
+    local start_codeblock = "<pre class=\"prettyprint lang-" .. codetype .. "\">"
+    local end_codeblock = "</pre>"
+    
+    local scripts = [[<script>]] .. prettify .. [[</script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+                 <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: ]] .. "[['$','$']]}}); </script>"
+    
+    -- Get the CSS
+    local css = ""
+    local files = readdir(source_dir) -- All the files in the current directory
+    
+    if contains(files, "default.css") then
+        css = readall(source_dir .. "/default.css"):gsub("%s+", "") -- Read the user's default.css
+    else
+        css = default_css:gsub("%s+", "") -- Use the default css
+    end
+    
+    if contains(files, "colorscheme.css") then
+        css = css .. readall(source_dir .. "/colorscheme.css"):gsub("%s+", "") -- Read the user's colorscheme.css
+    else
+        css = css .. tomorrow_theme_css:gsub("%s+", "") -- Use the default colorscheme
+    end
+    
+    if contains(files, "additions.css") then
+        css = css .. readall(source_dir .. "/additions.css"):gsub("%s+", "") -- Read the user's additions.css
+    end
+
+    
+    local base_html = [[<!doctype html>
+                   <html>
+                   <head>
+                   <meta charset="utf-8">
+                   <title> ]] .. title .. [[ </title>
+                   ]] .. scripts .. [[
+                   <style>
+                   ]] .. css .. [[
+                   </style>
+                   </head>
+                   <body>]]
+    
+    out = out .. base_html
+
+    -- Set up variables
+    local sectionnum = 0 -- Which section number we are currently parsing
+    local in_codeblock = false -- Whether or not we are parsing a some code
+    local in_prose = false -- Whether or not we are parsing prose
+    local markdown = "" -- This variable holds the current markdown that needs to be transformed to html
+    
+    local cur_codeblock_name = "" -- The name of the current codeblock begin parsed
+
+
+    for line_num,line in pairs(lines) do
+        line = chomp(line)
+
+        if startswith(line, "@code_type") then
+            goto continue
+        elseif startswith(line, "@comment_type") then
+            goto continue
+        end
+
+        -- Parse the line
+        if line == "" then
+            -- This was a blank line
+            if in_codeblock then
+                out = out .. "\n"
+            else
+                markdown = markdown .. "\n" -- Tell markdown this was a blank line
+            end
+            goto continue
+        end
+        
+        if string.match(line, "^%-%-%-.+$") then -- Codeblock began
+            -- Begin codeblock
+            -- A code block just began
+            in_prose = false
+            in_codeblock = true
+            -- Write the current markdown
+            write_markdown(markdown)
+            -- Reset the markdown
+            markdown = ""
+            
+            out = out .. "<div class=\"codeblock\">"
+            local name = strip(string.sub(line, 4, #line)) -- The codeblock name
+            
+            local adding = false -- Whether or not this block is a +=
+            
+            if string.match(name, "+=") then
+                local plus_index = name:match'^.*()%+'
+                name = strip(string.sub(name, 1, plus_index-1))
+                adding = true
+            end
+            
+            cur_codeblock_name = name
+            file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file name
+            
+            if block_locations[name] == nil then
+                print(inputfilename .. ":error:" .. line_num .. ": Unknown block name: " .. name)
+                os.exit()
+            end
+            
+            local definition_location = block_locations[name][1]
+            
+            local output = name .. " <a href=\"#" .. definition_location .. "\">" .. definition_location .. "</a>" -- Add the link to the definition location
+            local plus = ""
+            if adding then
+                plus = "+"
+            end
+            output = "{" .. output .. "} " .. plus .. "≡" -- Add the = or +=
+            
+            if file then
+                output = "<b>" .. output .. "</b>" -- If the name is a file, make it bold
+            end
+            
+            out = out .. "<p class=\"notp\"><span class=\"codeblock_name\">" .. output .. "</span></p>"
+            -- We can now begin pretty printing the code that comes next
+            out = out .. start_codeblock
+
+        elseif string.match(line, "^%-%-%-$") then -- Codeblock ended
+            -- End codeblock
+            -- A code block just ended
+            in_prose = true
+            in_codeblock = false
+            
+            -- First start by ending the pretty printing
+            out = out .. end_codeblock
+            -- This was stored when the code block began
+            local name = cur_codeblock_name
+            
+            -- Write any "see also" links
+            local locations = block_locations[name]
+            if block_locations[name] == nil then
+                print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. name)
+                os.exit()
+            end
+            
+            if #locations > 1 then
+                local links = "" -- This will hold the html for the links
+                local loopnum = 0
+                for i = 2,#locations do
+                    local location = locations[i]
+                    if location ~= sectionnum then
+                        loopnum = loopnum + 1
+                        local punc = "" -- We might need a comma or 'and'
+                        if loopnum > 1 and loopnum < #locations-1 then
+                            punc = ","
+                        elseif loopnum == #locations-1 and loopnum > 1 then
+                            punc = " and"
+                        end
+                        links = links .. punc .. " <a href=\"#" .. location .. "\">" .. location .. "</a>"
+                    end
+                end
+                if loopnum > 0 then
+                    local plural = ""
+                    if loopnum > 1 then
+                        plural = "s"
+                    end
+                    out = out .. "<p class=\"seealso\">See also section" .. plural .. links .. ".</p>"
+                end
+            end
+
+            -- Write any "used in" links
+            -- Top level codeblocks such as files are never used, so we have to check here
+            if block_use_locations[name] ~= nil then
+                local locations = block_use_locations[name]
+                local plural = ""
+                if #locations > 1 then
+                    plural = "s"
+                end
+                local output = "<p class=\"seealso\">This code is used in section" .. plural
+                for i = 1,#locations do
+                    local location = locations[i]
+                    local punc = ""
+                    if i > 1 and i < #locations then
+                        punc = ","
+                    elseif i == #locations and i ~= 1 then
+                        punc = " and"
+                    end
+                    output = output .. punc .. " <a href=\"#" .. location .. "\">" .. location .. "</a>"
+                end
+                output = output .. ".</p>"
+                out = out .. output
+            end
+
+            -- Close the "codeblock" div
+            out = out .. "</div>"
+
+        elseif startswith(line, "@s") and not in_codeblock then -- Section began
+            -- Create a new section
+            if sectionnum > 1 then
+                -- Every section is part of a div. Here we close the last one, and open a new one
+                out = out .. "</div>"
+            end
+            if sectionnum > 0 then
+                out = out .. "<div class=\"section\">"
+            end
+            
+            -- Write the markdown. It is possible that the last section had no code and was only prose.
+            write_markdown(markdown)
+            -- Reset the markdown
+            markdown = ""
+            
+            in_section = true
+            sectionnum = sectionnum + 1
+            heading_title = strip(string.sub(line, 3, #line))
+            local class = ""
+            if heading_title == "" then
+                class = "class=\"noheading\""
+            end
+            out = out .. "<p class=\"notp\" id=\"" .. sectionnum .. "\"></p><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4>"
+
+        elseif startswith(line, "@title") and not in_codeblock then -- Title created
+            -- Create the title
+            local title = strip(string.sub(line, 7, #line))
+            out = out .. "<h1>" .. title .. "</h1>"
+
+        elseif startswith(line, "@include") and not in_codeblock then -- Inline the html given
+            -- Include the given file
+            local filename = basename(strip(line:sub(10)))
+            local filetype = filename:match(".*%.(.*)")
+            local file = source_dir .. "/" .. strip(line:sub(10))
+            if not file_exists(file) then
+                print(inputfilename .. ":error:" .. line_num .. ":Included file ".. file .. " does not exist.")
+                exit()
+            end
+            
+            if filetype == "html" then
+                -- Inline the html in the specified file
+                out = out .. readall(file)
+                goto continue
+
+            end
+
+        else
+            if in_codeblock then
+                -- Write out the line of code
+                code_lines[line:gsub("%s+", " ")] = line_num
+                line = string.gsub(line, "&", "&amp;")
+                line = string.gsub(line, "<", "&lt;")
+                line = string.gsub(line, ">", "&gt;")
+                -- Link any sections in the line
+                while string.match(line, "@{.*}") do
+                    if not startswith(strip(line), "@{") and in_codeblock then
+                        break
+                    end
+                    local m = string.match(line, "@{.*}")
+                    local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
+                    if block_locations[name] == nil then
+                        print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. name)
+                        os.exit()
+                    end
+                    local location = block_locations[name][1]
+                
+                    if in_codeblock then
+                        local anchor = " <a href=\"#" .. location .. "\">" .. location .. "</a>"
+                        local links = "<span class=\"nocode\">{" .. name .. anchor .. "}</span>" -- The nocode is so that this is not pretty printed
+                        line = string.gsub(line, literalize(m), links)
+                    else
+                        local anchor = " [" .. location .. "](#" .. location .. ")"
+                        local links = "{`" .. name .. "`" .. anchor .. "}"
+                        line = string.gsub(line, literalize(m), links)
+                    end
+                end
+
+                out = out .. line .. "\n"
+
+            else
+                -- Add the line to the markdown
+                -- Link any sections in the line
+                while string.match(line, "@{.*}") do
+                    if not startswith(strip(line), "@{") and in_codeblock then
+                        break
+                    end
+                    local m = string.match(line, "@{.*}")
+                    local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
+                    if block_locations[name] == nil then
+                        print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. name)
+                        os.exit()
+                    end
+                    local location = block_locations[name][1]
+                
+                    if in_codeblock then
+                        local anchor = " <a href=\"#" .. location .. "\">" .. location .. "</a>"
+                        local links = "<span class=\"nocode\">{" .. name .. anchor .. "}</span>" -- The nocode is so that this is not pretty printed
+                        line = string.gsub(line, literalize(m), links)
+                    else
+                        local anchor = " [" .. location .. "](#" .. location .. ")"
+                        local links = "{`" .. name .. "`" .. anchor .. "}"
+                        line = string.gsub(line, literalize(m), links)
+                    end
+                end
+
+                markdown = markdown .. line .. "\n"
+
+            end
+        end
+
+        ::continue::
+    end
+
+    -- Clean up
+    write_markdown(markdown)
+    -- Close the last section's div
+    out = out .. "</div>"
+    
+    if has_index then
+        out = out .. create_index(inputfilename)
+    end
+    
+    out = out .. "</body></html>"
+
+
+    return out
+end
+
+
+-- tangle
+-- Define the tangle function
+function tangle(lines)
+    codeblock_use_lines = {} -- String => Number
+
+    comment_type = ""
+    local codeblocks = {} -- String => String
+    local block_names = {} -- Number => String
+    
+    for line_num,line in pairs(lines) do
+        line = chomp(line)
+        if startswith(line, "@comment_type") then
+            comment_type = strip(string.sub(line, 15, #line))
+        elseif startswith(line, "---") and not string.match(line, "^---$") then
+            -- Get the block name
+            local block_name = strip(string.sub(line, 4, #line))
+            
+            local add_to_block = false -- Whether or not this definition has a +=
+            if string.match(block_name, "+=") then
+                local plus_index = block_name:match'^.*()%+'
+                block_name = strip(string.sub(block_name, 1, plus_index-1))
+                add_to_block = true
+            end
+
+            -- Get the code
+            local code = ""
+            while true do
+                line_num = line_num + 1
+                if line_num > #lines then
+                    print(inputfilename .. ":error:" .. #lines .. ":".. block_name .. " is never closed")
+                    os.exit()
+                end
+            
+                if startswith(strip(line), "@{") then
+                    local name = line:match("@{(.*)}")
+                    codeblock_use_lines[name] = line_num
+                end
+            
+                line = lines[line_num]
+                if line == nil then break end
+                if chomp(line) == "---" then break end
+                code = code .. line .. "\n"
+            end
+
+            -- Add the code to the dict
+            if add_to_block then
+                if codeblocks[block_name] ~= nil then
+                    codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
+                else
+                    print(inputfilename .. ":error:" .. line_num .. ":Unknown block name: " .. block_name)
+                    os.exit()
+                end
+            else
+                block_names[#block_names + 1] = block_name
+                codeblocks[block_name] = code
+            end
+
+        end
+    end
+
+    -- Write the code
+    found_file = false
+    for i,name in pairs(block_names) do
+        if string.match(basename(name), "^.+%w%.%w+$") then
+            found_file = true
+            if stdin then
+                outstream = "STDOUT"
+                print("\n---- " .. basename(name) .. " ----\n")
+            else
+                if generate_files then
+                    outstream = io.open(outdir .. "/" .. strip(name), "w")
+                end
+            end
+            write_code(name, "", codeblocks, outstream)
+            if not stdin then
+                if generate_files then
+                    outstream:close()
+                end
+            end
+        end
+    end
+    if not found_file then
+        print(inputfilename .. ":error:no file name found. Not writing any code file.")
+    end
+
+end
+
+-- Define the write_code function
+function write_code(block_name, leading_whitespace, codeblocks, outstream)
+    local code = codeblocks[block_name]
+    if code == nil then
+        print(inputfilename .. ":error:" .. codeblock_use_lines[block_name] .. ":Unknown block name: " .. block_name)
+        os.exit()
+    end
+    local lines = split(code, "\n")
+
+    if comment_type ~= "" then
+        if not string.match(block_name, "^.+%w%.%w+$") then
+            comment = string.gsub(comment_type, "%%s", block_name)
+            if generate_files then
+                write(outstream, leading_whitespace .. comment .. "\n")
+            end
+        end
+    end
+
+    for line_num,line in pairs(lines) do
+        if startswith(strip(line), "@{") then
+            myleading_whitespace = string.match(line, "^(.-)[^%s]")
+            line = strip(line)
+            write_code(string.sub(line, 3, line:find("}[^}]*$") - 1), leading_whitespace .. myleading_whitespace, codeblocks, outstream)
+        else
+            if generate_files then
+                write(outstream, leading_whitespace .. line .. "\n")
+            end
+        end
+    end
+
+    if generate_files then
+        write(outstream, "\n")
+    end
+end
+
+
+
+-- index
+function section_for_linenum(linenum)
+    -- Get the section number given a line number
+    for i = 1,#section_linenums do
+        if i == #section_linenums then
+            return i
+        end
+        if linenum < section_linenums[i + 1] then
+            return i
+        end
+    end
+
+end
+
+-- Sort a table
+function pairsByKeys (t, f)
+    local a = {}
+    for n in pairs(t) do table.insert(a, n) end
+    table.sort(a, f)
+    local i = 0      -- iterator variable
+    local iter = function ()   -- iterator function
+        i = i + 1
+        if a[i] == nil then return nil
+        else return a[i], t[a[i]]
+        end
+    end
+    return iter
+end
+
+function create_index(inputfile)
+    local noctags = os.name() == "Windows"
+    if not noctags and run("which ctags") == nil then
+        -- print("You do not have ctags installed and it is required for making an index.")
+        -- print("If you do not want to receive this message use the -noindex flag.")
+        noctags = true
+    end
+
+    if not noctags and run("ctags --list-languages") == nil then
+        -- print("You have an old version of ctags installed, please update to exuberant or universal ctags if you want an index.")
+        -- print("If you do not want to receive this message use the -noindex flag.")
+        noctags = true
+    end
+
+    local tags = {}
+    if not noctags then
+        -- Run Ctags on the lit file
+        local supported_languages = split(run("ctags --list-languages"), "\n")
+        
+        if not contains_str(supported_languages, codetype) then
+            -- print(codetype .. " is not supported by your version of ctags.")
+            noctags = true
+        end
+        
+        run("echo '" .. complete_source:gsub("'", "'\"'\"'") .. "' | lit -code > out.txt")
+        local tags_str = run("ctags -x --" .. string.lower(codetype) .. "-kinds=+abcdefghijklmnopqrxtuvwxyzABCDEFGHIJKLMNOPQRXTUVWXYZ  --language-force=" .. string.lower(codetype) .. " out.txt 2>/dev/null")
+        run("rm out.txt")
+        
+        if tags_str == "" then
+            -- print(codetype .. " is not supported by your version of ctags.")
+            -- print("Please use -noindex if you would not like to create an index.")
+            -- return ""
+            noctags = true
+        end
+        
+        if not noctags then
+            local tags_arr = split(tags_str, "\n")
+        
+            for _,tag in pairs(tags_arr) do
+                if tag ~= "" then
+                    local words = split(tag, "%s+")
+        
+                    local line = tag:match("out.txt%s+([^%s].-)$")
+        
+                    if code_lines[line] == nil then
+                        goto continue
+                    end
+        
+                    local line_num = code_lines[line]
+        
+                    local name = words[1]
+                    local tag_type = words[2]
+                    
+                    tags[#tags + 1] = {name, tag_type, line_num}
+                end
+                ::continue::
+            end
+        end
+
+    end
+    -- Create the HTML for the index
+    local html = ""
+    if #tags > 0 then
+        html = html .. "<h5>Identifiers Used</h5>\n"
+        html = html .. "<ul class=\"two-col\">\n"
+    
+        for _,tag in pairs(tags) do
+            local section_num = section_for_linenum(tag[3])
+            html = html .. "<li><code>" .. tag[1] .. "</code>: <em>" .. tag[2] .. "</em> <a href=\"#" .. section_num .. "\">" .. section_num .. "</a></li>\n"
+        end
+        html = html .. "</ul>"
+    end
+    
+    if next(block_locations) ~= nil then
+        html = html .. "<h5>Code Blocks</h5>\n"
+        html = html .. "<ul class=\"two-col\">\n"
+    
+        -- Sort the block_locations dictionary so that the codeblocks come in order
+        for name,locations in pairsByKeys(block_locations) do
+            html = html .. "<li><code>" .. name .. "</code>"
+            for i = 1,#locations do
+                local location = locations[i]
+                local p = ", "
+                if i == 1 then
+                    p = " "
+                end
+                html = html .. p .. "<a href=\"#" .. location .. "\">" .. location .. "</a>"
+            end
+            html = html .. "</li>\n"
+        end
+        html = html .. "</ul>"
+        html = "<h3>Index</h3>\n" .. html
+    end
+
+    return html
+end
+
+
+-- markdown
+local unpack = unpack or table.unpack
+
+local span_transform, encode_backslash_escapes, block_transform, blocks_to_html, blocks_to_html
+
+-- Returns the result of mapping the values in table t through the function f
+local function map(t, f)
+    local out = {}
+    for k,v in pairs(t) do out[k] = f(v,k) end
+    return out
+end
+
+-- The identity function, useful as a placeholder.
+local function identity(text) return text end
+
+-- Functional style if statement. (NOTE: no short circuit evaluation)
+local function iff(t, a, b) if t then return a else return b end end
+
+-- Splits the text into an array of separate lines.
+local function split(text, sep)
+    sep = sep or "\n"
+    local lines = {}
+    local pos = 1
+    while true do
+        local b,e = text:find(sep, pos)
+        if not b then table.insert(lines, text:sub(pos)) break end
+        table.insert(lines, text:sub(pos, b-1))
+        pos = e + 1
+    end
+    return lines
+end
+
+-- Converts tabs to spaces
+local function detab(text)
+    local tab_width = 4
+    local function rep(match)
+        local spaces = -match:len()
+        while spaces<1 do spaces = spaces + tab_width end
+        return match .. string.rep(" ", spaces)
+    end
+    text = text:gsub("([^\n]-)\t", rep)
+    return text
+end
+
+-- Applies string.find for every pattern in the list and returns the first match
+local function find_first(s, patterns, index)
+    local res = {}
+    for _,p in ipairs(patterns) do
+        local match = {s:find(p, index)}
+        if #match>0 and (#res==0 or match[1] < res[1]) then res = match end
+    end
+    return unpack(res)
+end
+
+-- If a replacement array is specified, the range [start, stop] in the array is replaced
+-- with the replacement array and the resulting array is returned. Without a replacement
+-- array the section of the array between start and stop is returned.
+local function splice(array, start, stop, replacement)
+    if replacement then
+        local n = stop - start + 1
+        while n > 0 do
+            table.remove(array, start)
+            n = n - 1
+        end
+        for i,v in ipairs(replacement) do
+            table.insert(array, start, v)
+        end
+        return array
+    else
+        local res = {}
+        for i = start,stop do
+            table.insert(res, array[i])
+        end
+        return res
+    end
+end
+
+-- Outdents the text one step.
+local function outdent(text)
+    text = "\n" .. text
+    text = text:gsub("\n  ? ? ?", "\n")
+    text = text:sub(2)
+    return text
+end
+
+-- Indents the text one step.
+local function indent(text)
+    text = text:gsub("\n", "\n    ")
+    return text
+end
+
+-- Does a simple tokenization of html data. Returns the data as a list of tokens.
+-- Each token is a table with a type field (which is either "tag" or "text") and
+-- a text field (which contains the original token data).
+local function tokenize_html(html)
+    local tokens = {}
+    local pos = 1
+    while true do
+        local start = find_first(html, {"<!%-%-", "<[a-z/!$]", "<%?"}, pos)
+        if not start then
+            table.insert(tokens, {type="text", text=html:sub(pos)})
+            break
+        end
+        if start ~= pos then table.insert(tokens, {type="text", text = html:sub(pos, start-1)}) end
+
+        local _, stop
+        if html:match("^<!%-%-", start) then
+            _,stop = html:find("%-%->", start)
+        elseif html:match("^<%?", start) then
+            _,stop = html:find("?>", start)
+        else
+            _,stop = html:find("%b<>", start)
+        end
+        if not stop then
+            -- error("Could not match html tag " .. html:sub(start,start+30))
+            table.insert(tokens, {type="text", text=html:sub(start, start)})
+            pos = start + 1
+        else
+            table.insert(tokens, {type="tag", text=html:sub(start, stop)})
+            pos = stop + 1
+        end
+    end
+    return tokens
+end
+
+-- This is used to "hash" data into alphanumeric strings that are unique
+-- in the document. (Note that this is not cryptographic hash, the hash
+-- function is not one-way.) The hash procedure is used to protect parts
+-- of the document from further processing.
+
+local HASH = {
+    -- Has the hash been inited.
+    inited = false,
+
+    -- The unique string prepended to all hash values. This is to ensure
+    -- that hash values do not accidently coincide with an actual existing
+    -- string in the document.
+    identifier = "",
+
+    -- Counter that counts up for each new hash instance.
+    counter = 0,
+
+    -- Hash table.
+    table = {}
+}
+
+-- Inits hashing. Creates a hash_identifier that doesn't occur anywhere
+-- in the text.
+local function init_hash(text)
+    HASH.inited = true
+    HASH.identifier = ""
+    HASH.counter = 0
+    HASH.table = {}
+
+    local s = "HASH"
+    local counter = 0
+    local id
+    while true do
+        id  = s .. counter
+        if not text:find(id, 1, true) then break end
+        counter = counter + 1
+    end
+    HASH.identifier = id
+end
+
+-- Returns the hashed value for s.
+local function hash(s)
+    assert(HASH.inited)
+    if not HASH.table[s] then
+        HASH.counter = HASH.counter + 1
+        local id = HASH.identifier .. HASH.counter .. "X"
+        HASH.table[s] = id
+    end
+    return HASH.table[s]
+end
+
+-- The protection module is used to "protect" parts of a document
+-- so that they are not modified by subsequent processing steps.
+-- Protected parts are saved in a table for later unprotection
+
+-- Protection data
+local PD = {
+    -- Saved blocks that have been converted
+    blocks = {},
+
+    -- Block level tags that will be protected
+    tags = {"p", "div", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote",
+    "pre", "table", "dl", "ol", "ul", "script", "noscript", "form", "fieldset",
+    "iframe", "math", "ins", "del"}
+}
+
+-- Pattern for matching a block tag that begins and ends in the leftmost
+-- column and may contain indented subtags, i.e.
+-- <div>
+--    A nested block.
+--    <div>
+--        Nested data.
+--     </div>
+-- </div>
+local function block_pattern(tag)
+    return "\n<" .. tag .. ".-\n</" .. tag .. ">[ \t]*\n"
+end
+
+-- Pattern for matching a block tag that begins and ends with a newline
+local function line_pattern(tag)
+    return "\n<" .. tag .. ".-</" .. tag .. ">[ \t]*\n"
+end
+
+-- Protects the range of characters from start to stop in the text and
+-- returns the protected string.
+local function protect_range(text, start, stop)
+    local s = text:sub(start, stop)
+    local h = hash(s)
+    PD.blocks[h] = s
+    text = text:sub(1,start) .. h .. text:sub(stop)
+    return text
+end
+
+-- Protect every part of the text that matches any of the patterns. The first
+-- matching pattern is protected first, etc.
+local function protect_matches(text, patterns)
+    while true do
+        local start, stop = find_first(text, patterns)
+        if not start then break end
+        text = protect_range(text, start, stop)
+    end
+    return text
+end
+
+-- Protects blocklevel tags in the specified text
+local function protect(text)
+    -- First protect potentially nested block tags
+    text = protect_matches(text, map(PD.tags, block_pattern))
+    -- Then protect block tags at the line level.
+    text = protect_matches(text, map(PD.tags, line_pattern))
+    -- Protect <hr> and comment tags
+    text = protect_matches(text, {"\n<hr[^>]->[ \t]*\n"})
+    text = protect_matches(text, {"\n<!%-%-.-%-%->[ \t]*\n"})
+    return text
+end
+
+-- Returns true if the string s is a hash resulting from protection
+local function is_protected(s)
+    return PD.blocks[s]
+end
+
+-- Unprotects the specified text by expanding all the nonces
+local function unprotect(text)
+    for k,v in pairs(PD.blocks) do
+        v = v:gsub("%%", "%%%%")
+        text = text:gsub(k, v)
+    end
+    return text
+end
+
+
+-- The block transform functions transform the text on the block level.
+-- They work with the text as an array of lines rather than as individual
+-- characters.
+
+-- Returns true if the line is a ruler of (char) characters.
+-- The line must contain at least three char characters and contain only spaces and
+-- char characters.
+local function is_ruler_of(line, char)
+    if not line:match("^[ %" .. char .. "]*$") then return false end
+    if not line:match("%" .. char .. ".*%" .. char .. ".*%" .. char) then return false end
+    return true
+end
+
+-- Identifies the block level formatting present in the line
+local function classify(line)
+    local info = {line = line, text = line}
+
+    if line:match("^    ") then
+        info.type = "indented"
+        info.outdented = line:sub(5)
+        return info
+    end
+
+    for _,c in ipairs({'*', '-', '_', '='}) do
+        if is_ruler_of(line, c) then
+            info.type = "ruler"
+            info.ruler_char = c
+            return info
+        end
+    end
+
+    if line == "" then
+        info.type = "blank"
+        return info
+    end
+
+    if line:match("^(#+)[ \t]*(.-)[ \t]*#*[ \t]*$") then
+        local m1, m2 = line:match("^(#+)[ \t]*(.-)[ \t]*#*[ \t]*$")
+        info.type = "header"
+        info.level = m1:len()
+        info.text = m2
+        return info
+    end
+
+    if line:match("^ ? ? ?(%d+)%.[ \t]+(.+)") then
+        local number, text = line:match("^ ? ? ?(%d+)%.[ \t]+(.+)")
+        info.type = "list_item"
+        info.list_type = "numeric"
+        info.number = 0 + number
+        info.text = text
+        return info
+    end
+
+    if line:match("^ ? ? ?([%*%+%-])[ \t]+(.+)") then
+        local bullet, text = line:match("^ ? ? ?([%*%+%-])[ \t]+(.+)")
+        info.type = "list_item"
+        info.list_type = "bullet"
+        info.bullet = bullet
+        info.text= text
+        return info
+    end
+
+    if line:match("^>[ \t]?(.*)") then
+        info.type = "blockquote"
+        info.text = line:match("^>[ \t]?(.*)")
+        return info
+    end
+
+    if is_protected(line) then
+        info.type = "raw"
+        info.html = unprotect(line)
+        return info
+    end
+
+    info.type = "normal"
+    return info
+end
+
+-- Find headers constisting of a normal line followed by a ruler and converts them to
+-- header entries.
+local function headers(array)
+    local i = 1
+    while i <= #array - 1 do
+        if array[i].type  == "normal" and array[i+1].type == "ruler" and
+            (array[i+1].ruler_char == "-" or array[i+1].ruler_char == "=") then
+            local info = {line = array[i].line}
+            info.text = info.line
+            info.type = "header"
+            info.level = iff(array[i+1].ruler_char == "=", 1, 2)
+            table.remove(array, i+1)
+            array[i] = info
+        end
+        i = i + 1
+    end
+    return array
+end
+
+-- Find list blocks and convert them to protected data blocks
+local function lists(array, sublist)
+    local function process_list(arr)
+        local function any_blanks(arr)
+            for i = 1, #arr do
+                if arr[i].type == "blank" then return true end
+            end
+            return false
+        end
+
+        local function split_list_items(arr)
+            local acc = {arr[1]}
+            local res = {}
+            for i=2,#arr do
+                if arr[i].type == "list_item" then
+                    table.insert(res, acc)
+                    acc = {arr[i]}
+                else
+                    table.insert(acc, arr[i])
+                end
+            end
+            table.insert(res, acc)
+            return res
+        end
+
+        local function process_list_item(lines, block)
+            while lines[#lines].type == "blank" do
+                table.remove(lines)
+            end
+
+            local itemtext = lines[1].text
+            for i=2,#lines do
+                itemtext = itemtext .. "\n" .. outdent(lines[i].line)
+            end
+            if block then
+                itemtext = block_transform(itemtext, true)
+                if not itemtext:find("<pre>") then itemtext = indent(itemtext) end
+                return "    <li>" .. itemtext .. "</li>"
+            else
+                local lines = split(itemtext)
+                lines = map(lines, classify)
+                lines = lists(lines, true)
+                lines = blocks_to_html(lines, true)
+                itemtext = table.concat(lines, "\n")
+                if not itemtext:find("<pre>") then itemtext = indent(itemtext) end
+                return "    <li>" .. itemtext .. "</li>"
+            end
+        end
+
+        local block_list = any_blanks(arr)
+        local items = split_list_items(arr)
+        local out = ""
+        for _, item in ipairs(items) do
+            out = out .. process_list_item(item, block_list) .. "\n"
+        end
+        if arr[1].list_type == "numeric" then
+            return "<ol>\n" .. out .. "</ol>"
+        else
+            return "<ul>\n" .. out .. "</ul>"
+        end
+    end
+
+    -- Finds the range of lines composing the first list in the array. A list
+    -- starts with (^ list_item) or (blank list_item) and ends with
+    -- (blank* $) or (blank normal).
+    --
+    -- A sublist can start with just (list_item) does not need a blank...
+    local function find_list(array, sublist)
+        local function find_list_start(array, sublist)
+            if array[1].type == "list_item" then return 1 end
+            if sublist then
+                for i = 1,#array do
+                    if array[i].type == "list_item" then return i end
+                end
+            else
+                for i = 1, #array-1 do
+                    if array[i].type == "blank" and array[i+1].type == "list_item" then
+                        return i+1
+                    end
+                end
+            end
+            return nil
+        end
+        local function find_list_end(array, start)
+            local pos = #array
+            for i = start, #array-1 do
+                if array[i].type == "blank" and array[i+1].type ~= "list_item"
+                    and array[i+1].type ~= "indented" and array[i+1].type ~= "blank" then
+                    pos = i-1
+                    break
+                end
+            end
+            while pos > start and array[pos].type == "blank" do
+                pos = pos - 1
+            end
+            return pos
+        end
+
+        local start = find_list_start(array, sublist)
+        if not start then return nil end
+        return start, find_list_end(array, start)
+    end
+
+    while true do
+        local start, stop = find_list(array, sublist)
+        if not start then break end
+        local text = process_list(splice(array, start, stop))
+        local info = {
+            line = text,
+            type = "raw",
+            html = text
+        }
+        array = splice(array, start, stop, {info})
+    end
+
+    -- Convert any remaining list items to normal
+    for _,line in ipairs(array) do
+        if line.type == "list_item" then line.type = "normal" end
+    end
+
+    return array
+end
+
+-- Find and convert blockquote markers.
+local function blockquotes(lines)
+    local function find_blockquote(lines)
+        local start
+        for i,line in ipairs(lines) do
+            if line.type == "blockquote" then
+                start = i
+                break
+            end
+        end
+        if not start then return nil end
+
+        local stop = #lines
+        for i = start+1, #lines do
+            if lines[i].type == "blank" or lines[i].type == "blockquote" then
+            elseif lines[i].type == "normal" then
+                if lines[i-1].type == "blank" then stop = i-1 break end
+            else
+                stop = i-1 break
+            end
+        end
+        while lines[stop].type == "blank" do stop = stop - 1 end
+        return start, stop
+    end
+
+    local function process_blockquote(lines)
+        local raw = lines[1].text
+        for i = 2,#lines do
+            raw = raw .. "\n" .. lines[i].text
+        end
+        local bt = block_transform(raw)
+        if not bt:find("<pre>") then bt = indent(bt) end
+        return "<blockquote>\n    " .. bt ..
+            "\n</blockquote>"
+    end
+
+    while true do
+        local start, stop = find_blockquote(lines)
+        if not start then break end
+        local text = process_blockquote(splice(lines, start, stop))
+        local info = {
+            line = text,
+            type = "raw",
+            html = text
+        }
+        lines = splice(lines, start, stop, {info})
+    end
+    return lines
+end
+
+-- Find and convert codeblocks.
+local function codeblocks(lines)
+    local function find_codeblock(lines)
+        local start
+        for i,line in ipairs(lines) do
+            if line.type == "indented" then start = i break end
+        end
+        if not start then return nil end
+
+        local stop = #lines
+        for i = start+1, #lines do
+            if lines[i].type ~= "indented" and lines[i].type ~= "blank" then
+                stop = i-1
+                break
+            end
+        end
+        while lines[stop].type == "blank" do stop = stop - 1 end
+        return start, stop
+    end
+
+    local function process_codeblock(lines)
+        local raw = detab(encode_code(outdent(lines[1].line)))
+        for i = 2,#lines do
+            raw = raw .. "\n" .. detab(encode_code(outdent(lines[i].line)))
+        end
+        return "<pre><code>" .. raw .. "\n</code></pre>"
+    end
+
+    while true do
+        local start, stop = find_codeblock(lines)
+        if not start then break end
+        local text = process_codeblock(splice(lines, start, stop))
+        local info = {
+            line = text,
+            type = "raw",
+            html = text
+        }
+        lines = splice(lines, start, stop, {info})
+    end
+    return lines
+end
+
+-- Convert lines to html code
+function blocks_to_html(lines, no_paragraphs)
+    local out = {}
+    local i = 1
+    while i <= #lines do
+        local line = lines[i]
+        if line.type == "ruler" then
+            table.insert(out, "<hr/>")
+        elseif line.type == "raw" then
+            table.insert(out, line.html)
+        elseif line.type == "normal" then
+            local s = line.line
+
+            while i+1 <= #lines and lines[i+1].type == "normal" do
+                i = i + 1
+                s = s .. "\n" .. lines[i].line
+            end
+
+            if no_paragraphs then
+                table.insert(out, span_transform(s))
+            else
+                table.insert(out, "<p>" .. span_transform(s) .. "</p>")
+            end
+        elseif line.type == "header" then
+            local s = "<h" .. line.level .. ">" .. span_transform(line.text) .. "</h" .. line.level .. ">"
+            table.insert(out, s)
+        else
+            table.insert(out, line.line)
+        end
+        i = i + 1
+    end
+    return out
+end
+
+-- Perform all the block level transforms
+function block_transform(text, sublist)
+    local lines = split(text)
+    lines = map(lines, classify)
+    lines = headers(lines)
+    lines = lists(lines, sublist)
+    lines = codeblocks(lines)
+    lines = blockquotes(lines)
+    lines = blocks_to_html(lines)
+    local text = table.concat(lines, "\n")
+    return text
+end
+
+-- Debug function for printing a line array to see the result
+-- of partial transforms.
+local function print_lines(lines)
+    for i, line in ipairs(lines) do
+        print(i, line.type, line.text or line.line)
+    end
+end
+
+-- Functions for transforming the text at the span level.
+
+-- These characters may need to be escaped because they have a special
+-- meaning in markdown.
+escape_chars = "'\\`*_{}[]()>#+-.!'"
+escape_table = {}
+
+local function init_escape_table()
+    escape_table = {}
+    for i = 1,#escape_chars do
+        local c = escape_chars:sub(i,i)
+        escape_table[c] = hash(c)
+    end
+end
+
+-- Adds a new escape to the escape table.
+local function add_escape(text)
+    if not escape_table[text] then
+        escape_table[text] = hash(text)
+    end
+    return escape_table[text]
+end
+
+-- Escape characters that should not be disturbed by markdown.
+local function escape_special_chars(text)
+    local tokens = tokenize_html(text)
+
+    local out = ""
+    for _, token in ipairs(tokens) do
+        local t = token.text
+        if token.type == "tag" then
+            -- In tags, encode * and _ so they don't conflict with their use in markdown.
+            t = t:gsub("%*", escape_table["*"])
+            t = t:gsub("%_", escape_table["_"])
+        else
+            t = encode_backslash_escapes(t)
+        end
+        out = out .. t
+    end
+    return out
+end
+
+-- Encode backspace-escaped characters in the markdown source.
+function encode_backslash_escapes(t)
+    for i=1,escape_chars:len() do
+        local c = escape_chars:sub(i,i)
+        t = t:gsub("\\%" .. c, escape_table[c])
+    end
+    return t
+end
+
+-- Unescape characters that have been encoded.
+local function unescape_special_chars(t)
+    local tin = t
+    for k,v in pairs(escape_table) do
+        k = k:gsub("%%", "%%%%")
+        t = t:gsub(v,k)
+    end
+    if t ~= tin then t = unescape_special_chars(t) end
+    return t
+end
+
+-- Encode/escape certain characters inside Markdown code runs.
+-- The point is that in code, these characters are literals,
+-- and lose their special Markdown meanings.
+function encode_code(s)
+    s = s:gsub("%&", "&amp;")
+    s = s:gsub("<", "&lt;")
+    s = s:gsub(">", "&gt;")
+    for k,v in pairs(escape_table) do
+        s = s:gsub("%"..k, v)
+    end
+    return s
+end
+
+-- Handle backtick blocks.
+local function code_spans(s)
+    s = s:gsub("\\\\", escape_table["\\"])
+    s = s:gsub("\\`", escape_table["`"])
+
+    local pos = 1
+    while true do
+        local start, stop = s:find("`+", pos)
+        if not start then return s end
+        local count = stop - start + 1
+        -- Find a matching numbert of backticks
+        local estart, estop = s:find(string.rep("`", count), stop+1)
+        local brstart = s:find("\n", stop+1)
+        if estart and (not brstart or estart < brstart) then
+            local code = s:sub(stop+1, estart-1)
+            code = code:gsub("^[ \t]+", "")
+            code = code:gsub("[ \t]+$", "")
+            code = code:gsub(escape_table["\\"], escape_table["\\"] .. escape_table["\\"])
+            code = code:gsub(escape_table["`"], escape_table["\\"] .. escape_table["`"])
+            code = "<code>" .. encode_code(code) .. "</code>"
+            code = add_escape(code)
+            s = s:sub(1, start-1) .. code .. s:sub(estop+1)
+            pos = start + code:len()
+        else
+            pos = stop + 1
+        end
+    end
+    return s
+end
+
+-- Encode alt text... enodes &, and ".
+local function encode_alt(s)
+    if not s then return s end
+    s = s:gsub('&', '&amp;')
+    s = s:gsub('"', '&quot;')
+    s = s:gsub('<', '&lt;')
+    return s
+end
+
+-- Handle image references
+local function images(text)
+    local function reference_link(alt, id)
+        alt = encode_alt(alt:match("%b[]"):sub(2,-2))
+        id = id:match("%[(.*)%]"):lower()
+        if id == "" then id = text:lower() end
+        link_database[id] = link_database[id] or {}
+        if not link_database[id].url then return nil end
+        local url = link_database[id].url or id
+        url = encode_alt(url)
+        local title = encode_alt(link_database[id].title)
+        if title then title = " title=\"" .. title .. "\"" else title = "" end
+        return add_escape ('<img src="' .. url .. '" alt="' .. alt .. '"' .. title .. "/>")
+    end
+
+    local function inline_link(alt, link)
+        alt = encode_alt(alt:match("%b[]"):sub(2,-2))
+        local url, title = link:match("%(<?(.-)>?[ \t]*['\"](.+)['\"]")
+        url = url or link:match("%(<?(.-)>?%)")
+        url = encode_alt(url)
+        title = encode_alt(title)
+        if title then
+            return add_escape('<img src="' .. url .. '" alt="' .. alt .. '" title="' .. title .. '"/>')
+        else
+            return add_escape('<img src="' .. url .. '" alt="' .. alt .. '"/>')
+        end
+    end
+
+    text = text:gsub("!(%b[])[ \t]*\n?[ \t]*(%b[])", reference_link)
+    text = text:gsub("!(%b[])(%b())", inline_link)
+    return text
+end
+
+-- Handle anchor references
+local function anchors(text)
+    local function reference_link(text, id)
+        text = text:match("%b[]"):sub(2,-2)
+        id = id:match("%b[]"):sub(2,-2):lower()
+        if id == "" then id = text:lower() end
+        link_database[id] = link_database[id] or {}
+        if not link_database[id].url then return nil end
+        local url = link_database[id].url or id
+        url = encode_alt(url)
+        local title = encode_alt(link_database[id].title)
+        if title then title = " title=\"" .. title .. "\"" else title = "" end
+        return add_escape("<a href=\"" .. url .. "\"" .. title .. ">") .. text .. add_escape("</a>")
+    end
+
+    local function inline_link(text, link)
+        text = text:match("%b[]"):sub(2,-2)
+        local url, title = link:match("%(<?(.-)>?[ \t]*['\"](.+)['\"]")
+        title = encode_alt(title)
+        url  = url or  link:match("%(<?(.-)>?%)") or ""
+        url = encode_alt(url)
+        if title then
+            return add_escape("<a href=\"" .. url .. "\" title=\"" .. title .. "\">") .. text .. "</a>"
+        else
+            return add_escape("<a href=\"" .. url .. "\">") .. text .. add_escape("</a>")
+        end
+    end
+
+    text = text:gsub("(%b[])[ \t]*\n?[ \t]*(%b[])", reference_link)
+    text = text:gsub("(%b[])(%b())", inline_link)
+    return text
+end
+
+-- Handle auto links, i.e. <http://www.google.com/>.
+local function auto_links(text)
+    local function link(s)
+        return add_escape("<a href=\"" .. s .. "\">") .. s .. "</a>"
+    end
+    -- Encode chars as a mix of dec and hex entitites to (perhaps) fool
+    -- spambots.
+    local function encode_email_address(s)
+        -- Use a deterministic encoding to make unit testing possible.
+        -- Code 45% hex, 45% dec, 10% plain.
+        local hex = {code = function(c) return "&#x" .. string.format("%x", c:byte()) .. ";" end, count = 1, rate = 0.45}
+        local dec = {code = function(c) return "&#" .. c:byte() .. ";" end, count = 0, rate = 0.45}
+        local plain = {code = function(c) return c end, count = 0, rate = 0.1}
+        local codes = {hex, dec, plain}
+        local function swap(t,k1,k2) local temp = t[k2] t[k2] = t[k1] t[k1] = temp end
+
+        local out = ""
+        for i = 1,s:len() do
+            for _,code in ipairs(codes) do code.count = code.count + code.rate end
+            if codes[1].count < codes[2].count then swap(codes,1,2) end
+            if codes[2].count < codes[3].count then swap(codes,2,3) end
+            if codes[1].count < codes[2].count then swap(codes,1,2) end
+
+            local code = codes[1]
+            local c = s:sub(i,i)
+            -- Force encoding of "@" to make email address more invisible.
+            if c == "@" and code == plain then code = codes[2] end
+            out = out .. code.code(c)
+            code.count = code.count - 1
+        end
+        return out
+    end
+    local function mail(s)
+        s = unescape_special_chars(s)
+        local address = encode_email_address("mailto:" .. s)
+        local text = encode_email_address(s)
+        return add_escape("<a href=\"" .. address .. "\">") .. text .. "</a>"
+    end
+    -- links
+    text = text:gsub("<(https?:[^'\">%s]+)>", link)
+    text = text:gsub("<(ftp:[^'\">%s]+)>", link)
+
+    -- mail
+    text = text:gsub("<mailto:([^'\">%s]+)>", mail)
+    text = text:gsub("<([-.%w]+%@[-.%w]+)>", mail)
+    return text
+end
+
+-- Encode free standing amps (&) and angles (<)... note that this does not
+-- encode free >.
+local function amps_and_angles(s)
+    -- encode amps not part of &..; expression
+    local pos = 1
+    while true do
+        local amp = s:find("&", pos)
+        if not amp then break end
+        local semi = s:find(";", amp+1)
+        local stop = s:find("[ \t\n&]", amp+1)
+        if not semi or (stop and stop < semi) or (semi - amp) > 15 then
+            s = s:sub(1,amp-1) .. "&amp;" .. s:sub(amp+1)
+            pos = amp+1
+        else
+            pos = amp+1
+        end
+    end
+
+    -- encode naked <'s
+    s = s:gsub("<([^a-zA-Z/?$!])", "&lt;%1")
+    s = s:gsub("<$", "&lt;")
+
+    -- what about >, nothing done in the original markdown source to handle them
+    return s
+end
+
+-- Handles emphasis markers (* and _) in the text.
+local function emphasis(text)
+    for _, s in ipairs {"%*%*"} do
+        text = text:gsub(s .. "([^%s][%*%_]?)" .. s, "<strong>%1</strong>")
+        text = text:gsub(s .. "([^%s][^<>]-[^%s][%*%_]?)" .. s, "<strong>%1</strong>")
+    end
+    for _, s in ipairs {"%*"} do
+        text = text:gsub(s .. "([^%s_])" .. s, "<em>%1</em>")
+        text = text:gsub(s .. "(<strong>[^%s_]</strong>)" .. s, "<em>%1</em>")
+        text = text:gsub(s .. "([^%s_][^<>_]-[^%s_])" .. s, "<em>%1</em>")
+        text = text:gsub(s .. "([^<>_]-<strong>[^<>_]-</strong>[^<>_]-)" .. s, "<em>%1</em>")
+    end
+    return text
+end
+
+-- Handles line break markers in the text.
+local function line_breaks(text)
+    return text:gsub("  +\n", " <br/>\n")
+end
+
+-- Perform all span level transforms.
+function span_transform(text)
+    text = code_spans(text)
+    text = escape_special_chars(text)
+    text = images(text)
+    text = anchors(text)
+    text = auto_links(text)
+    text = amps_and_angles(text)
+    text = emphasis(text)
+    text = line_breaks(text)
+    return text
+end
+
+-- Cleanup the text by normalizing some possible variations to make further
+-- processing easier.
+local function cleanup(text)
+    -- Standardize line endings
+    text = text:gsub("\r\n", "\n")  -- DOS to UNIX
+    text = text:gsub("\r", "\n")    -- Mac to UNIX
+
+    -- Convert all tabs to spaces
+    text = detab(text)
+
+    -- Strip lines with only spaces and tabs
+    while true do
+        local subs
+        text, subs = text:gsub("\n[ \t]+\n", "\n\n")
+        if subs == 0 then break end
+    end
+
+    return "\n" .. text .. "\n"
+end
+
+-- Strips link definitions from the text and stores the data in a lookup table.
+local function strip_link_definitions(text)
+    local linkdb = {}
+
+    local function link_def(id, url, title)
+        id = id:match("%[(.+)%]"):lower()
+        linkdb[id] = linkdb[id] or {}
+        linkdb[id].url = url or linkdb[id].url
+        linkdb[id].title = title or linkdb[id].title
+        return ""
+    end
+
+    local def_no_title = "\n ? ? ?(%b[]):[ \t]*\n?[ \t]*<?([^%s>]+)>?[ \t]*"
+    local def_title1 = def_no_title .. "[ \t]+\n?[ \t]*[\"'(]([^\n]+)[\"')][ \t]*"
+    local def_title2 = def_no_title .. "[ \t]*\n[ \t]*[\"'(]([^\n]+)[\"')][ \t]*"
+    local def_title3 = def_no_title .. "[ \t]*\n?[ \t]+[\"'(]([^\n]+)[\"')][ \t]*"
+
+    text = text:gsub(def_title1, link_def)
+    text = text:gsub(def_title2, link_def)
+    text = text:gsub(def_title3, link_def)
+    text = text:gsub(def_no_title, link_def)
+    return text, linkdb
+end
+
+link_database = {}
+
+-- Main markdown processing function
+function markdown(text)
+    init_hash(text)
+    init_escape_table()
+
+    text = cleanup(text)
+    text = protect(text)
+    text, link_database = strip_link_definitions(text)
+    text = block_transform(text)
+    text = unescape_special_chars(text)
+    return text
+end
+
+-- Expose markdown function to the world
+md = { markdown = markdown }
+
+-- Class for parsing command-line options
+local OptionParser = {}
+OptionParser.__index = OptionParser
+
+-- Creates a new option parser
+function OptionParser:new()
+    local o = {short = {}, long = {}}
+    setmetatable(o, self)
+    return o
+end
+
+-- Calls f() whenever a flag with specified short and long name is encountered
+function OptionParser:flag(short, long, f)
+    local info = {type = "flag", f = f}
+    if short then self.short[short] = info end
+    if long then self.long[long] = info end
+end
+
+-- Calls f(param) whenever a parameter flag with specified short and long name is encountered
+function OptionParser:param(short, long, f)
+    local info = {type = "param", f = f}
+    if short then self.short[short] = info end
+    if long then self.long[long] = info end
+end
+
+-- Calls f(v) for each non-flag argument
+function OptionParser:arg(f)
+    self.arg = f
+end
+
+-- Runs the option parser for the specified set of arguments. Returns true if all arguments
+-- where successfully parsed and false otherwise.
+function OptionParser:run(args)
+    local pos = 1
+    while pos <= #args do
+        local arg = args[pos]
+        if arg == "--" then
+            for i=pos+1,#args do
+                if self.arg then self.arg(args[i]) end
+                return true
+            end
+        end
+        if arg:match("^%-%-") then
+            local info = self.long[arg:sub(3)]
+            if not info then print("Unknown flag: " .. arg) return false end
+            if info.type == "flag" then
+                info.f()
+                pos = pos + 1
+            else
+                param = args[pos+1]
+                if not param then print("No parameter for flag: " .. arg) return false end
+                info.f(param)
+                pos = pos+2
+            end
+        elseif arg:match("^%-") then
+            for i=2,arg:len() do
+                local c = arg:sub(i,i)
+                local info = self.short[c]
+                if not info then print("Unknown flag: -" .. c) return false end
+                if info.type == "flag" then
+                    info.f()
+                else
+                    if i == arg:len() then
+                        param = args[pos+1]
+                        if not param then print("No parameter for flag: -" .. c) return false end
+                        info.f(param)
+                        pos = pos + 1
+                    else
+                        param = arg:sub(i+1)
+                        info.f(param)
+                    end
+                    break
+                end
+            end
+            pos = pos + 1
+        else
+            if self.arg then self.arg(arg) end
+            pos = pos + 1
+        end
+    end
+    return true
+end
+
+-- Handles the case when markdown is run from the command line
+local function run_command_line(arg)
+    -- Generate output for input s given options
+    local function run(s, options)
+        s = markdown(s)
+        if not options.wrap_header then return s end
+        local header = ""
+        if options.header then
+            local f = io.open(options.header) or error("Could not open file: " .. options.header)
+            header = f:read("*a")
+            f:close()
+        else
+            header = [[
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=CHARSET" />
+    <title>TITLE</title>
+    <link rel="stylesheet" type="text/css" href="STYLESHEET" />
+</head>
+<body>
+]]
+            local title = options.title or s:match("<h1>(.-)</h1>") or s:match("<h2>(.-)</h2>") or
+                s:match("<h3>(.-)</h3>") or "Untitled"
+            header = header:gsub("TITLE", title)
+            if options.inline_style then
+                local style = ""
+                local f = io.open(options.stylesheet)
+                if f then
+                    style = f:read("*a") f:close()
+                else
+                    error("Could not include style sheet " .. options.stylesheet .. ": File not found")
+                end
+                header = header:gsub('<link rel="stylesheet" type="text/css" href="STYLESHEET" />',
+                    "<style type=\"text/css\"><!--\n" .. style .. "\n--></style>")
+            else
+                header = header:gsub("STYLESHEET", options.stylesheet)
+            end
+            header = header:gsub("CHARSET", options.charset)
+        end
+        local footer = "</body></html>"
+        if options.footer then
+            local f = io.open(options.footer) or error("Could not open file: " .. options.footer)
+            footer = f:read("*a")
+            f:close()
+        end
+        return header .. s .. footer
+    end
+
+    -- Generate output path name from input path name given options.
+    local function outpath(path, options)
+        if options.append then return path .. ".html" end
+        local m = path:match("^(.+%.html)[^/\\]+$") if m then return m end
+        m = path:match("^(.+%.)[^/\\]*$") if m and path ~= m .. "html" then return m .. "html" end
+        return path .. ".html"
+    end
+
+    -- Default commandline options
+    local options = {
+        wrap_header = true,
+        header = nil,
+        footer = nil,
+        charset = "utf-8",
+        title = nil,
+        stylesheet = "default.css",
+        inline_style = false
+    }
+    local help = [[
+Usage: markdown.lua [OPTION] [FILE]
+Runs the markdown text markup to HTML converter on each file specified on the
+command line. If no files are specified, runs on standard input.
+
+No header:
+    -n, --no-wrap        Don't wrap the output in <html>... tags.
+Custom header:
+    -e, --header FILE    Use content of FILE for header.
+    -f, --footer FILE    Use content of FILE for footer.
+Generated header:
+    -c, --charset SET    Specifies charset (default utf-8).
+    -i, --title TITLE    Specifies title (default from first <h1> tag).
+    -s, --style STYLE    Specifies style sheet file (default default.css).
+    -l, --inline-style   Include the style sheet file inline in the header.
+Generated files:
+    -a, --append         Append .html extension (instead of replacing).
+Other options:
+    -h, --help           Print this help text.
+    -t, --test           Run the unit tests.
+]]
+
+    local run_stdin = true
+    local op = OptionParser:new()
+    op:flag("n", "no-wrap", function () options.wrap_header = false end)
+    op:param("e", "header", function (x) options.header = x end)
+    op:param("f", "footer", function (x) options.footer = x end)
+    op:param("c", "charset", function (x) options.charset = x end)
+    op:param("i", "title", function(x) options.title = x end)
+    op:param("s", "style", function(x) options.stylesheet = x end)
+    op:flag("l", "inline-style", function(x) options.inline_style = true end)
+    op:flag("a", "append", function() options.append = true end)
+    op:flag("t", "test", function()
+        local n = arg[0]:gsub("markdown.lua", "markdown-tests.lua")
+        local f = io.open(n)
+        if f then
+            f:close() dofile(n)
+        else
+            error("Cannot find markdown-tests.lua")
+        end
+        run_stdin = false
+    end)
+    op:flag("h", "help", function() print(help) run_stdin = false end)
+    op:arg(function(path)
+            local file = io.open(path) or error("Could not open file: " .. path)
+            local s = file:read("*a")
+            file:close()
+            s = run(s, options)
+            file = io.open(outpath(path, options), "w") or error("Could not open output file: " .. outpath(path, options))
+            file:write(s)
+            file:close()
+            run_stdin = false
+        end
+    )
+
+    if not op:run(arg) then
+        print(help)
+        run_stdin = false
+    end
+
+    if run_stdin then
+        local s = io.read("*a")
+        s = run(s, options)
+        io.write(s)
+    end
+end
+
+
+-- lit
+-- Function to identify the os
+if package.config:sub(1, 1) == "/" then
+    function os.name()
+        return "Unix"
+    end
+elseif package.config:sub(1, 1) == "\\" then
+    function os.name()
+        return "Windows"
+    end
+end
+
+-- Function to resolve @include statements
+function resolve_includes(source, source_dir, cur_filename)
+    local newSource = ""
+    local lines = split(source, "\n")
+
+    local line_num = 0
+    for i=1,#lines do
+        line_num = line_num + 1
+        local line = lines[line_num]
+
+        if startswith(line, "@include") then
+            -- @include statement
+            local filename = basename(strip(line:sub(10)))
+            if strip(filename) == "" then
+                print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
+                os.exit()
+            end
+            local filetype = filename:match(".*%.(.*)")
+            local file = source_dir .. "/" .. strip(line:sub(10))
+            if not file_exists(file) then
+                print(cur_filename .. ":error:" .. line_num .. ":Included file ".. file .. " does not exist.")
+                os.exit()
+            end
+            
+            if filetype == "lit" then
+                newSource = newSource .. resolve_includes(readall(file), source_dir, file)
+            end
+
+        elseif startswith(line, "@change") and not startswith(line, "@change_end") then
+            -- @change statement
+            local filename = basename(strip(line:sub(9)))
+            if strip(filename) == "" then
+                print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
+                os.exit()
+            end
+            
+            local filetype = filename:match(".*%.(.*)")
+            local file = source_dir .. "/" .. strip(line:sub(9))
+            if not file_exists(file) then
+                print(cur_filename .. ":error:" .. line_num .. ":Changed file ".. file .. " does not exist.")
+                os.exit()
+            end
+            
+            if filetype == "lit" then
+                local search_text = ""
+                local replace_text = ""
+                local in_search_text = false
+                local in_replace_text = false
+            
+                local file_source = readall(file)
+            
+                -- Parse the change statement
+                while strip(line) ~= "@change_end" do
+                    if line_num == #lines + 1 then
+                        print(cur_filename .. ":error:" .. #lines .. "Reached end of file with no @change_end")
+                        exit()
+                    end
+                    line_num = line_num + 1
+                    line = lines[line_num]
+                
+                    if startswith(strip(line), "@replace") then
+                        in_replace_text = false
+                        in_search_text = true
+                        line_num = line_num + 1
+                        line = lines[line_num]
+                    elseif startswith(strip(line), "@with") then
+                        in_search_text = false
+                        in_replace_text = true
+                        line_num = line_num + 1
+                        line = lines[line_num]
+                    elseif startswith(strip(line), "@end") then
+                        in_search_text = false
+                        in_replace_text = false
+                
+                        search_text = literalize(chomp(search_text))
+                        replace_text = chomp(replace_text)
+                        replace_text = replace_text:gsub("%%", "%%%%")
+                
+                        file_source = file_source:gsub(search_text, replace_text)
+                        search_text = ""
+                        replace_text = ""
+                    end
+                
+                    if in_search_text then
+                        search_text = search_text .. line .. "\n"
+                    elseif in_replace_text then
+                        replace_text = replace_text .. line .. "\n"
+                    end
+                end
+
+            
+                newSource = newSource .. resolve_includes(file_source, source_dir, file)
+            end 
+
+            local filename = basename(strip(line:sub(9)))
+            if strip(filename) == "" then
+                print(cur_filename .. ":error:" .. line_num .. ":No filename given to @change")
+                os.exit()
+            end
+
+            local filetype = filename:match(".*%.(.*)")
+            local file = source_dir .. "/" .. strip(line:sub(9))
+            if not file_exists(file) then
+                print(cur_filename .. ":error:" .. line_num .. ":Changed file ".. file .. " does not exist.")
+                os.exit()
+            end
+
+            if filetype == "lit" then
+                local search_text = ""
+                local replace_text = ""
+                local in_search_text = false
+                local in_replace_text = false
+
+                local file_source = readall(file)
+
+                while strip(line) ~= "@change_end" do
+                    if line_num == #lines + 1 then
+                        print(cur_filename .. ":error:" .. #lines .. "Reached end of file with no @change_end")
+                        exit()
+                    end
+                    line_num = line_num + 1
+                    line = lines[line_num]
+
+                    if startswith(strip(line), "@replace") then
+                        in_replace_text = false
+                        in_search_text = true
+                        line_num = line_num + 1
+                        line = lines[line_num]
+                    elseif startswith(strip(line), "@with") then
+                        in_search_text = false
+                        in_replace_text = true
+                        line_num = line_num + 1
+                        line = lines[line_num]
+                    elseif startswith(strip(line), "@end") then
+                        in_search_text = false
+                        in_replace_text = false
+
+                        search_text = literalize(chomp(search_text))
+                        replace_text = chomp(replace_text)
+                        replace_text = replace_text:gsub("%%", "%%%%")
+
+                        file_source = file_source:gsub(search_text, replace_text)
+                        search_text = ""
+                        replace_text = ""
+                    end
+
+                    if in_search_text then
+                        search_text = search_text .. line .. "\n"
+                    elseif in_replace_text then
+                        replace_text = replace_text .. line .. "\n"
+                    end
+                end
+
+                newSource = newSource .. resolve_includes(file_source, source_dir, file)
+            end 
+
+        end
+        
+        if not startswith(line, "@change_end") then
+            newSource = newSource .. line .. "\n"
+        end
+
+        if line_num >= #lines then
+            break
+        end
+    end
+
+    return newSource
+end
+
+
+-- Parse the arguments
+html = false
+code = false
+outdir = "."
+index = true
+generate_files = true
+
+inputfiles = {}
+
+for i=1,#arg do
+    argument = arg[i]
+    if argument == "-h" then
+        print("Usage: lit [-html] [-code] [-noindex] [--out-dir=<dir>] [--no-output] [file ...]")
+        print("Available options are:")
+        print("   -html:          Only generated HTML output")
+        print("   -code:          Only generated code output")
+        print("   -noindex:       Do not create an index")
+        print("  --out-dir=<dir>: Put the output files in <dir>")
+        print("  --no-output:     Do not create any output files, only report errors")
+        os.exit()
+    elseif argument == "-html" then
+        html = true
+    elseif argument == "-code" then
+        code = true
+    elseif argument == "-noindex" then
+        index = false
+    elseif startswith(argument, "--out-dir=") then
+        outdir = string.sub(argument, 11, #argument)
+    elseif startswith(argument, "--no-output") then
+        generate_files = false
+    else
+        inputfiles[#inputfiles + 1] = argument
+    end
+end
+
+if not html and not code then
+    html = true
+    code = true
+end
+
+if #inputfiles == 0 then
+    -- Use STDIN and STDOUT
+    -- Declare a few globals
+    title = ""
+    block_locations = {} -- String => (Number => Number)
+    block_use_locations = {} -- String => (Number => Number)
+    
+    codetype = ""
+    codetype_ext = ""
+    
+    code_lines = {} -- Number => Number
+    section_linenums = {} -- Number => Number
+
+    local source_dir = "."
+    
+    complete_source = readall()
+    complete_source = resolve_includes(complete_source, source_dir, "none")
+    local lines = split(complete_source, "\n")
+    
+    inputfilename = "none"
+    
+    stdin = true
+    if html then
+        local output = weave(lines, ".", index)
+        if generate_files then
+            write("STDOUT", output)
+        end
+    end
+    
+    if code then
+        tangle(lines)
+    end
+
 else
-    echo "Lua has not been built. Please run ./install.sh PLATFORM"
-fi
+    -- Weave and/or tangle the input files
+    for num,file in pairs(inputfiles) do
+        -- Declare a few globals
+        title = ""
+        block_locations = {} -- String => (Number => Number)
+        block_use_locations = {} -- String => (Number => Number)
+        
+        codetype = ""
+        codetype_ext = ""
+        
+        code_lines = {} -- Number => Number
+        section_linenums = {} -- Number => Number
+
+    
+        inputfilename = file
+    
+        local source_dir = dirname(file)
+        if source_dir == "" then
+            source_dir = "."
+        end
+    
+        complete_source = readall(file)
+        complete_source = resolve_includes(complete_source, source_dir, file)
+        local lines = split(complete_source, "\n")
+    
+        if html then
+            local output = weave(lines, source_dir, index)
+            if generate_files then
+                local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
+                write(outputstream, output)
+                outputstream:close()
+            end
+        end
+        if code then
+            tangle(lines)
+        end
+    end
+
+end
+
+

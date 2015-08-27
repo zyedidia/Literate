@@ -1,5 +1,7 @@
 # Literate
 
+[Website] (http://zbyedidia.webfactional.com/literate).
+
 Literate (lit for short) is a computer programming system to create literate programs. It works with any programming language, generates HTML pages as output ([which can be converted to PDF](http://http://wkhtmltopdf.org/)),
 and generates readable code. The code that is generated is indented properly and is commented using the names of codeblocks that you choose.
 
@@ -13,25 +15,49 @@ If you want to see what features I am working on, check out my [Todolist](src/To
 
 # Installation
 
-The compiler is made with Lua. When you download the repository, run `./install.sh platform` where platform one of the following supported platforms: `aix` `bsd` `c89` `generic` `linux` `macosx` `mingw` `posix` `solaris` and a local version of lua will be installed and used for Lit.
-
-For example:
+### Unix
+If you're on a Mac and you have brew installed, you can use brew to install literate:
 
 ```
-$ git clone https://github.com/zyedidia/Literate
-$ cd Literate
-$ ./install.sh macosx
+$ brew tap zyedidia/literate
+$ brew install literate
 ```
+
+If you want the `HEAD` version, you can use:
+
+```
+$ brew install --HEAD literate
+```
+
+If you don't want to use brew, you can install it manually:
+
+The compiler is made with Lua, so please make sure you have lua installed before running Literate. You can download it [here] (http://www.lua.org/download.html). You can also install it with brew, apt-get, and yum.
+In addition, there is a script that comes in the zip called `install_lua.sh`. This will install lua for you into the directory of your choice. You can install lua locally
+or you can install it to `/usr/local/bin`
+
+Once you have it installed, add `path/to/Literate/bin` to your `$PATH`
 
 In addition, if you would like an index to be generated, you must have exuberant or [universal ctags] (https://github.com/universal-ctags/ctags) installed. You can find instructions for installing with homebrew [here] (https://github.com/universal-ctags/homebrew-universal-ctags).
+
+### Windows
+Download the zip, or clone the repository, and just add path\to\Literate\bin to your
+PATH. Index generation with ctags does not work with Windows yet.
 
 # Usage
 
 Add `path/to/Literate/bin` to your PATH and then you can generate html and/or code from `.lit` files.
 
 ```
-$ lit [-html] [-code] examples/wc.lit
+$ lit examples/wc.lit
 ```
+
+Additional command line flags are:
+
+* -html: Only generate HTML output
+* -code: Only generate code output
+* -noindex: Do not create an index
+* --out-dir=dir: Put the output files in the specified directory
+* --no-output: Do not generate any files, only show errors
 
 # Features
 ### In addition to those of CWEB

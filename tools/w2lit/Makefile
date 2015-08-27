@@ -3,4 +3,4 @@ all:
 	lit *.lit
 
 clean:
-	rm -rf *.html *.lit *.c
+	rm -rf *.html *.lit *.c a.out

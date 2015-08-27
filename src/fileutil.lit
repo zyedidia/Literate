@@ -9,7 +9,7 @@ to strip paths and get filenames, and functions to read and write to files.
 
 The overall structure will look like this:
 
---- fileutil.lua
+--- fileutil
 @{The run function}
 @{The write function}
 @{The file_exists function}
@@ -39,11 +39,11 @@ end
 This function writes a string either to *STDOUT* or to a file depending on the input parameter.
 
 --- The write function
-function write(output, str)
-    if output == "STDOUT" then
+function write(outstream, str)
+    if outstream == "STDOUT" then
         io.write(str)
     else
-        output:write(str)
+        outstream:write(str)
     end
 end
 ---
@@ -92,13 +92,23 @@ The `readall` function reads the entire file and returns the string.
 
 --- The readall function
 function readall(file)
-    local f = io.open(file, "rb")
-    if f == nil then
-        print(file .. " could not be opened")
-        return ""
+    local content = ""
+    if file ~= nil then
+        local f = io.open(file, "rb")
+        if f == nil then
+            print(file .. " could not be opened")
+            return ""
+        end
+        content = f:read("*all")
+        f:close()
+    else
+        local stat,res = pcall(io.read, "*all")
+        if res:match("interrupted") then
+            print(" ")
+            os.exit()
+        end
+        content = res
     end
-    local content = f:read("*all")
-    f:close()
     return content
 end
 ---

@@ -17,7 +17,7 @@ not from prose).
 
 The overall structure of the program will look like this:
 
---- index.lua
+--- index
 function section_for_linenum(linenum)
     @{Get the section number given a line number}
 end
@@ -72,7 +72,7 @@ if not contains_str(supported_languages, codetype) then
     noctags = true
 end
 
-local tangle_result = run("echo '" .. complete_source:gsub("'", "'\"'\"'") .. "' | lit -code > out.txt")
+run("echo '" .. complete_source:gsub("'", "'\"'\"'") .. "' | lit -code > out.txt")
 local tags_str = run("ctags -x --" .. string.lower(codetype) .. "-kinds=+abcdefghijklmnopqrxtuvwxyzABCDEFGHIJKLMNOPQRXTUVWXYZ  --language-force=" .. string.lower(codetype) .. " out.txt 2>/dev/null")
 run("rm out.txt")
 
