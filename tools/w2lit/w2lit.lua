@@ -101,7 +101,7 @@ for i=1,#inputfiles do
                 started = true
                 line = line:gsub("{\\tt (.-)}", "%1")
                 out = out .. "@s " .. strip(line):match("^@%*(.-)%..-") .. "\n"
-                line = strip(line):match("^@%*.-%.(.-)$")
+                line = strip(strip(line):match("^@%*.-%.(.-)$"))
                 -- line = strip(line):gsub("^@%*(.-)%.(.-)", "@s %1\n%2")
             end
             line = line .. "\n"
@@ -165,7 +165,12 @@ for i=1,#inputfiles do
         line = line:gsub("@<(.-)@>@;", "@{%1}")
         line = line:gsub("@<(.-)@>", "@{%1}")
         line = line:gsub("@%.(.-)@>", "")
-        line = line:gsub("@^(.-)@>", "")
+        line = line:gsub("@%^(.-)@>", "")
+        line = line:gsub("\\dots", "...")
+        line = line:gsub("\\ldots", "...")
+
+        line = line:gsub("@;", "")
+        line = line:gsub("@#", "")
         local macros = ""
 
         if has_macros then
