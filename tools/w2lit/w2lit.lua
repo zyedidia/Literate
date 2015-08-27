@@ -100,7 +100,7 @@ for i=1,#inputfiles do
             else
                 started = true
                 out = out .. "@s " .. strip(line):match("^@%*(.-)%..-") .. "\n"
-                line = strip(line:match("^@%*.-%.(.-)"))
+                line = strip(strip(line):match("^@%*.-%.(.-)$"))
                 -- line = strip(line):gsub("^@%*(.-)%.(.-)", "@s %1\n%2")
             end
             line = line .. "\n"
@@ -141,6 +141,9 @@ for i=1,#inputfiles do
         if string.match(line, "@c") then
             in_codeblock = true
         end
+        if string.match(line, "@p") then
+            in_codeblock = true
+        end
 
         line = line:gsub("{\\sl (.-)}", "*%1*")
         line = line:gsub("{\\tt (.-)}", "%1")
@@ -157,6 +160,12 @@ for i=1,#inputfiles do
         line = line:gsub("@<(.-)@>@;", "@{%1}")
         line = line:gsub("@<(.-)@>", "@{%1}")
         line = line:gsub("@%.(.-)@>", "")
+        line = line:gsub("@%^(.-)@>", "")
+        line = line:gsub("\\dots", "...")
+        line = line:gsub("\\ldots", "...")
+
+        line = line:gsub("@;", "")
+        line = line:gsub("@#", "")
         local macros = ""
 
         if has_macros then
@@ -164,6 +173,7 @@ for i=1,#inputfiles do
         end
 
         line = line:gsub("@c", "--- " .. name(inputfile) .. ".c" .. macros)
+        line = line:gsub("@p", "--- " .. name(inputfile) .. ".c" .. macros)
 
 
         line = line:gsub("@/", "")
