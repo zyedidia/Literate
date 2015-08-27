@@ -321,8 +321,8 @@ cur_codeblock_name = name
 file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file name
 
 if block_locations[name] == nil then
-    print(inputfilename .. ":" .. line_num .. ":error:  Unknown block name: " .. name)
-    os.exit()
+    print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
+    goto continue
 end
 
 local definition_location = block_locations[name][1]
@@ -377,7 +377,7 @@ We also have to perform a few extra checks to make sure we get our grammar right
 local locations = block_locations[name]
 if block_locations[name] == nil then
     print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
-    os.exit()
+    goto continue
 end
 
 if #locations > 1 then
@@ -481,9 +481,6 @@ based on that.
 local filename = basename(strip(line:sub(10)))
 local filetype = filename:match(".*%.(.*)")
 local file = source_dir .. "/" .. strip(line:sub(10))
-if not file_exists(file) then
-    print(inputfilename .. ":" .. line_num .. ":error: Included file ".. file .. " does not exist.")
-end
 
 if filetype == "html" then
     @{Inline the html in the specified file}
@@ -535,7 +532,7 @@ while string.match(line, "@{.*}") do
     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
     if block_locations[name] == nil then
         print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
-        os.exit()
+        goto continue
     end
     local location = block_locations[name][1]
 

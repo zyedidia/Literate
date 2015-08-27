@@ -32,9 +32,11 @@ introduced in a piecemeal fashion.
 
 Here, then, is an overview of the file `wc.c` that is defined by this `Literate` program `wc.lit`:
 
+@include hello.lit
+
 --- wc.c
-@{Header files to include}
-@{Preprocessor definitions}
+@{eader files to include}
+@{reprocessor definitions}
 @{Global variables}
 @{Functions}
 @{The main program}
@@ -61,7 +63,7 @@ and `prog_name` is used in case there’s an error message to be printed.
 #define cannot_open_file 2    /* status code for file access error */ 
 ---
 
---- Global variables
+--- Gobal variables
 int status = OK;    /* exit status of command, initially OK */
 char *prog_name;    /* who we are */
 ---

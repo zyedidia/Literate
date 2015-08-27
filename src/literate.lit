@@ -213,6 +213,8 @@ function resolve_includes(source, source_dir, cur_filename)
         elseif startswith(line, "@change") and not startswith(line, "@change_end") then
             @{@change statement}
         end
+
+        ::continue::
         
         if not startswith(line, "@change_end") then
             newSource = newSource .. line .. "\n"
@@ -237,14 +239,14 @@ the include statements.
 --- @include statement
 local filename = basename(strip(line:sub(10)))
 if strip(filename) == "" then
-    print(cur_filename .. ":" .. line_num .. ":error: No filename given to @change")
-    os.exit()
+    print(cur_filename .. ":" .. line_num .. ":error: No filename given to @include")
+    goto continue
 end
 local filetype = filename:match(".*%.(.*)")
 local file = source_dir .. "/" .. strip(line:sub(10))
 if not file_exists(file) then
     print(cur_filename .. ":" .. line_num .. ":error: Included file ".. file .. " does not exist.")
-    os.exit()
+    goto continue
 end
 
 if filetype == "lit" then
@@ -262,14 +264,14 @@ we also have to parse what to search for and what to replace with.
 local filename = basename(strip(line:sub(9)))
 if strip(filename) == "" then
     print(cur_filename .. ":" .. line_num .. ":error: No filename given to @change")
-    os.exit()
+    goto continue
 end
 
 local filetype = filename:match(".*%.(.*)")
 local file = source_dir .. "/" .. strip(line:sub(9))
 if not file_exists(file) then
     print(cur_filename .. ":" .. line_num .. ":error: Changed file ".. file .. " does not exist.")
-    os.exit()
+    goto continue
 end
 
 if filetype == "lit" then
@@ -303,7 +305,7 @@ we perform the substitution on the file source, and look for more `@replace` ...
 while strip(line) ~= "@change_end" do
     if line_num == #lines + 1 then
         print(cur_filename .. ":" .. #lines .. ":error: Reached end of file with no @change_end")
-        exit()
+        break
     end
     line_num = line_num + 1
     line = lines[line_num]
