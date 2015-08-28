@@ -511,16 +511,11 @@ function get_locations(lines, source_dir)
                 goto continue
             end
             -- Get the block name
-            local block_name = strip(string.sub(line, 4, #line))
+            local block_name = strip(string.sub(line, 4, #line)) -- Remove the '---'
             
-            local add_to_block = false -- Whether or not this definition has a +=
             if string.match(block_name, "+=") then
-                local plus_index = block_name:match'^.*()%+'
-                block_name = strip(string.sub(block_name, 1, plus_index-1))
-                if codeblocks[block_name] == nil then
-                    print(inputfilename .. ":" .. line_num .. ":error: Attempt to add to unknown block: " .. block_name)
-                end
-                add_to_block = true
+                local plus_index = block_name:match'^.*()%+' -- Get the index of the "+" (the [end] is to get the last occurrence)
+                block_name = strip(string.sub(block_name, 1, plus_index-1)) -- Remove the "+=" and strip any whitespace
             end
 
             -- Add the locations to the dict
@@ -874,7 +869,7 @@ function tangle(lines)
         if startswith(line, "@comment_type") then
             comment_type = strip(string.sub(line, 15, #line))
         elseif startswith(line, "---") and not string.match(line, "^---$") then
-            -- Get the block name
+            -- Find the block name
             local block_name = strip(string.sub(line, 4, #line))
             
             local add_to_block = false -- Whether or not this definition has a +=

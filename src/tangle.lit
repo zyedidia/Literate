@@ -35,7 +35,7 @@ function tangle(lines)
         if startswith(line, "@comment_type") then
             comment_type = strip(string.sub(line, 15, #line))
         elseif startswith(line, "---") and not string.match(line, "^---$") then
-            @{Get the block name}
+            @{Find the block name}
             @{Get the code}
             @{Add the code to the dict}
         end
@@ -52,7 +52,7 @@ case we want to strip that off too. We make sure to find the *last* occurrence o
 in the name of the code block. Then we substring it off. We also set a flag `add_to_block` to tell the code later on
 that this is not a codeblock definition, but a `+=` definition.
 
---- Get the block name
+--- Find the block name
 local block_name = strip(string.sub(line, 4, #line))
 
 local add_to_block = false -- Whether or not this definition has a +=
