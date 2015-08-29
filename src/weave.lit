@@ -237,10 +237,13 @@ local base_html = [[<!doctype html>
                <title> ]] .. title .. [[ </title>
                ]] .. scripts .. [[
                <style>
+               ]] .. prettify_css .. [[
+               </style>
+               <style>
                ]] .. css .. [[
                </style>
                </head>
-               <body>]]
+               <body onload="prettyPrint()">]]
 
 out = out .. base_html
 ---
