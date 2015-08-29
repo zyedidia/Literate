@@ -2519,7 +2519,6 @@ else
         if source_dir == "" then
             source_dir = "."
         end
-        print(source_dir)
     
         complete_source = readall(file)
         complete_source = resolve_includes(complete_source, source_dir, file)
