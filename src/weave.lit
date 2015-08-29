@@ -229,6 +229,9 @@ local scripts = [[<script>]] .. prettify .. [[</script>
 
 local css = default_css:gsub("\n+", "")
 css = css .. colorscheme_css:gsub("\n+", "")
+if pdf then
+    css = css .. pdf_additions
+end
 
 local base_html = [[<!doctype html>
                <html>

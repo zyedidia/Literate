@@ -29,7 +29,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
 -- Prettify
-local prettify = [[!function(){var q=null;window.PR_SHOULD_USE_CONTINUATION=!0;
+prettify = [[!function(){var q=null;window.PR_SHOULD_USE_CONTINUATION=!0;
 (function(){function R(a){function d(e){var b=e.charCodeAt(0);if(b!==92)return b;var a=e.charAt(1);return(b=r[a])?b:"0"<=a&&a<="7"?parseInt(e.substring(1),8):a==="u"||a==="x"?parseInt(e.substring(2),16):e.charCodeAt(1)}function g(e){if(e<32)return(e<16?"\\x0":"\\x")+e.toString(16);e=String.fromCharCode(e);return e==="\\"||e==="-"||e==="]"||e==="^"?"\\"+e:e}function b(e){var b=e.substring(1,e.length-1).match(/\\u[\dA-Fa-f]{4}|\\x[\dA-Fa-f]{2}|\\[0-3][0-7]{0,2}|\\[0-7]{1,2}|\\[\S\s]|[^\\]/g),e=[],a=
 b[0]==="^",c=["["];a&&c.push("^");for(var a=a?1:0,f=b.length;a<f;++a){var h=b[a];if(/\\[bdsw]/i.test(h))c.push(h);else{var h=d(h),l;a+2<f&&"-"===b[a+1]?(l=d(b[a+2]),a+=2):l=h;e.push([h,l]);l<65||h>122||(l<65||h>90||e.push([Math.max(65,h)|32,Math.min(l,90)|32]),l<97||h>122||e.push([Math.max(97,h)&-33,Math.min(l,122)&-33]))}}e.sort(function(e,a){return e[0]-a[0]||a[1]-e[1]});b=[];f=[];for(a=0;a<e.length;++a)h=e[a],h[0]<=f[1]+1?f[1]=Math.max(f[1],h[1]):b.push(f=h);for(a=0;a<b.length;++a)h=b[a],c.push(g(h[0])),
 h[1]>h[0]&&(h[1]+1>h[0]&&c.push("-"),c.push(g(h[1])));c.push("]");return c.join("")}function s(e){for(var a=e.source.match(/\[(?:[^\\\] ]|\\[\S\s])*]|\\u[\dA-Fa-f]{4}|\\x[\dA-Fa-f]{2}|\\\d+|\\[^\dux]|\(\?[!:=]|[()^]|[^()[\\^]+/g),c=a.length,d=[],f=0,h=0;f<c;++f){var l=a[f];l==="("?++h:"\\"===l.charAt(0)&&(l=+l.substring(1))&&(l<=h?d[l]=-1:a[f]=g(l))}for(f=1;f<d.length;++f)-1===d[f]&&(d[f]=++x);for(h=f=0;f<c;++f)l=a[f],l==="("?(++h,d[h]||(a[f]="(?:")):"\\"===l.charAt(0)&&(l=+l.substring(1))&&l<=h&&
@@ -65,7 +65,7 @@ h={};g()}};typeof define==="function"&&define.amd&&define("google-code-prettify"
 prettify_css = [[.pln{color:#000}@media screen{.str{color:#080}.kwd{color:#008}.com{color:#800}.typ{color:#606}.lit{color:#066}.pun,.opn,.clo{color:#660}.tag{color:#008}.atn{color:#606}.atv{color:#080}.dec,.var{color:#606}.fun{color:red}}@media print,projection{.str{color:#060}.kwd{color:#006;font-weight:bold}.com{color:#600;font-style:italic}.typ{color:#404;font-weight:bold}.lit{color:#044}.pun,.opn,.clo{color:#440}.tag{color:#006;font-weight:bold}.atn{color:#404}.atv{color:#060}}pre.prettyprint{padding:2px;border:1px solid #888}ol.linenums{margin-top:0;margin-bottom:0}li.L0,li.L1,li.L2,li.L3,li.L5,li.L6,li.L7,li.L8{list-style-type:none}li.L1,li.L3,li.L5,li.L7,li.L9{background:#eee}]]
 
 -- Tomorrow theme CSS
-local colorscheme_css = [[/* Tomorrow Theme */
+colorscheme_css = [[/* Tomorrow Theme */
 /* Original theme - https://github.com/chriskempson/tomorrow-theme */
 .prettyprint {
     background: white;
@@ -209,7 +209,7 @@ li.L9 {
 }]]
 
 -- Default CSS
-local default_css = [[body {
+default_css = [[body {
     margin-left: 4em;
     margin-right: 4em;
     font-size: 14pt;
@@ -293,6 +293,25 @@ p:not(.notp) {
     background-color: white;
     display: inline-block;
 }]]
+
+pdf_additions = 
+[[
+body {
+    font-size: 10pt;
+}
+pre.prettyprint {
+    font-size: 8pt;
+}
+.seealso {
+    font-size: 9pt;
+}
+.codeblock_name {
+    font-size: 8pt;
+}
+code {
+    font-size: 8pt;
+}
+]]
 
 
 -- stringutil
@@ -573,6 +592,9 @@ function weave(lines, source_dir, has_index)
     
     local css = default_css:gsub("\n+", "")
     css = css .. colorscheme_css:gsub("\n+", "")
+    if pdf then
+        css = css .. pdf_additions
+    end
     
     local base_html = [[<!doctype html>
                    <html>
@@ -2428,6 +2450,7 @@ end
 -- Parse the arguments
 html = false
 code = false
+pdf = false
 outdir = "."
 index = true
 generate_files = true
@@ -2439,16 +2462,25 @@ for i=1,#arg do
     if argument == "-h" then
         print("Usage: lit [-html] [-code] [-noindex] [--out-dir=<dir>] [--no-output] [file ...]")
         print("Available options are:")
-        print("   -html:          Only generated HTML output")
-        print("   -code:          Only generated code output")
-        print("   -noindex:       Do not create an index")
-        print("  --out-dir=<dir>: Put the output files in <dir>")
-        print("  --no-output:     Do not create any output files, only report errors")
+        print("   -html          Only generate HTML output")
+        print("   -code          Only generate code output")
+        print("   -pdf           Only generate a PDF (wkhtmltopdf is required to use this option)")
+        print("   -noindex       Do not create an index")
+        print("  --out-dir=<dir> Put the output files in <dir>")
+        print("  --no-output     Do not create any output files, only report errors")
         os.exit()
     elseif argument == "-html" then
         html = true
     elseif argument == "-code" then
         code = true
+    elseif startswith(argument, "-pdf") then
+        if os.name() ~= "Windows" and run("which wkhtmltopdf") == nil then
+            print("You don't have wkhtmltopdf installed.")
+            print("Please install it to use the -pdf option.")
+            os.exit()
+        end
+        html = true
+        pdf = true
     elseif argument == "-noindex" then
         index = false
     elseif startswith(argument, "--out-dir=") then
@@ -2467,6 +2499,10 @@ end
 
 if #inputfiles == 0 then
     -- Use STDIN and STDOUT
+    if pdf then
+        print("A PDF cannot be generated from STDOUT")
+        os.exit()
+    end
     -- Declare a few globals
     title = ""
     block_locations = {} -- String => (Number => Number)
@@ -2527,9 +2563,14 @@ else
         if html then
             local output = weave(lines, source_dir, index)
             if generate_files then
-                local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
+                local filename = outdir .. "/" .. name(file)
+                local outputstream = io.open(filename .. ".html", "w")
                 write(outputstream, output)
                 outputstream:close()
+                if pdf then
+                    run("wkhtmltopdf " .. filename .. ".html " .. filename .. ".pdf")
+                    run("rm " .. filename .. ".html")
+                end
             end
         end
         if code then

@@ -34,6 +34,7 @@ an array to hold the input filenames.
 --- Parse the arguments
 html = false
 code = false
+pdf = false
 outdir = "."
 index = true
 generate_files = true
@@ -48,6 +49,7 @@ Next we loop through each argument and check if it is one of the possible flags:
 * `-h`: Get the usage help
 * `-html`: Only generate html
 * `-code`: Only generate code
+* `-pdf`: Only generate a PDF ([wkhtmltopdf](http://wkhtmltopdf.org/) is required for this option)
 * `-noindex`: Don't create an index
 * `--out-dir=dir`: Specify the directory to output html and/or code
 * `--no-output`: With the option enabled, lit will not generate any output files. This is useful if you just want to check errors
@@ -61,16 +63,25 @@ for i=1,#arg do
     if argument == "-h" then
         print("Usage: lit [-html] [-code] [-noindex] [--out-dir=<dir>] [--no-output] [file ...]")
         print("Available options are:")
-        print("   -html:          Only generated HTML output")
-        print("   -code:          Only generated code output")
-        print("   -noindex:       Do not create an index")
-        print("  --out-dir=<dir>: Put the output files in <dir>")
-        print("  --no-output:     Do not create any output files, only report errors")
+        print("   -html          Only generate HTML output")
+        print("   -code          Only generate code output")
+        print("   -pdf           Only generate a PDF (wkhtmltopdf is required to use this option)")
+        print("   -noindex       Do not create an index")
+        print("  --out-dir=<dir> Put the output files in <dir>")
+        print("  --no-output     Do not create any output files, only report errors")
         os.exit()
     elseif argument == "-html" then
         html = true
     elseif argument == "-code" then
         code = true
+    elseif startswith(argument, "-pdf") then
+        if os.name() ~= "Windows" and run("which wkhtmltopdf") == nil then
+            print("You don't have wkhtmltopdf installed.")
+            print("Please install it to use the -pdf option.")
+            os.exit()
+        end
+        html = true
+        pdf = true
     elseif argument == "-noindex" then
         index = false
     elseif startswith(argument, "--out-dir=") then
@@ -101,6 +112,10 @@ If no input files were passed in, we should take input from `STDIN` and spit all
 output to `STDOUT`.
 
 --- Use STDIN and STDOUT
+if pdf then
+    print("A PDF cannot be generated from STDOUT")
+    os.exit()
+end
 @{Declare a few globals}
 local source_dir = "."
 
@@ -145,9 +160,14 @@ for num,file in pairs(inputfiles) do
     if html then
         local output = weave(lines, source_dir, index)
         if generate_files then
-            local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
+            local filename = outdir .. "/" .. name(file)
+            local outputstream = io.open(filename .. ".html", "w")
             write(outputstream, output)
             outputstream:close()
+            if pdf then
+                run("wkhtmltopdf " .. filename .. ".html " .. filename .. ".pdf")
+                run("rm " .. filename .. ".html")
+            end
         end
     end
     if code then

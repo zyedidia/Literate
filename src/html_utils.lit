@@ -5,12 +5,12 @@
 @s
 
 This file contains a bunch of strings that hold all the default css for the colorscheme,
-and the css for the page in general. These get inlined into the HTML during weave.
+and the css for the page in general. These get inlined into the head of the HTML during weave.
 
 Here is the CSS for the `Tomorrow` colorscheme:
 
 --- Tomorrow theme CSS
-local colorscheme_css = [[/* Tomorrow Theme */
+colorscheme_css = [[/* Tomorrow Theme */
 /* Original theme - https://github.com/chriskempson/tomorrow-theme */
 .prettyprint {
     background: white;
@@ -157,7 +157,7 @@ li.L9 {
 And here is the CSS for the default css for the page:
 
 --- Default CSS
-local default_css = [[body {
+default_css = [[body {
     margin-left: 4em;
     margin-right: 4em;
     font-size: 14pt;
@@ -243,8 +243,34 @@ p:not(.notp) {
 }]]
 ---
 
+Here is some changes to the default css that will cause the page to look better as
+a pdf
+
+--- Default CSS +=
+pdf_additions = 
+[[
+body {
+    font-size: 10pt;
+}
+pre.prettyprint {
+    font-size: 8pt;
+}
+.seealso {
+    font-size: 9pt;
+}
+.codeblock_name {
+    font-size: 8pt;
+}
+code {
+    font-size: 8pt;
+}
+]]
+---
+
+Here is the code for the syntax highlighter. Taken from google-code-prettify.
+
 --- Prettify
-local prettify = [[!function(){var q=null;window.PR_SHOULD_USE_CONTINUATION=!0;
+prettify = [[!function(){var q=null;window.PR_SHOULD_USE_CONTINUATION=!0;
 (function(){function R(a){function d(e){var b=e.charCodeAt(0);if(b!==92)return b;var a=e.charAt(1);return(b=r[a])?b:"0"<=a&&a<="7"?parseInt(e.substring(1),8):a==="u"||a==="x"?parseInt(e.substring(2),16):e.charCodeAt(1)}function g(e){if(e<32)return(e<16?"\\x0":"\\x")+e.toString(16);e=String.fromCharCode(e);return e==="\\"||e==="-"||e==="]"||e==="^"?"\\"+e:e}function b(e){var b=e.substring(1,e.length-1).match(/\\u[\dA-Fa-f]{4}|\\x[\dA-Fa-f]{2}|\\[0-3][0-7]{0,2}|\\[0-7]{1,2}|\\[\S\s]|[^\\]/g),e=[],a=
 b[0]==="^",c=["["];a&&c.push("^");for(var a=a?1:0,f=b.length;a<f;++a){var h=b[a];if(/\\[bdsw]/i.test(h))c.push(h);else{var h=d(h),l;a+2<f&&"-"===b[a+1]?(l=d(b[a+2]),a+=2):l=h;e.push([h,l]);l<65||h>122||(l<65||h>90||e.push([Math.max(65,h)|32,Math.min(l,90)|32]),l<97||h>122||e.push([Math.max(97,h)&-33,Math.min(l,122)&-33]))}}e.sort(function(e,a){return e[0]-a[0]||a[1]-e[1]});b=[];f=[];for(a=0;a<e.length;++a)h=e[a],h[0]<=f[1]+1?f[1]=Math.max(f[1],h[1]):b.push(f=h);for(a=0;a<b.length;++a)h=b[a],c.push(g(h[0])),
 h[1]>h[0]&&(h[1]+1>h[0]&&c.push("-"),c.push(g(h[1])));c.push("]");return c.join("")}function s(e){for(var a=e.source.match(/\[(?:[^\\\] ]|\\[\S\s])*]|\\u[\dA-Fa-f]{4}|\\x[\dA-Fa-f]{2}|\\\d+|\\[^\dux]|\(\?[!:=]|[()^]|[^()[\\^]+/g),c=a.length,d=[],f=0,h=0;f<c;++f){var l=a[f];l==="("?++h:"\\"===l.charAt(0)&&(l=+l.substring(1))&&(l<=h?d[l]=-1:a[f]=g(l))}for(f=1;f<d.length;++f)-1===d[f]&&(d[f]=++x);for(h=f=0;f<c;++f)l=a[f],l==="("?(++h,d[h]||(a[f]="(?:")):"\\"===l.charAt(0)&&(l=+l.substring(1))&&l<=h&&
@@ -276,6 +302,8 @@ o.className&&e.test(o.className)){m=!0;break}if(!m){d.className+=" prettyprinted
 h={};g()}};typeof define==="function"&&define.amd&&define("google-code-prettify",[],function(){return Y})})();}()
 ]]
 ---
+
+Here is the CSS for the syntax highlighter
 
 --- Prettify css
 prettify_css = [[.pln{color:#000}@media screen{.str{color:#080}.kwd{color:#008}.com{color:#800}.typ{color:#606}.lit{color:#066}.pun,.opn,.clo{color:#660}.tag{color:#008}.atn{color:#606}.atv{color:#080}.dec,.var{color:#606}.fun{color:red}}@media print,projection{.str{color:#060}.kwd{color:#006;font-weight:bold}.com{color:#600;font-style:italic}.typ{color:#404;font-weight:bold}.lit{color:#044}.pun,.opn,.clo{color:#440}.tag{color:#006;font-weight:bold}.atn{color:#404}.atv{color:#060}}pre.prettyprint{padding:2px;border:1px solid #888}ol.linenums{margin-top:0;margin-bottom:0}li.L0,li.L1,li.L2,li.L3,li.L5,li.L6,li.L7,li.L8{list-style-type:none}li.L1,li.L3,li.L5,li.L7,li.L9{background:#eee}]]
