@@ -168,18 +168,24 @@ end
 ---
 
 @s
-This is a small function which takes some text and turns it into markdown using Julia's Markdown support.
-Markdown will escape any HTML symbols, which is a good thing, but sometimes it is useful to be able to write some HTML
-from Markdown, so we define a couple things that transform `\<` directly to `<` in the HTML.
+This is a small function which takes some text and turns it into markdown using Lua's Markdown support.
+
+If there are any characters within dollar signs, we turn them into math divs. We also then set katex to true.
+We don't write the katex source code to the html file unless there is math in the file because katex is pretty large (148 kb)
+and it won't be used.
 
 --- Define the write_markdown function
 function write_markdown(mkdown)
     if mkdown ~= "" then
-        local html = mkdown
-        html = string.gsub(html, "<", "&lt;")
-        html = string.gsub(html, ">", "&gt;")
-        html = string.gsub(html, "\"", "&quot;")
-        html = markdown(mkdown)
+        -- local html = mkdown
+        -- html = string.gsub(html, "<", "&lt;")
+        -- html = string.gsub(html, ">", "&gt;")
+        -- html = string.gsub(html, "\"", "&quot;")
+        local html = markdown(mkdown)
+        if html:match("%$.-%$") then
+            use_katex = true
+        end
+        html = html:gsub("%$(.-)%$", "<div class=\"math\">%1</div>")
         out = out .. strip(html)
     end
 end
@@ -189,6 +195,7 @@ end
 
 --- Define the weave function
 function weave(lines, source_dir, has_index)
+    use_katex = false
     out = ""
 
     get_locations(lines, source_dir)
@@ -223,9 +230,7 @@ In this section, we define the starting structure for the html document. We incl
 local start_codeblock = "<pre class=\"prettyprint lang-" .. codetype .. "\">"
 local end_codeblock = "</pre>"
 
-local scripts = [[<script>]] .. prettify .. [[</script>
-<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
-             <script type="text/x-mathjax-config"> MathJax.Hub.Config({tex2jax: {inlineMath: ]] .. "[['$','$']]}}); </script>"
+local scripts = [[<script>]] .. prettify .. [[</script>]]
 
 local css = default_css:gsub("\n+", "")
 css = css .. colorscheme_css:gsub("\n+", "")
@@ -466,7 +471,8 @@ local class = ""
 if heading_title == "" then
     class = "class=\"noheading\""
 end
-out = out .. "<p class=\"notp\" id=\"" .. sectionnum .. "\"></p><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4>"
+-- out = out .. "<p class=\"notp\" id=\"" .. sectionnum .. "\"></p><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4>"
+out = out .. "<a name=\"" .. sectionnum .. "\"><h4 ".. class .. ">" .. sectionnum .. ". ".. heading_title .. "</h4></a>"
 ---
 
 @s
@@ -590,5 +596,25 @@ if has_index then
     out = out .. create_index(inputfilename)
 end
 
+if use_katex then
+    out = out .. katex .. [[
+    <script>
+    var mathDivs = document.getElementsByClassName("math")
+    for (var i = 0; i < mathDivs.length; i++) {
+        var el = mathDivs[i];
+        console.log(el)
+        var texTxt = el.textContent;
+        try {
+            katex.render(texTxt, el);
+        }
+        catch(err) {
+            el.innerHTML = "<span class='err'>"+err+"</span>";
+        }
+    }
+    </script>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js"></script>
+    ]]
+end
 out = out .. "</body></html>"
 ---

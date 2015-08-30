@@ -166,7 +166,7 @@ for num,file in pairs(inputfiles) do
             outputstream:close()
             if pdf then
                 run("wkhtmltopdf " .. filename .. ".html " .. filename .. ".pdf")
-                run("rm " .. filename .. ".html")
+                -- run("rm " .. filename .. ".html")
             end
         end
     end
