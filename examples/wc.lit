@@ -7,9 +7,7 @@
 
 This example is a close adaptation of a tutorial example for Knuth and Levy's `CWEB` programming system,
 translated from `CWEB` to the `Literate` programming system. 
-$f(x) = \int_{-\infty}^\infty f(\xi)\,e^{2 \pi i \xi x}\,d\xi$
 That example in turn is based on a program by Klaus Guntermann and Joachim Schrod 
-$$\left( \sum_{k=1}^n a_k b_k \right)^2 \leq \left( \sum_{k=1}^n a_k^2 \right) \left( \sum_{k=1}^n b_k^2 \right)$$
 [*TUGboat* **7** (1986), 134–137] for a version of the "word count" program from `UNIX`.
 
 This example demonstrates literate programming in C, although the 
