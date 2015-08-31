@@ -125,6 +125,9 @@ default_css = [[body {
 .codeblock {
     padding-bottom: 15px;
 }
+.math {
+    text-indent: 0em;
+}
 pre.prettyprint {
     font-family: Monaco, "Lucida Console", monospace;
     font-size: 11pt;

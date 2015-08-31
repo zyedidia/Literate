@@ -187,6 +187,9 @@ default_css = [[body {
 .codeblock {
     padding-bottom: 15px;
 }
+.math {
+    text-indent: 0em;
+}
 pre.prettyprint {
     font-family: Monaco, "Lucida Console", monospace;
     font-size: 11pt;
@@ -538,11 +541,14 @@ function write_markdown(mkdown)
         -- html = string.gsub(html, "<", "&lt;")
         -- html = string.gsub(html, ">", "&gt;")
         -- html = string.gsub(html, "\"", "&quot;")
+        mkdown = mkdown:gsub("\\<", "&lt;")
+        mkdown = mkdown:gsub("\\>", "&gt;")
         local html = markdown(mkdown)
-        if html:match("%$.-%$") then
+        if html:match("%$.-%$") or html:match("%$%$.-%$%$") then
             use_katex = true
         end
-        html = html:gsub("%$(.-)%$", "<div class=\"math\">%1</div>")
+        html = html:gsub("%$%$(.-)%$%$", "<div class=\"math\">%1</div>")
+        html = html:gsub("%$(.-)%$", "<span class=\"math\">%1</span>")
         out = out .. strip(html)
     end
 end
@@ -858,7 +864,11 @@ function weave(lines, source_dir, has_index)
             console.log(el)
             var texTxt = el.textContent;
             try {
-                katex.render(texTxt, el);
+                var displayMode = false;
+                if (el.tagName == 'DIV') {
+                    displayMode = true;
+                }
+                katex.render(texTxt, el, {displayMode: displayMode});
             }
             catch(err) {
                 el.innerHTML = "<span class='err'>"+err+"</span>";
