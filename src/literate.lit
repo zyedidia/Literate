@@ -16,6 +16,7 @@ Here is the structure:
 @{Function to resolve @include statements}
 
 @{Parse the arguments}
+@{Declare a few globals}
 if #inputfiles == 0 then
     @{Use STDIN and STDOUT}
 else
@@ -116,7 +117,6 @@ if pdf then
     print("A PDF cannot be generated from STDOUT")
     os.exit()
 end
-@{Declare a few globals}
 local source_dir = "."
 
 complete_source = readall()
@@ -144,8 +144,6 @@ If input files were given, we should loop through each one and tangle/weave it.
 
 --- Weave and/or tangle the input files
 for num,file in pairs(inputfiles) do
-    @{Declare a few globals}
-
     inputfilename = file
 
     local source_dir = dirname(file)

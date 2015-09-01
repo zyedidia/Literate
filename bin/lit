@@ -2498,23 +2498,23 @@ if not html and not code then
     code = true
 end
 
+-- Declare a few globals
+title = ""
+block_locations = {} -- String => (Number => Number)
+block_use_locations = {} -- String => (Number => Number)
+
+codetype = ""
+codetype_ext = ""
+
+code_lines = {} -- Number => Number
+section_linenums = {} -- Number => Number
+
 if #inputfiles == 0 then
     -- Use STDIN and STDOUT
     if pdf then
         print("A PDF cannot be generated from STDOUT")
         os.exit()
     end
-    -- Declare a few globals
-    title = ""
-    block_locations = {} -- String => (Number => Number)
-    block_use_locations = {} -- String => (Number => Number)
-    
-    codetype = ""
-    codetype_ext = ""
-    
-    code_lines = {} -- Number => Number
-    section_linenums = {} -- Number => Number
-
     local source_dir = "."
     
     complete_source = readall()
@@ -2538,18 +2538,6 @@ if #inputfiles == 0 then
 else
     -- Weave and/or tangle the input files
     for num,file in pairs(inputfiles) do
-        -- Declare a few globals
-        title = ""
-        block_locations = {} -- String => (Number => Number)
-        block_use_locations = {} -- String => (Number => Number)
-        
-        codetype = ""
-        codetype_ext = ""
-        
-        code_lines = {} -- Number => Number
-        section_linenums = {} -- Number => Number
-
-    
         inputfilename = file
     
         local source_dir = dirname(file)
