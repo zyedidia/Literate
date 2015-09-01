@@ -104,6 +104,9 @@ if add_to_block then
         codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
     end
 else
+    if codeblocks[block_name] ~= nil then
+        print(inputfilename .. ":" .. line_num .. ":error: " .. block_name .. " is already defined")
+    end
     block_names[#block_names + 1] = block_name
     codeblocks[block_name] = code
 end

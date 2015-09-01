@@ -598,9 +598,11 @@ function weave(lines, source_dir, has_index)
     for line_num,line in pairs(lines) do
         line = chomp(line)
 
-        if startswith(line, "@code_type") then
-            goto continue
-        elseif startswith(line, "@comment_type") then
+        if startswith(line, "@code_type") or
+           startswith(line, "@comment_type") or
+           startswith(line, "@add_css") or
+           startswith(line, "@overwrite_css") or
+           startswith(line, "@colorscheme") then
             goto continue
         end
 
@@ -908,6 +910,9 @@ function tangle(lines)
                     codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
                 end
             else
+                if codeblocks[block_name] ~= nil then
+                    print(inputfilename .. ":" .. line_num .. ":error: " .. block_name .. " is already defined")
+                end
                 block_names[#block_names + 1] = block_name
                 codeblocks[block_name] = code
             end
@@ -2513,7 +2518,6 @@ else
         if source_dir == "" then
             source_dir = "."
         end
-        print(source_dir)
     
         complete_source = readall(file)
         complete_source = resolve_includes(complete_source, source_dir, file)

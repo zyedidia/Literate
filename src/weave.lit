@@ -199,9 +199,11 @@ function weave(lines, source_dir, has_index)
     for line_num,line in pairs(lines) do
         line = chomp(line)
 
-        if startswith(line, "@code_type") then
-            goto continue
-        elseif startswith(line, "@comment_type") then
+        if startswith(line, "@code_type") or
+           startswith(line, "@comment_type") or
+           startswith(line, "@add_css") or
+           startswith(line, "@overwrite_css") or
+           startswith(line, "@colorscheme") then
             goto continue
         end
 
@@ -546,26 +548,6 @@ while string.match(line, "@{.*}") do
         line = string.gsub(line, literalize(m), links)
     end
 end
----
-
-@s
-
-Here we write actually write the line to html if it is in a codeblock. We must first escape certain HTML special characters.
-
---- Write out the line of code
-code_lines[line:gsub("%s+", " ")] = line_num
-line = string.gsub(line, "&", "&amp;")
-line = string.gsub(line, "<", "&lt;")
-line = string.gsub(line, ">", "&gt;")
-@{Link any sections in the line}
-out = out .. line .. "\n"
----
-
-@s
-
---- Add the line to the markdown
-@{Link any sections in the line}
-markdown = markdown .. line .. "\n"
 ---
 
 @s
