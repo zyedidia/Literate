@@ -69,6 +69,7 @@ function get_locations(lines, source_dir)
             local file = source_dir .. "/" .. strip(line:sub(9))
             if not file_exists(file) then
                 print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
+                generate_files = false
             else
                 default_css = default_css .. readall(file)
             end
@@ -77,6 +78,7 @@ function get_locations(lines, source_dir)
             local file = source_dir .. "/" .. strip(line:sub(15))
             if not file_exists(file) then
                 print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
+                generate_files = false
             else
                 default_css = readall(file)
             end
@@ -85,6 +87,7 @@ function get_locations(lines, source_dir)
             local file = source_dir .. "/" .. strip(line:sub(13))
             if not file_exists(file) then
                 print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
+                generate_files = false
             else
                 colorscheme_css = readall(file)
             end
@@ -324,6 +327,7 @@ file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file n
 
 if block_locations[name] == nil then
     print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
+    generate_files = false
     goto continue
 end
 
@@ -379,6 +383,7 @@ We also have to perform a few extra checks to make sure we get our grammar right
 local locations = block_locations[name]
 if block_locations[name] == nil then
     print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
+    generate_files = false
     goto continue
 end
 
@@ -534,6 +539,7 @@ while string.match(line, "@{.*}") do
     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
     if block_locations[name] == nil then
         print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
+        generate_files = false
         goto continue
     end
     local location = block_locations[name][1]

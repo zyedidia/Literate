@@ -474,6 +474,7 @@ function get_locations(lines, source_dir)
             local file = source_dir .. "/" .. strip(line:sub(9))
             if not file_exists(file) then
                 print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
+                generate_files = false
             else
                 default_css = default_css .. readall(file)
             end
@@ -482,6 +483,7 @@ function get_locations(lines, source_dir)
             local file = source_dir .. "/" .. strip(line:sub(15))
             if not file_exists(file) then
                 print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
+                generate_files = false
             else
                 default_css = readall(file)
             end
@@ -490,6 +492,7 @@ function get_locations(lines, source_dir)
             local file = source_dir .. "/" .. strip(line:sub(13))
             if not file_exists(file) then
                 print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
+                generate_files = false
             else
                 colorscheme_css = readall(file)
             end
@@ -643,6 +646,7 @@ function weave(lines, source_dir, has_index)
             
             if block_locations[name] == nil then
                 print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
+                generate_files = false
                 goto continue
             end
             
@@ -678,6 +682,7 @@ function weave(lines, source_dir, has_index)
             local locations = block_locations[name]
             if block_locations[name] == nil then
                 print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
+                generate_files = false
                 goto continue
             end
             
@@ -790,6 +795,7 @@ function weave(lines, source_dir, has_index)
                     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
                     if block_locations[name] == nil then
                         print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
+                        generate_files = false
                         goto continue
                     end
                     local location = block_locations[name][1]
@@ -818,6 +824,7 @@ function weave(lines, source_dir, has_index)
                     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
                     if block_locations[name] == nil then
                         print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
+                        generate_files = false
                         goto continue
                     end
                     local location = block_locations[name][1]
@@ -880,6 +887,7 @@ function tangle(lines)
                 block_name = strip(string.sub(block_name, 1, plus_index-1))
                 if codeblocks[block_name] == nil then
                     print(inputfilename .. ":" .. line_num .. ":error: Attempt to add to unknown block: " .. block_name)
+                    generate_files = false
                 end
                 add_to_block = true
             end
@@ -890,6 +898,7 @@ function tangle(lines)
                 line_num = line_num + 1
                 if line_num > #lines then
                     print(inputfilename .. ":" .. #lines .. ":error: ".. block_name .. " is never closed")
+                    generate_files = false
                     break
                 end
             
@@ -912,6 +921,7 @@ function tangle(lines)
             else
                 if codeblocks[block_name] ~= nil then
                     print(inputfilename .. ":" .. line_num .. ":error: " .. block_name .. " is already defined")
+                    generate_files = false
                 end
                 block_names[#block_names + 1] = block_name
                 codeblocks[block_name] = code
@@ -952,6 +962,7 @@ function write_code(block_name, leading_whitespace, codeblocks, outstream)
     local code = codeblocks[block_name]
     if code == nil then
         print(inputfilename .. ":" .. codeblock_use_lines[block_name] .. ":error: Unknown block name: " .. block_name)
+        generate_files = false
         return
     end
     local lines = split(code, "\n")
@@ -2328,12 +2339,14 @@ function resolve_includes(source, source_dir, cur_filename)
             local filename = basename(strip(line:sub(10)))
             if strip(filename) == "" then
                 print(cur_filename .. ":" .. line_num .. ":error: No filename given to @include")
+                generate_files = false
                 goto continue
             end
             local filetype = filename:match(".*%.(.*)")
             local file = source_dir .. "/" .. strip(line:sub(10))
             if not file_exists(file) then
                 print(cur_filename .. ":" .. line_num .. ":error: Included file ".. file .. " does not exist.")
+                generate_files = false
                 goto continue
             end
             
@@ -2346,6 +2359,7 @@ function resolve_includes(source, source_dir, cur_filename)
             local filename = basename(strip(line:sub(9)))
             if strip(filename) == "" then
                 print(cur_filename .. ":" .. line_num .. ":error: No filename given to @change")
+                generate_files = false
                 goto continue
             end
             
@@ -2353,6 +2367,7 @@ function resolve_includes(source, source_dir, cur_filename)
             local file = source_dir .. "/" .. strip(line:sub(9))
             if not file_exists(file) then
                 print(cur_filename .. ":" .. line_num .. ":error: Changed file ".. file .. " does not exist.")
+                generate_files = false
                 goto continue
             end
             
@@ -2368,6 +2383,7 @@ function resolve_includes(source, source_dir, cur_filename)
                 while strip(line) ~= "@change_end" do
                     if line_num == #lines + 1 then
                         print(cur_filename .. ":" .. #lines .. ":error: Reached end of file with no @change_end")
+                    generate_files = false
                         break
                     end
                     line_num = line_num + 1

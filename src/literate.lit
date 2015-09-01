@@ -239,12 +239,14 @@ the include statements.
 local filename = basename(strip(line:sub(10)))
 if strip(filename) == "" then
     print(cur_filename .. ":" .. line_num .. ":error: No filename given to @include")
+    generate_files = false
     goto continue
 end
 local filetype = filename:match(".*%.(.*)")
 local file = source_dir .. "/" .. strip(line:sub(10))
 if not file_exists(file) then
     print(cur_filename .. ":" .. line_num .. ":error: Included file ".. file .. " does not exist.")
+    generate_files = false
     goto continue
 end
 
@@ -263,6 +265,7 @@ we also have to parse what to search for and what to replace with.
 local filename = basename(strip(line:sub(9)))
 if strip(filename) == "" then
     print(cur_filename .. ":" .. line_num .. ":error: No filename given to @change")
+    generate_files = false
     goto continue
 end
 
@@ -270,6 +273,7 @@ local filetype = filename:match(".*%.(.*)")
 local file = source_dir .. "/" .. strip(line:sub(9))
 if not file_exists(file) then
     print(cur_filename .. ":" .. line_num .. ":error: Changed file ".. file .. " does not exist.")
+    generate_files = false
     goto continue
 end
 
@@ -304,6 +308,7 @@ we perform the substitution on the file source, and look for more `@replace` ...
 while strip(line) ~= "@change_end" do
     if line_num == #lines + 1 then
         print(cur_filename .. ":" .. #lines .. ":error: Reached end of file with no @change_end")
+    generate_files = false
         break
     end
     line_num = line_num + 1
