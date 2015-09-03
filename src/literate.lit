@@ -112,14 +112,23 @@ inputfilename = "none"
 
 stdin = true
 if html then
+    weave_errors = ""
     local output = weave(lines, ".", index)
-    if generate_files then
-        write("STDOUT", output)
+    if weave_errors ~= "" then
+        print("Weave errors:\n" .. weave_errors)
+    else
+        if generate_files then
+            write("STDOUT", output)
+        end
     end
 end
 
 if code then
+    tangle_errors = ""
     tangle(lines)
+    if tangle_errors ~= "" then
+        print("Tangle errors:\n" .. tangle_errors)
+    end
 end
 ---
 
@@ -143,15 +152,24 @@ for num,file in pairs(inputfiles) do
     local lines = split(complete_source, "\n")
 
     if html then
+        weave_errors = ""
         local output = weave(lines, source_dir, index)
-        if generate_files then
-            local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
-            write(outputstream, output)
-            outputstream:close()
+        if weave_errors ~= "" then
+            print("Weave errors:\n" .. weave_errors)
+        else
+            if generate_files then
+                local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
+                write(outputstream, output)
+                outputstream:close()
+            end
         end
     end
     if code then
+        tangle_errors = ""
         tangle(lines)
+        if tangle_errors ~= "" then
+            print("Tangle errors:\n" .. tangle_errors)
+        end
     end
 end
 ---

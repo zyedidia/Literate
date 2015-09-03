@@ -473,8 +473,7 @@ function get_locations(lines, source_dir)
         if startswith(line, "@add_css") then
             local file = source_dir .. "/" .. strip(line:sub(9))
             if not file_exists(file) then
-                print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
-                generate_files = false
+                weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist."
             else
                 default_css = default_css .. readall(file)
             end
@@ -482,8 +481,7 @@ function get_locations(lines, source_dir)
         elseif startswith(line, "@overwrite_css") then
             local file = source_dir .. "/" .. strip(line:sub(15))
             if not file_exists(file) then
-                print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
-                generate_files = false
+                weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist."
             else
                 default_css = readall(file)
             end
@@ -491,8 +489,7 @@ function get_locations(lines, source_dir)
         elseif startswith(line, "@colorscheme") then
             local file = source_dir .. "/" .. strip(line:sub(13))
             if not file_exists(file) then
-                print(inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.")
-                generate_files = false
+                weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist."
             else
                 colorscheme_css = readall(file)
             end
@@ -645,8 +642,7 @@ function weave(lines, source_dir, has_index)
             file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file name
             
             if block_locations[name] == nil then
-                print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
-                generate_files = false
+                weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name
                 goto continue
             end
             
@@ -681,8 +677,7 @@ function weave(lines, source_dir, has_index)
             -- Write any "see also" links
             local locations = block_locations[name]
             if block_locations[name] == nil then
-                print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
-                generate_files = false
+                weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name
                 goto continue
             end
             
@@ -794,8 +789,7 @@ function weave(lines, source_dir, has_index)
                     local m = string.match(line, "@{.*}")
                     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
                     if block_locations[name] == nil then
-                        print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
-                        generate_files = false
+                        weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name
                         goto continue
                     end
                     local location = block_locations[name][1]
@@ -823,8 +817,7 @@ function weave(lines, source_dir, has_index)
                     local m = string.match(line, "@{.*}")
                     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
                     if block_locations[name] == nil then
-                        print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name)
-                        generate_files = false
+                        weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name
                         goto continue
                     end
                     local location = block_locations[name][1]
@@ -886,8 +879,7 @@ function tangle(lines)
                 local plus_index = block_name:match'^.*()%+'
                 block_name = strip(string.sub(block_name, 1, plus_index-1))
                 if codeblocks[block_name] == nil then
-                    print(inputfilename .. ":" .. line_num .. ":error: Attempt to add to unknown block: " .. block_name)
-                    generate_files = false
+                    tangle_errors = tangle_errors .. inputfilename .. ":" .. line_num .. ":error: Attempt to add to unknown block: " .. block_name
                 end
                 add_to_block = true
             end
@@ -897,8 +889,7 @@ function tangle(lines)
             while true do
                 line_num = line_num + 1
                 if line_num > #lines then
-                    print(inputfilename .. ":" .. #lines .. ":error: ".. block_name .. " is never closed")
-                    generate_files = false
+                    tangle_errors = tangle_errors .. inputfilename .. ":" .. #lines .. ":error: ".. block_name .. " is never closed"
                     break
                 end
             
@@ -920,8 +911,7 @@ function tangle(lines)
                 end
             else
                 if codeblocks[block_name] ~= nil then
-                    print(inputfilename .. ":" .. line_num .. ":error: " .. block_name .. " is already defined")
-                    generate_files = false
+                    tangle_errors = tangle_errors .. inputfilename .. ":" .. line_num .. ":error: " .. block_name .. " is already defined"
                 end
                 block_names[#block_names + 1] = block_name
                 codeblocks[block_name] = code
@@ -961,8 +951,7 @@ end
 function write_code(block_name, leading_whitespace, codeblocks, outstream)
     local code = codeblocks[block_name]
     if code == nil then
-        print(inputfilename .. ":" .. codeblock_use_lines[block_name] .. ":error: Unknown block name: " .. block_name)
-        generate_files = false
+        tangle_errors = tangle_errors .. inputfilename .. ":" .. codeblock_use_lines[block_name] .. ":error: Unknown block name: " .. block_name
         return
     end
     local lines = split(code, "\n")
@@ -2503,14 +2492,23 @@ if #inputfiles == 0 then
     
     stdin = true
     if html then
+        weave_errors = ""
         local output = weave(lines, ".", index)
-        if generate_files then
-            write("STDOUT", output)
+        if weave_errors ~= "" then
+            print("Weave errors:\n" .. weave_errors)
+        else
+            if generate_files then
+                write("STDOUT", output)
+            end
         end
     end
     
     if code then
+        tangle_errors = ""
         tangle(lines)
+        if tangle_errors ~= "" then
+            print("Tangle errors:\n" .. tangle_errors)
+        end
     end
 
 else
@@ -2540,15 +2538,24 @@ else
         local lines = split(complete_source, "\n")
     
         if html then
+            weave_errors = ""
             local output = weave(lines, source_dir, index)
-            if generate_files then
-                local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
-                write(outputstream, output)
-                outputstream:close()
+            if weave_errors ~= "" then
+                print("Weave errors:\n" .. weave_errors)
+            else
+                if generate_files then
+                    local outputstream = io.open(outdir .. "/" .. name(file) .. ".html", "w")
+                    write(outputstream, output)
+                    outputstream:close()
+                end
             end
         end
         if code then
+            tangle_errors = ""
             tangle(lines)
+            if tangle_errors ~= "" then
+                print("Tangle errors:\n" .. tangle_errors)
+            end
         end
     end
 
