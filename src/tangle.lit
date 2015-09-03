@@ -60,7 +60,7 @@ if string.match(block_name, "+=") then
     local plus_index = block_name:match'^.*()%+'
     block_name = strip(string.sub(block_name, 1, plus_index-1))
     if codeblocks[block_name] == nil then
-        tangle_errors = tangle_errors .. inputfilename .. ":" .. line_num .. ":error: Attempt to add to unknown block: " .. block_name
+        tangle_errors = tangle_errors .. inputfilename .. ":" .. line_num .. ":error: Attempt to add to unknown block: " .. block_name .. "\n"
     end
     add_to_block = true
 end
@@ -76,7 +76,7 @@ local code = ""
 while true do
     line_num = line_num + 1
     if line_num > #lines then
-        tangle_errors = tangle_errors .. inputfilename .. ":" .. #lines .. ":error: ".. block_name .. " is never closed"
+        tangle_errors = tangle_errors .. inputfilename .. ":" .. #lines .. ":error: ".. block_name .. " is never closed\n"
         break
     end
 
@@ -105,7 +105,7 @@ if add_to_block then
     end
 else
     if codeblocks[block_name] ~= nil then
-        tangle_errors = tangle_errors .. inputfilename .. ":" .. line_num .. ":error: " .. block_name .. " is already defined"
+        tangle_errors = tangle_errors .. inputfilename .. ":" .. line_num .. ":error: " .. block_name .. " is already defined\n"
     end
     block_names[#block_names + 1] = block_name
     codeblocks[block_name] = code
@@ -122,7 +122,7 @@ the code that is generated based on how the codeblock name was indented.
 function write_code(block_name, leading_whitespace, codeblocks, outstream)
     local code = codeblocks[block_name]
     if code == nil then
-        tangle_errors = tangle_errors .. inputfilename .. ":" .. codeblock_use_lines[block_name] .. ":error: Unknown block name: " .. block_name
+        tangle_errors = tangle_errors .. inputfilename .. ":" .. codeblock_use_lines[block_name] .. ":error: Unknown block name: " .. block_name .. "\n"
         return
     end
     local lines = split(code, "\n")

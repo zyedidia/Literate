@@ -68,7 +68,7 @@ function get_locations(lines, source_dir)
         if startswith(line, "@add_css") then
             local file = source_dir .. "/" .. strip(line:sub(9))
             if not file_exists(file) then
-                weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist."
+                weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.\n"
             else
                 default_css = default_css .. readall(file)
             end
@@ -76,7 +76,7 @@ function get_locations(lines, source_dir)
         elseif startswith(line, "@overwrite_css") then
             local file = source_dir .. "/" .. strip(line:sub(15))
             if not file_exists(file) then
-                weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist."
+                weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.\n"
             else
                 default_css = readall(file)
             end
@@ -84,7 +84,7 @@ function get_locations(lines, source_dir)
         elseif startswith(line, "@colorscheme") then
             local file = source_dir .. "/" .. strip(line:sub(13))
             if not file_exists(file) then
-                weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist."
+                weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: " .. file .. " does not exist.\n"
             else
                 colorscheme_css = readall(file)
             end
@@ -323,7 +323,7 @@ cur_codeblock_name = name
 file = string.match(name, "^.+%w%.%w+$") -- Whether or not this name is a file name
 
 if block_locations[name] == nil then
-    weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name
+    weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name .. "\n"
     goto continue
 end
 
@@ -378,7 +378,7 @@ We also have to perform a few extra checks to make sure we get our grammar right
 --- Write any "see also" links
 local locations = block_locations[name]
 if block_locations[name] == nil then
-    weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name
+    weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name .. "\n"
     goto continue
 end
 
@@ -533,7 +533,7 @@ while string.match(line, "@{.*}") do
     local m = string.match(line, "@{.*}")
     local name = string.sub(m, 3, #m - 1) -- Get the name in curly brackets
     if block_locations[name] == nil then
-        weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name
+        weave_errors = weave_errors .. inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. name .. "\n"
         goto continue
     end
     local location = block_locations[name][1]
