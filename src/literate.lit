@@ -127,14 +127,23 @@ inputfilename = "none"
 
 stdin = true
 if html then
+    weave_errors = ""
     local output = weave(lines, ".", index)
-    if generate_files then
-        write("STDOUT", output)
+    if weave_errors ~= "" then
+        print("Weave errors:\n" .. weave_errors)
+    else
+        if generate_files then
+            write("STDOUT", output)
+        end
     end
 end
 
 if code then
+    tangle_errors = ""
     tangle(lines)
+    if tangle_errors ~= "" then
+        print("Tangle errors:\n" .. tangle_errors)
+    end
 end
 ---
 
@@ -156,20 +165,25 @@ for num,file in pairs(inputfiles) do
     local lines = split(complete_source, "\n")
 
     if html then
+        weave_errors = ""
         local output = weave(lines, source_dir, index)
-        if generate_files then
-            local filename = outdir .. "/" .. name(file)
-            local outputstream = io.open(filename .. ".html", "w")
-            write(outputstream, output)
-            outputstream:close()
-            if pdf then
-                run("wkhtmltopdf " .. filename .. ".html " .. filename .. ".pdf")
-                -- run("rm " .. filename .. ".html")
+        if weave_errors ~= "" then
+            print("Weave errors:\n" .. weave_errors)
+        else
+            if generate_files then
+                local filename = outdir .. "/" .. name(file)
+                local outputstream = io.open(filename .. ".html", "w")
+                write(outputstream, output)
+                outputstream:close()
             end
         end
     end
     if code then
+        tangle_errors = ""
         tangle(lines)
+        if tangle_errors ~= "" then
+            print("Tangle errors:\n" .. tangle_errors)
+        end
     end
 end
 ---
@@ -230,6 +244,8 @@ function resolve_includes(source, source_dir, cur_filename)
         elseif startswith(line, "@change") and not startswith(line, "@change_end") then
             @{@change statement}
         end
+
+        ::continue::
         
         if not startswith(line, "@change_end") then
             newSource = newSource .. line .. "\n"
@@ -254,14 +270,16 @@ the include statements.
 --- @include statement
 local filename = basename(strip(line:sub(10)))
 if strip(filename) == "" then
-    print(cur_filename .. ":" .. line_num .. ":error: No filename given to @change")
-    os.exit()
+    print(cur_filename .. ":" .. line_num .. ":error: No filename given to @include")
+    generate_files = false
+    goto continue
 end
 local filetype = filename:match(".*%.(.*)")
 local file = source_dir .. "/" .. strip(line:sub(10))
 if not file_exists(file) then
     print(cur_filename .. ":" .. line_num .. ":error: Included file ".. file .. " does not exist.")
-    os.exit()
+    generate_files = false
+    goto continue
 end
 
 if filetype == "lit" then
@@ -279,14 +297,16 @@ we also have to parse what to search for and what to replace with.
 local filename = basename(strip(line:sub(9)))
 if strip(filename) == "" then
     print(cur_filename .. ":" .. line_num .. ":error: No filename given to @change")
-    os.exit()
+    generate_files = false
+    goto continue
 end
 
 local filetype = filename:match(".*%.(.*)")
 local file = source_dir .. "/" .. strip(line:sub(9))
 if not file_exists(file) then
     print(cur_filename .. ":" .. line_num .. ":error: Changed file ".. file .. " does not exist.")
-    os.exit()
+    generate_files = false
+    goto continue
 end
 
 if filetype == "lit" then
@@ -320,7 +340,8 @@ we perform the substitution on the file source, and look for more `@replace` ...
 while strip(line) ~= "@change_end" do
     if line_num == #lines + 1 then
         print(cur_filename .. ":" .. #lines .. ":error: Reached end of file with no @change_end")
-        exit()
+    generate_files = false
+        break
     end
     line_num = line_num + 1
     line = lines[line_num]

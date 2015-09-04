@@ -35,7 +35,7 @@ function tangle(lines)
         if startswith(line, "@comment_type") then
             comment_type = strip(string.sub(line, 15, #line))
         elseif startswith(line, "---") and not string.match(line, "^---$") then
-            @{Get the block name}
+            @{Find the block name}
             @{Get the code}
             @{Add the code to the dict}
         end
@@ -52,13 +52,16 @@ case we want to strip that off too. We make sure to find the *last* occurrence o
 in the name of the code block. Then we substring it off. We also set a flag `add_to_block` to tell the code later on
 that this is not a codeblock definition, but a `+=` definition.
 
---- Get the block name
+--- Find the block name
 local block_name = strip(string.sub(line, 4, #line))
 
 local add_to_block = false -- Whether or not this definition has a +=
 if string.match(block_name, "+=") then
     local plus_index = block_name:match'^.*()%+'
     block_name = strip(string.sub(block_name, 1, plus_index-1))
+    if codeblocks[block_name] == nil then
+        tangle_errors = tangle_errors .. inputfilename .. ":" .. line_num .. ":error: Attempt to add to unknown block: " .. block_name .. "\n"
+    end
     add_to_block = true
 end
 ---
@@ -73,13 +76,13 @@ local code = ""
 while true do
     line_num = line_num + 1
     if line_num > #lines then
-        print(inputfilename .. ":" .. #lines .. ":error: ".. block_name .. " is never closed")
-        os.exit()
+        tangle_errors = tangle_errors .. inputfilename .. ":" .. #lines .. ":error: ".. block_name .. " is never closed\n"
+        break
     end
 
     if startswith(strip(line), "@{") then
         local name = line:match("@{(.*)}")
-        codeblock_use_lines[name] = line_num
+        codeblock_use_lines[name] = line_num - 1
     end
 
     line = lines[line_num]
@@ -99,11 +102,11 @@ create a new slot for the block name, and assign it to its code.
 if add_to_block then
     if codeblocks[block_name] ~= nil then
         codeblocks[block_name] = codeblocks[block_name] .. "\n" .. code
-    else
-        print(inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. block_name)
-        os.exit()
     end
 else
+    if codeblocks[block_name] ~= nil then
+        tangle_errors = tangle_errors .. inputfilename .. ":" .. line_num .. ":error: " .. block_name .. " is already defined\n"
+    end
     block_names[#block_names + 1] = block_name
     codeblocks[block_name] = code
 end
@@ -119,8 +122,8 @@ the code that is generated based on how the codeblock name was indented.
 function write_code(block_name, leading_whitespace, codeblocks, outstream)
     local code = codeblocks[block_name]
     if code == nil then
-        print(inputfilename .. ":" .. codeblock_use_lines[block_name] .. ":error: Unknown block name: " .. block_name)
-        os.exit()
+        tangle_errors = tangle_errors .. inputfilename .. ":" .. codeblock_use_lines[block_name] .. ":error: Unknown block name: " .. block_name .. "\n"
+        return
     end
     local lines = split(code, "\n")
 
