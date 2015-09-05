@@ -2,5 +2,4 @@ These are in no particular order
 
 - User adjustable css/fonts -- needs more work
 - Improve w2lit converter -- convert CWEB to Literate
-- Support change files with the @change command
-- Better way to include css, html, other lit files, etc...
+- Add option to include line directives
