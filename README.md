@@ -2,7 +2,7 @@
 
 [Website] (http://zbyedidia.webfactional.com/literate).
 
-Literate (lit for short) is a computer programming system to create literate programs. It works with any programming language, generates HTML pages as output ([which can be converted to PDF](http://http://wkhtmltopdf.org/)),
+Literate (lit for short) is a computer programming system to create literate programs. It works with any programming language, generates HTML pages as output (which can be converted to PDF by using your browser's 'print to pdf'),
 and generates readable code. The code that is generated is indented properly and is commented using the names of codeblocks that you choose.
 
 The goal of this project is to create a modern literate programming system which keeps most, if not all of the features of Knuth and Levy's CWEB system, but simplifies the system and adds even more features.
@@ -55,6 +55,7 @@ Additional command line flags are:
 
 * -html: Only generate HTML output
 * -code: Only generate code output
+* -pdf: Create an HTML file with the correct fonts for printing to pdf (I recommend Chrome for printing to pdf)
 * -noindex: Do not create an index
 * --out-dir=dir: Put the output files in the specified directory
 * --no-output: Do not generate any files, only show errors
@@ -67,7 +68,7 @@ Additional command line flags are:
 * Compatible with Vim ([literate.vim] (https://github.com/zyedidia/literate.vim))
 * Highly customizable (you can add your own HTML or CSS)
 * Runs fast -- wc.lit compiled for me in 82ms for both code and HTML output and 10ms for just code output
-* Supports tex equations with `$` notation.
+* Supports TeX equations with `$` notation.
 
 ### Inspired from CWEB
 * Automatically generates hyperlinks between code sections

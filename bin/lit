@@ -2469,11 +2469,11 @@ inputfiles = {}
 for i=1,#arg do
     argument = arg[i]
     if argument == "-h" then
-        print("Usage: lit [-html] [-code] [-noindex] [--out-dir=<dir>] [--no-output] [file ...]")
+        print("Usage: lit [-html] [-code] [-pdf] [-noindex] [--out-dir=<dir>] [--no-output] [file ...]")
         print("Available options are:")
         print("   -html          Only generate HTML output")
         print("   -code          Only generate code output")
-        print("   -pdf           Only generate a PDF (wkhtmltopdf is required to use this option)")
+        print("   -pdf           Create an HTML file with the correctfonts for printing to pdf")
         print("   -noindex       Do not create an index")
         print("  --out-dir=<dir> Put the output files in <dir>")
         print("  --no-output     Do not create any output files, only report errors")
