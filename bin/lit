@@ -853,7 +853,10 @@ function weave(lines, source_dir, has_index)
     end
     
     if use_katex then
-        out = out .. katex .. [[
+        out = out .. 
+        [[<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.css">
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js"></script>
+        ]] .. katex .. [[
         <script>
         var mathDivs = document.getElementsByClassName("math")
         for (var i = 0; i < mathDivs.length; i++) {
@@ -872,8 +875,6 @@ function weave(lines, source_dir, has_index)
             }
         }
         </script>
-        <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.css">
-        <script src="http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js"></script>
         ]]
     end
     out = out .. "</body></html>"
