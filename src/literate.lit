@@ -184,6 +184,9 @@ for num,file in pairs(inputfiles) do
         if tangle_errors ~= "" then
             print("Tangle errors:\n" .. tangle_errors)
         end
+        if compiler_command ~= nil then
+            local errors = split(run(compiler_command .. " 2>&1"), "\n")
+        end
     end
 end
 ---

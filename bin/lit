@@ -897,6 +897,8 @@ function tangle(lines)
         line = chomp(line)
         if startswith(line, "@comment_type") then
             comment_type = strip(string.sub(line, 15, #line))
+        elseif startswith(line, "@compiler") then
+            compiler_command = line:sub(10, #line)
         elseif startswith(line, "---") and not string.match(line, "^---$") then
             -- Find the block name
             local block_name = strip(string.sub(line, 4, #line))
@@ -1000,6 +1002,8 @@ function write_code(block_name, leading_whitespace, codeblocks, outstream)
         else
             if generate_files then
                 write(outstream, leading_whitespace .. line .. "\n")
+                print(code_lines[line])
+                code_linenums[#code_linenums + 1] = code_lines[line]
             end
         end
     end
@@ -2582,9 +2586,17 @@ else
         end
         if code then
             tangle_errors = ""
+            code_linenums = {}
             tangle(lines)
             if tangle_errors ~= "" then
                 print("Tangle errors:\n" .. tangle_errors)
+            end
+            if compiler_command ~= nil then
+                local errors = split(run(compiler_command .. " 2>&1"), "\n")
+                for i=1,#errors do
+                    print(code_linenums[split(errors[i], ":")[2]])
+                end
+                -- print(errors)
             end
         end
     end

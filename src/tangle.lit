@@ -34,6 +34,8 @@ function tangle(lines)
         line = chomp(line)
         if startswith(line, "@comment_type") then
             comment_type = strip(string.sub(line, 15, #line))
+        elseif startswith(line, "@compiler") then
+            compiler_command = line:sub(10, #line)
         elseif startswith(line, "---") and not string.match(line, "^---$") then
             @{Find the block name}
             @{Get the code}
