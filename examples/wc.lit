@@ -1,5 +1,5 @@
 @code_type c .c
-@comment_type /* %s */
+@compiler gcc wc.c
 
 @title WC
 
@@ -56,7 +56,7 @@ The `status` variable will tell the operating system if the run was successful o
 and `prog_name` is used in case there’s an error message to be printed.
 
 --- Preprocessor definitions
-#define OK 0    /* status code for successful run */
+#define OK    /* status code for successful run */
 #define usage_error 1    /* status code for improper syntax */
 #define cannot_open_file 2    /* status code for file access error */ 
 ---
