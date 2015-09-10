@@ -962,6 +962,7 @@ function tangle(lines)
                     outstream = io.open(outdir .. "/" .. strip(name), "w")
                 end
             end
+            current_line = 0
             write_code(name, "", codeblocks, outstream)
             if not stdin then
                 if generate_files then
@@ -990,6 +991,7 @@ function write_code(block_name, leading_whitespace, codeblocks, outstream)
             comment = string.gsub(comment_type, "%%s", block_name)
             if generate_files then
                 write(outstream, leading_whitespace .. comment .. "\n")
+                current_line = current_line + 1
             end
         end
     end
@@ -1002,14 +1004,16 @@ function write_code(block_name, leading_whitespace, codeblocks, outstream)
         else
             if generate_files then
                 write(outstream, leading_whitespace .. line .. "\n")
-                print(code_lines[line])
-                code_linenums[#code_linenums + 1] = code_lines[line]
+                current_line = current_line + 1
+
+                code_linenums[current_line] = code_lines[line:gsub("%s+", " ")]
             end
         end
     end
 
     if generate_files then
         write(outstream, "\n")
+        current_line = current_line + 1
     end
 end
 
@@ -2518,6 +2522,7 @@ block_use_locations = {} -- String => (Number => Number)
 codetype = ""
 codetype_ext = ""
 
+code_linenums = {}
 code_lines = {} -- Number => Number
 section_linenums = {} -- Number => Number
 
@@ -2586,7 +2591,6 @@ else
         end
         if code then
             tangle_errors = ""
-            code_linenums = {}
             tangle(lines)
             if tangle_errors ~= "" then
                 print("Tangle errors:\n" .. tangle_errors)
@@ -2594,9 +2598,16 @@ else
             if compiler_command ~= nil then
                 local errors = split(run(compiler_command .. " 2>&1"), "\n")
                 for i=1,#errors do
-                    print(code_linenums[split(errors[i], ":")[2]])
+                    local compiler_error = errors[i]
+                    local error_line = compiler_error:match(":(%d+):")
+                    if error_line ~= nil then
+                        if compiler_error:match("error:(.-)") ~= nil then
+                        print(inputfilename .. ":" .. code_linenums[tonumber(error_line)] ..  ":error:" .. compiler_error:match("error:(.-)$"))
+                        end
+                    else
+                        print(compiler_error)
+                    end
                 end
-                -- print(errors)
             end
         end
     end

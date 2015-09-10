@@ -1,5 +1,5 @@
 src:
-	../bin/lit -code main.lit
+	/usr/local/bin/lit -code main.lit
 	mv lit.lua ../bin/lit
 	chmod +x ../bin/lit
 

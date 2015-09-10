@@ -36,7 +36,7 @@ Here, then, is an overview of the file `wc.c` that is defined by this `Literate`
 @{Header files to include}
 @{Preprocessor definitions}
 @{Global variables}
-@{Functions}
+@{unctions}
 @{The main program}
 ---
 
@@ -58,7 +58,7 @@ and `prog_name` is used in case there’s an error message to be printed.
 --- Preprocessor definitions
 #define OK    /* status code for successful run */
 #define usage_error 1    /* status code for improper syntax */
-#define cannot_open_file 2    /* status code for file access error */ 
+define cannot_open_file 2    /* status code for file access error */ 
 ---
 
 --- Global variables
