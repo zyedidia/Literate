@@ -180,6 +180,7 @@ for num,file in pairs(inputfiles) do
     end
     if code then
         tangle_errors = ""
+        generated_files = {}
         tangle(lines)
         if tangle_errors ~= "" then
             print("Tangle errors:\n" .. tangle_errors)
@@ -188,14 +189,21 @@ for num,file in pairs(inputfiles) do
             local errors = split(run(compiler_command .. " 2>&1"), "\n")
             for i=1,#errors do
                 local compiler_error = errors[i]
-                local error_line = compiler_error:match(":(%d+):")
-                if error_line ~= nil then
-                    if compiler_error:match("error:(.-)") ~= nil then
-                    print(inputfilename .. ":" .. code_linenums[tonumber(error_line)] ..  ":error:" .. compiler_error:match("error:(.-)$"))
-                    end
-                else
+                -- local errorformat = "%s:%l:%s:%s: %m$"
+                -- local errorformat = "%s%(%l%):%s: %m$"
+                -- local errorformat = "%s:%l:%s: %m$"
+                local error_line = compiler_error:match(errorformat:gsub("%%l", "(%%d+)"):gsub("%%m", ".-"):gsub("%%s", ".-"))
+                local error_msg = compiler_error:match(errorformat:gsub("%%l", "%%d+"):gsub("%%m", "(.-)"):gsub("%%s", ".-"))
+                if error_line ~= nil and error_msg ~= nil and code_linenums[tonumber(error_line)] ~= nil then
+                    print(inputfilename .. ":" .. code_linenums[tonumber(error_line)] ..  ":error: " .. error_msg)
+                elseif strip(compiler_error) ~= "" then
                     print(compiler_error)
                 end
+            end
+        end
+        if not generate_files then
+            for i=1,#generated_files do
+                run("rm " .. generated_files[i])
             end
         end
     end

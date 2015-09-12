@@ -1,5 +1,6 @@
 @code_type c .c
 @compiler gcc wc.c
+@error_format %s:%l:%s:%s: %m$
 
 @title WC
 
@@ -36,7 +37,7 @@ Here, then, is an overview of the file `wc.c` that is defined by this `Literate`
 @{Header files to include}
 @{Preprocessor definitions}
 @{Global variables}
-@{unctions}
+@{Functions}
 @{The main program}
 ---
 
@@ -45,7 +46,7 @@ Here, then, is an overview of the file `wc.c` that is defined by this `Literate`
 We must include the standard I/O definitions, since we want to send formatted output to *stdout* and *stderr*.
 
 --- Header files to include
-#include <stdio.h>
+#include <tdio.h>
 #include <fcntl.h>
 #include <unistd.h>
 ---
@@ -56,9 +57,9 @@ The `status` variable will tell the operating system if the run was successful o
 and `prog_name` is used in case there’s an error message to be printed.
 
 --- Preprocessor definitions
-#define OK    /* status code for successful run */
+#define OK 1    /* status code for successful run */
 #define usage_error 1    /* status code for improper syntax */
-define cannot_open_file 2    /* status code for file access error */ 
+#define cannot_open_file 2    /* status code for file access error */ 
 ---
 
 --- Global variables

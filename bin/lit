@@ -899,6 +899,8 @@ function tangle(lines)
             comment_type = strip(string.sub(line, 15, #line))
         elseif startswith(line, "@compiler") then
             compiler_command = line:sub(10, #line)
+        elseif startswith(line, "@error_format") then
+            errorformat = line:sub(15, #line)
         elseif startswith(line, "---") and not string.match(line, "^---$") then
             -- Find the block name
             local block_name = strip(string.sub(line, 4, #line))
@@ -927,9 +929,10 @@ function tangle(lines)
                     codeblock_use_lines[name] = line_num - 1
                 end
             
-                line = lines[line_num]
+                local line = lines[line_num]
                 if line == nil then break end
                 if chomp(line) == "---" then break end
+                line = line_num .. ":" .. line
                 code = code .. line .. "\n"
             end
 
@@ -958,16 +961,13 @@ function tangle(lines)
                 outstream = "STDOUT"
                 print("\n---- " .. basename(name) .. " ----\n")
             else
-                if generate_files then
-                    outstream = io.open(outdir .. "/" .. strip(name), "w")
-                end
+                outstream = io.open(outdir .. "/" .. strip(name), "w")
+                generated_files[#generated_files + 1] = outdir .. "/" .. strip(name)
             end
             current_line = 0
             write_code(name, "", codeblocks, outstream)
             if not stdin then
-                if generate_files then
-                    outstream:close()
-                end
+                outstream:close()
             end
         end
     end
@@ -989,32 +989,28 @@ function write_code(block_name, leading_whitespace, codeblocks, outstream)
     if comment_type ~= "" then
         if not string.match(block_name, "^.+%w%.%w+$") then
             comment = string.gsub(comment_type, "%%s", block_name)
-            if generate_files then
-                write(outstream, leading_whitespace .. comment .. "\n")
-                current_line = current_line + 1
-            end
+            write(outstream, leading_whitespace .. comment .. "\n")
+            current_line = current_line + 1
         end
     end
 
     for line_num,line in pairs(lines) do
+        real_line_num = line:match("^(%d+):")
+        line = line:gsub("^%d+:", "")
         if startswith(strip(line), "@{") then
             myleading_whitespace = string.match(line, "^(.-)[^%s]")
             line = strip(line)
             write_code(string.sub(line, 3, line:find("}[^}]*$") - 1), leading_whitespace .. myleading_whitespace, codeblocks, outstream)
         else
-            if generate_files then
-                write(outstream, leading_whitespace .. line .. "\n")
-                current_line = current_line + 1
+            write(outstream, leading_whitespace .. line .. "\n")
+            current_line = current_line + 1
 
-                code_linenums[current_line] = code_lines[line:gsub("%s+", " ")]
-            end
+            code_linenums[current_line] = real_line_num
         end
     end
 
-    if generate_files then
-        write(outstream, "\n")
-        current_line = current_line + 1
-    end
+    write(outstream, "\n")
+    current_line = current_line + 1
 end
 
 
@@ -2591,6 +2587,7 @@ else
         end
         if code then
             tangle_errors = ""
+            generated_files = {}
             tangle(lines)
             if tangle_errors ~= "" then
                 print("Tangle errors:\n" .. tangle_errors)
@@ -2599,14 +2596,21 @@ else
                 local errors = split(run(compiler_command .. " 2>&1"), "\n")
                 for i=1,#errors do
                     local compiler_error = errors[i]
-                    local error_line = compiler_error:match(":(%d+):")
-                    if error_line ~= nil then
-                        if compiler_error:match("error:(.-)") ~= nil then
-                        print(inputfilename .. ":" .. code_linenums[tonumber(error_line)] ..  ":error:" .. compiler_error:match("error:(.-)$"))
-                        end
-                    else
+                    -- local errorformat = "%s:%l:%s:%s: %m$"
+                    -- local errorformat = "%s%(%l%):%s: %m$"
+                    -- local errorformat = "%s:%l:%s: %m$"
+                    local error_line = compiler_error:match(errorformat:gsub("%%l", "(%%d+)"):gsub("%%m", ".-"):gsub("%%s", ".-"))
+                    local error_msg = compiler_error:match(errorformat:gsub("%%l", "%%d+"):gsub("%%m", "(.-)"):gsub("%%s", ".-"))
+                    if error_line ~= nil and error_msg ~= nil and code_linenums[tonumber(error_line)] ~= nil then
+                        print(inputfilename .. ":" .. code_linenums[tonumber(error_line)] ..  ":error: " .. error_msg)
+                    elseif strip(compiler_error) ~= "" then
                         print(compiler_error)
                     end
+                end
+            end
+            if not generate_files then
+                for i=1,#generated_files do
+                    run("rm " .. generated_files[i])
                 end
             end
         end
