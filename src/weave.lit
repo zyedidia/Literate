@@ -213,6 +213,8 @@ function weave(lines, source_dir, has_index)
            startswith(line, "@comment_type") or
            startswith(line, "@add_css") or
            startswith(line, "@overwrite_css") or
+           startswith(line, "@compiler") or
+           startswith(line, "@error_format") or
            startswith(line, "@colorscheme") then
             goto continue
         end
