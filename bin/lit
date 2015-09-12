@@ -603,6 +603,8 @@ function weave(lines, source_dir, has_index)
            startswith(line, "@comment_type") or
            startswith(line, "@add_css") or
            startswith(line, "@overwrite_css") or
+           startswith(line, "@compiler") or
+           startswith(line, "@error_format") or
            startswith(line, "@colorscheme") then
             goto continue
         end
@@ -2522,6 +2524,16 @@ code_linenums = {}
 code_lines = {} -- Number => Number
 section_linenums = {} -- Number => Number
 
+errorformats = {}
+errorformats["clang"] = "%s:%l:%s:%s: %m"
+errorformats["clang++"] = "%s:%l:%s:%s: %m"
+errorformats["gcc"] = "%s:%l:%s:%s: %m"
+errorformats["g++"] = "%s:%l:%s:%s: %m"
+errorformats["javac"] = "%s:%l: %m"
+errorformats["pyflakes"] = "%s:%l:%s: %m"
+errorformats["jshint"] = "%s: line %l,%s, %m"
+errorformats["dmd"] = "%s(%l):%s: %m"
+
 if #inputfiles == 0 then
     -- Use STDIN and STDOUT
     if pdf then
@@ -2593,20 +2605,28 @@ else
                 print("Tangle errors:\n" .. tangle_errors)
             end
             if compiler_command ~= nil then
+                -- Run the compiler command and parse the errors
                 local errors = split(run(compiler_command .. " 2>&1"), "\n")
-                for i=1,#errors do
-                    local compiler_error = errors[i]
-                    -- local errorformat = "%s:%l:%s:%s: %m$"
-                    -- local errorformat = "%s%(%l%):%s: %m$"
-                    -- local errorformat = "%s:%l:%s: %m$"
-                    local error_line = compiler_error:match(errorformat:gsub("%%l", "(%%d+)"):gsub("%%m", ".-"):gsub("%%s", ".-"))
-                    local error_msg = compiler_error:match(errorformat:gsub("%%l", "%%d+"):gsub("%%m", "(.-)"):gsub("%%s", ".-"))
-                    if error_line ~= nil and error_msg ~= nil and code_linenums[tonumber(error_line)] ~= nil then
-                        print(inputfilename .. ":" .. code_linenums[tonumber(error_line)] ..  ":error: " .. error_msg)
-                    elseif strip(compiler_error) ~= "" then
-                        print(compiler_error)
+                local compiler = split(strip(compiler_command), " ")[1]
+                
+                if errorformats[compiler] ~= nil and errorformat == nil then
+                    errorformat = errorformats[compiler]
+                    errorformat = literalize(errorformat) .. "$"
+                end
+                
+                if errorformat ~= nil then
+                    for i=1,#errors do
+                        local compiler_error = errors[i]
+                        local error_line = compiler_error:match(errorformat:gsub("%%%%l", "(%%d+)"):gsub("%%%%m", ".-"):gsub("%%%%s", ".-"))
+                        local error_msg = compiler_error:match(errorformat:gsub("%%%%l", "%%d+"):gsub("%%%%m", "(.-)"):gsub("%%%%s", ".-"))
+                        if error_line ~= nil and error_msg ~= nil and code_linenums[tonumber(error_line)] ~= nil then
+                            print(inputfilename .. ":" .. code_linenums[tonumber(error_line)] ..  ":error: " .. error_msg)
+                        elseif strip(compiler_error) ~= "" then
+                            print(compiler_error)
+                        end
                     end
                 end
+
             end
             if not generate_files then
                 for i=1,#generated_files do

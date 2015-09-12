@@ -186,25 +186,57 @@ for num,file in pairs(inputfiles) do
             print("Tangle errors:\n" .. tangle_errors)
         end
         if compiler_command ~= nil then
-            local errors = split(run(compiler_command .. " 2>&1"), "\n")
-            for i=1,#errors do
-                local compiler_error = errors[i]
-                -- local errorformat = "%s:%l:%s:%s: %m$"
-                -- local errorformat = "%s%(%l%):%s: %m$"
-                -- local errorformat = "%s:%l:%s: %m$"
-                local error_line = compiler_error:match(errorformat:gsub("%%l", "(%%d+)"):gsub("%%m", ".-"):gsub("%%s", ".-"))
-                local error_msg = compiler_error:match(errorformat:gsub("%%l", "%%d+"):gsub("%%m", "(.-)"):gsub("%%s", ".-"))
-                if error_line ~= nil and error_msg ~= nil and code_linenums[tonumber(error_line)] ~= nil then
-                    print(inputfilename .. ":" .. code_linenums[tonumber(error_line)] ..  ":error: " .. error_msg)
-                elseif strip(compiler_error) ~= "" then
-                    print(compiler_error)
-                end
-            end
+            @{Run the compiler command and parse the errors}
         end
         if not generate_files then
             for i=1,#generated_files do
                 run("rm " .. generated_files[i])
             end
+        end
+    end
+end
+---
+
+Now we run the compiler command that the user specified, and we parse the errors
+by following the errorformat rules. In the error format, `%s` means any characters
+that can be thrown out, `%l` means the line number, and `%m` means the error
+message.
+
+We'll run the compiler command, and redirect all stderr to stdout so we can read
+it with lua.
+
+--- Run the compiler command and parse the errors
+local errors = split(run(compiler_command .. " 2>&1"), "\n")
+local compiler = split(strip(compiler_command), " ")[1]
+---
+
+Now that we have a list with all the error lines, we go through each one and see
+if it matches the errorformat. If it does not, we just print it out for the user.
+Otherwise, we replace the special parts of the errorformat string (`%s`, `%l`,
+and `%m`), and print out the error message, with the correct literate filename
+and line number.
+
+We also have to make sure to literalize the errorformat string first.
+
+Note that to replace `%s` we need to use the lua expression `%%%%s` because lua
+requires that `%` be escaped with another `%`. In addition, we have four percents
+because earlier we literalized the string.
+
+--- Run the compiler command and parse the errors +=
+if errorformats[compiler] ~= nil and errorformat == nil then
+    errorformat = errorformats[compiler]
+    errorformat = literalize(errorformat) .. "$"
+end
+
+if errorformat ~= nil then
+    for i=1,#errors do
+        local compiler_error = errors[i]
+        local error_line = compiler_error:match(errorformat:gsub("%%%%l", "(%%d+)"):gsub("%%%%m", ".-"):gsub("%%%%s", ".-"))
+        local error_msg = compiler_error:match(errorformat:gsub("%%%%l", "%%d+"):gsub("%%%%m", "(.-)"):gsub("%%%%s", ".-"))
+        if error_line ~= nil and error_msg ~= nil and code_linenums[tonumber(error_line)] ~= nil then
+            print(inputfilename .. ":" .. code_linenums[tonumber(error_line)] ..  ":error: " .. error_msg)
+        elseif strip(compiler_error) ~= "" then
+            print(compiler_error)
         end
     end
 end
@@ -239,6 +271,21 @@ holding the line numbers each section starts on.
 code_linenums = {}
 code_lines = {} -- Number => Number
 section_linenums = {} -- Number => Number
+---
+
+We'll also predefine some error formats for common languages like C, C++, Java,
+Python, Javascript, and D.
+
+--- Declare a few globals +=
+errorformats = {}
+errorformats["clang"] = "%s:%l:%s:%s: %m"
+errorformats["clang++"] = "%s:%l:%s:%s: %m"
+errorformats["gcc"] = "%s:%l:%s:%s: %m"
+errorformats["g++"] = "%s:%l:%s:%s: %m"
+errorformats["javac"] = "%s:%l: %m"
+errorformats["pyflakes"] = "%s:%l:%s: %m"
+errorformats["jshint"] = "%s: line %l,%s, %m"
+errorformats["dmd"] = "%s(%l):%s: %m"
 ---
 
 @s

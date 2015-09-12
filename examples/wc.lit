@@ -1,6 +1,5 @@
 @code_type c .c
 @compiler gcc wc.c
-@error_format %s:%l:%s:%s: %m$
 
 @title WC
 
