@@ -189,6 +189,7 @@ default_css = [[body {
 }
 .math {
     text-indent: 0em;
+    font-size: 11pt;
 }
 pre.prettyprint {
     font-family: Monaco, "Lucida Console", monospace;
