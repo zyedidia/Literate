@@ -3,6 +3,7 @@
 examples/*.jl
 examples/*.c
 examples/*.pdf
+examples/a.out
 examples/wc
 
 tools/w2lit/*.lit

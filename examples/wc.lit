@@ -1,4 +1,5 @@
 @code_type c .c
+@comment_type // %s
 @compiler gcc wc.c
 
 @title WC
