@@ -45,7 +45,7 @@ Here, then, is an overview of the file `wc.c` that is defined by this `Literate`
 We must include the standard I/O definitions, since we want to send formatted output to *stdout* and *stderr*.
 
 --- Header files to include
-#include <tdio.h>
+#include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
 ---

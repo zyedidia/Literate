@@ -2628,11 +2628,11 @@ else
                 end
 
             end
-            if not generate_files then
-                for i=1,#generated_files do
-                    run("rm " .. generated_files[i])
-                end
-            end
+            -- if not generate_files then
+                -- for i=1,#generated_files do
+                    -- run("rm " .. generated_files[i])
+                -- end
+            -- end
         end
     end
 
