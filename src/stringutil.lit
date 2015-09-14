@@ -12,6 +12,7 @@ This file provides some useful string functions.
 @{The strip function}
 @{The chomp function}
 @{The literalize function}
+@{The shift function}
 ---
 
 @s
@@ -77,5 +78,21 @@ passed in.
 --- The literalize function
 function literalize(str)
     return str:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", function(c) return "%" .. c end)
+end
+---
+
+This function shifts every character in a string a variable amount.
+
+--- The shift function
+function shift(str, amount)
+    return str:gsub("%a", function(t)
+            local base = (t:lower() == t and string.byte('a') or string.byte('A'))
+
+            local r = t:byte() - base
+            r = r + amount
+            r = r%26 -- works correctly even if r is negative
+            r = r + base
+            return string.char(r)
+        end)
 end
 ---

@@ -174,8 +174,13 @@ for i,name in pairs(block_names) do
             outstream = "STDOUT"
             print("\n---- " .. basename(name) .. " ----\n")
         else
-            outstream = io.open(outdir .. "/" .. strip(name), "w")
-            generated_files[#generated_files + 1] = outdir .. "/" .. strip(name)
+            local filename = outdir .. "/" .. strip(name)
+            generated_files[#generated_files + 1] = filename
+            if file_exists(filename) and not generate_files then
+                run("mv " .. filename .. " " .. outdir .. "/" .. shift(strip(name), 3))
+                moved_files[#moved_files + 1] = shift(strip(name), 3)
+            end
+            outstream = io.open(filename, "w")
         end
         current_line = 0
         write_code(name, "", codeblocks, outstream)

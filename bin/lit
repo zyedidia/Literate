@@ -326,6 +326,19 @@ function literalize(str)
     return str:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", function(c) return "%" .. c end)
 end
 
+-- The shift function
+function shift(str, amount)
+    return str:gsub("%a", function(t)
+            local base = (t:lower() == t and string.byte('a') or string.byte('A'))
+
+            local r = t:byte() - base
+            r = r + amount
+            r = r%26 -- works correctly even if r is negative
+            r = r + base
+            return string.char(r)
+        end)
+end
+
 
 -- fileutil
 -- The run function
@@ -964,8 +977,13 @@ function tangle(lines)
                 outstream = "STDOUT"
                 print("\n---- " .. basename(name) .. " ----\n")
             else
-                outstream = io.open(outdir .. "/" .. strip(name), "w")
-                generated_files[#generated_files + 1] = outdir .. "/" .. strip(name)
+                local filename = outdir .. "/" .. strip(name)
+                generated_files[#generated_files + 1] = filename
+                if file_exists(filename) and not generate_files then
+                    run("mv " .. filename .. " " .. outdir .. "/" .. shift(strip(name), 3))
+                    moved_files[#moved_files + 1] = shift(strip(name), 3)
+                end
+                outstream = io.open(filename, "w")
             end
             current_line = 0
             write_code(name, "", codeblocks, outstream)
@@ -1071,9 +1089,9 @@ function create_index(inputfile)
             noctags = true
         end
         
-        run("echo '" .. complete_source:gsub("'", "'\"'\"'") .. "' | lit -code > out.txt")
-        local tags_str = run("ctags -x --" .. string.lower(codetype) .. "-kinds=+abcdefghijklmnopqrxtuvwxyzABCDEFGHIJKLMNOPQRXTUVWXYZ  --language-force=" .. string.lower(codetype) .. " out.txt 2>/dev/null")
-        run("rm out.txt")
+        run("echo '" .. complete_source:gsub("'", "'\"'\"'") .. "' | lit -code > 00ba29caee102c5fd3d95cb0a433d523.txt")
+        local tags_str = run("ctags -x --" .. string.lower(codetype) .. "-kinds=+abcdefghijklmnopqrxtuvwxyzABCDEFGHIJKLMNOPQRXTUVWXYZ  --language-force=" .. string.lower(codetype) .. " 00ba29caee102c5fd3d95cb0a433d523.txt 2>/dev/null")
+        run("rm 00ba29caee102c5fd3d95cb0a433d523.txt")
         
         if tags_str == "" then
             -- print(codetype .. " is not supported by your version of ctags.")
@@ -1089,7 +1107,7 @@ function create_index(inputfile)
                 if tag ~= "" then
                     local words = split(tag, "%s+")
         
-                    local line = tag:match("out.txt%s+([^%s].-)$")
+                    local line = tag:match("00ba29caee102c5fd3d95cb0a433d523.txt%s+([^%s].-)$")
         
                     if code_lines[line] == nil then
                         goto continue
@@ -2601,6 +2619,9 @@ else
         if code then
             tangle_errors = ""
             generated_files = {}
+            if not generate_files then
+                moved_files = {}
+            end
             tangle(lines)
             if tangle_errors ~= "" then
                 print("Tangle errors:\n" .. tangle_errors)
@@ -2629,11 +2650,15 @@ else
                 end
 
             end
-            -- if not generate_files then
-                -- for i=1,#generated_files do
-                    -- run("rm " .. generated_files[i])
-                -- end
-            -- end
+            if not generate_files then
+                for i=1,#generated_files do
+                    run("rm " .. generated_files[i])
+                    -- run("mv " .. outdir .. "/" .. shift(basename(generated_files[i]), 3) .. " " .. generated_files[i])
+                end
+                for i=1,#moved_files do
+                    run("mv " .. outdir .. "/" .. moved_files[i] .. " " .. outdir .. "/" .. shift(moved_files[i], -3))
+                end
+            end
         end
     end
 

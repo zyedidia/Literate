@@ -1,6 +1,6 @@
 @code_type c .c
 @comment_type // %s
-@compiler gcc wc.c
+@compiler gcc -fsyntax-only wc.c
 
 @title WC
 
