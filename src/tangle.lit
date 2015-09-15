@@ -127,7 +127,11 @@ the code that is generated based on how the codeblock name was indented.
 function write_code(block_name, leading_whitespace, codeblocks, outstream)
     local code = codeblocks[block_name]
     if code == nil then
-        tangle_errors = tangle_errors .. inputfilename .. ":" .. codeblock_use_lines[block_name] .. ":error: Unknown block name: " .. block_name .. "\n"
+        local line_num = ""
+        if codeblock_use_lines[block_name] ~= nil then
+            line_num = codeblock_use_lines[block_name] .. ""
+        end
+        tangle_errors = tangle_errors .. inputfilename .. ":" .. line_num .. ":error: Unknown block name: " .. block_name .. "\n"
         return
     end
     local lines = split(code, "\n")
