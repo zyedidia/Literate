@@ -20,12 +20,6 @@ If you're on a Mac and you have brew installed, you can use brew to install lite
 
 ```
 $ brew tap zyedidia/literate
-$ brew install literate
-```
-
-If you want the `HEAD` version, you can use:
-
-```
 $ brew install --HEAD literate
 ```
 
