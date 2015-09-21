@@ -213,7 +213,7 @@ We'll run the compiler command, and redirect all stderr to stdout so we can read
 it with lua.
 
 --- Run the compiler command and parse the errors
-local errors = split(run(compiler_command .. " 2>&1"), "\n")
+local errors = split(run("(" .. strip(compiler_command) .. ") 2>&1"), "\n")
 local compiler = split(strip(compiler_command), " ")[1]
 ---
 
@@ -246,6 +246,8 @@ if errorformat ~= nil then
             print(compiler_error)
         end
     end
+elseif compiler_command ~= nil then
+    print("Unkown compiler command " .. compiler .. " and no error_format provided")
 end
 ---
 

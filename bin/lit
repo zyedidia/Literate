@@ -2632,7 +2632,7 @@ else
             end
             if compiler_command ~= nil then
                 -- Run the compiler command and parse the errors
-                local errors = split(run(compiler_command .. " 2>&1"), "\n")
+                local errors = split(run("(" .. strip(compiler_command) .. ") 2>&1"), "\n")
                 local compiler = split(strip(compiler_command), " ")[1]
                 
                 if errorformats[compiler] ~= nil and errorformat == nil then
@@ -2651,6 +2651,8 @@ else
                             print(compiler_error)
                         end
                     end
+                elseif compiler_command ~= nil then
+                    print("Unkown compiler command " .. compiler .. " and no error_format provided")
                 end
 
             end
