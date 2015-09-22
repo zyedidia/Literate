@@ -201,7 +201,29 @@ p:not(.notp) {
     color: orange;
     background-color: white;
     display: inline-block;
-}]]
+}
+@media print {
+    body {
+        font-size: 10pt;
+    }
+    pre.prettyprint {
+        font-size: 8pt;
+    }
+    .seealso {
+        font-size: 9pt;
+    }
+    .codeblock_name {
+        font-size: 8pt;
+    }
+    code {
+        font-size: 8pt;
+    }
+    .math {
+        text-indent: 0em;
+        font-size: 8pt;
+    }
+}
+]]
 ---
 
 Here is some changes to the default css that will cause the page to look better as
@@ -223,6 +245,10 @@ pre.prettyprint {
     font-size: 8pt;
 }
 code {
+    font-size: 8pt;
+}
+.math {
+    text-indent: 0em;
     font-size: 8pt;
 }
 ]]
