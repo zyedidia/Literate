@@ -49,7 +49,6 @@ Additional command line flags are:
 
 * -html: Only generate HTML output
 * -code: Only generate code output
-* -pdf: Create an HTML file with the correct fonts for printing to pdf (I recommend Chrome for printing to pdf)
 * -noindex: Do not create an index
 * --out-dir=dir: Put the output files in the specified directory
 * --no-output: Do not generate any files, only show errors
