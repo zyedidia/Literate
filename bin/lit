@@ -181,7 +181,7 @@ default_css = [[body {
     margin-right: 4em;
     font-size: 14pt;
 }
-.section {
+.codeblock {
     page-break-inside: avoid;
 }
 .codeblock {
