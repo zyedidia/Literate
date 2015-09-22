@@ -287,29 +287,6 @@ p:not(.notp) {
 }
 ]]
 
-pdf_additions = 
-[[
-body {
-    font-size: 10pt;
-}
-pre.prettyprint {
-    font-size: 8pt;
-}
-.seealso {
-    font-size: 9pt;
-}
-.codeblock_name {
-    font-size: 8pt;
-}
-code {
-    font-size: 8pt;
-}
-.math {
-    text-indent: 0em;
-    font-size: 8pt;
-}
-]]
-
 
 -- stringutil
 -- The startswith function
@@ -606,9 +583,6 @@ function weave(lines, source_dir, has_index)
     
     local css = default_css:gsub("\n+", "")
     css = css .. colorscheme_css:gsub("\n+", "")
-    if pdf then
-        css = css .. pdf_additions
-    end
     
     local base_html = [[<!doctype html>
                    <html>
@@ -2514,7 +2488,6 @@ end
 -- Parse the arguments
 html = false
 code = false
-pdf = false
 outdir = "."
 index = true
 generate_files = true
@@ -2524,11 +2497,10 @@ inputfiles = {}
 for i=1,#arg do
     argument = arg[i]
     if argument == "-h" then
-        print("Usage: lit [-html] [-code] [-pdf] [-noindex] [--out-dir=<dir>] [--no-output] [file ...]")
+        print("Usage: lit [-html] [-code] [-noindex] [--out-dir=<dir>] [--no-output] [file ...]")
         print("Available options are:")
         print("   -html          Only generate HTML output")
         print("   -code          Only generate code output")
-        print("   -pdf           Create an HTML file with the correctfonts for printing to pdf")
         print("   -noindex       Do not create an index")
         print("  --out-dir=<dir> Put the output files in <dir>")
         print("  --no-output     Do not create any output files, only report errors")
@@ -2537,14 +2509,6 @@ for i=1,#arg do
         html = true
     elseif argument == "-code" then
         code = true
-    elseif startswith(argument, "-pdf") then
-        if os.name() ~= "Windows" and run("which wkhtmltopdf") == nil then
-            print("You don't have wkhtmltopdf installed.")
-            print("Please install it to use the -pdf option.")
-            os.exit()
-        end
-        html = true
-        pdf = true
     elseif argument == "-noindex" then
         index = false
     elseif startswith(argument, "--out-dir=") then
@@ -2585,10 +2549,6 @@ errorformats["dmd"] = "%s(%l):%s: %m"
 
 if #inputfiles == 0 then
     -- Use STDIN and STDOUT
-    if pdf then
-        print("A PDF cannot be generated from STDOUT")
-        os.exit()
-    end
     local source_dir = "."
     
     complete_source = readall()

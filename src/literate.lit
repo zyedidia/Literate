@@ -35,7 +35,6 @@ an array to hold the input filenames.
 --- Parse the arguments
 html = false
 code = false
-pdf = false
 outdir = "."
 index = true
 generate_files = true
@@ -50,7 +49,6 @@ Next we loop through each argument and check if it is one of the possible flags:
 * `-h`: Get the usage help
 * `-html`: Only generate html
 * `-code`: Only generate code
-* `-pdf`: Create an HTML file with the correct fonts for printing to pdf (I recommend Chrome for printing to pdf)
 * `-noindex`: Don't create an index
 * `--out-dir=dir`: Specify the directory to output html and/or code
 * `--no-output`: With the option enabled, lit will not generate any output files. This is useful if you just want to check errors
@@ -62,11 +60,10 @@ array.
 for i=1,#arg do
     argument = arg[i]
     if argument == "-h" then
-        print("Usage: lit [-html] [-code] [-pdf] [-noindex] [--out-dir=<dir>] [--no-output] [file ...]")
+        print("Usage: lit [-html] [-code] [-noindex] [--out-dir=<dir>] [--no-output] [file ...]")
         print("Available options are:")
         print("   -html          Only generate HTML output")
         print("   -code          Only generate code output")
-        print("   -pdf           Create an HTML file with the correctfonts for printing to pdf")
         print("   -noindex       Do not create an index")
         print("  --out-dir=<dir> Put the output files in <dir>")
         print("  --no-output     Do not create any output files, only report errors")
@@ -75,14 +72,6 @@ for i=1,#arg do
         html = true
     elseif argument == "-code" then
         code = true
-    elseif startswith(argument, "-pdf") then
-        if os.name() ~= "Windows" and run("which wkhtmltopdf") == nil then
-            print("You don't have wkhtmltopdf installed.")
-            print("Please install it to use the -pdf option.")
-            os.exit()
-        end
-        html = true
-        pdf = true
     elseif argument == "-noindex" then
         index = false
     elseif startswith(argument, "--out-dir=") then
@@ -113,10 +102,6 @@ If no input files were passed in, we should take input from `STDIN` and spit all
 output to `STDOUT`.
 
 --- Use STDIN and STDOUT
-if pdf then
-    print("A PDF cannot be generated from STDOUT")
-    os.exit()
-end
 local source_dir = "."
 
 complete_source = readall()
