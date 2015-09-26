@@ -3,15 +3,18 @@ platform='Unknown'
 install_platform='generic'
 
 # Detect the platform
-if [[ "$unamestr" == 'Linux' ]]; then
+if [ "$unamestr" == "Darwin" ]; then
+    platform="Mac OS X"
+    install_platform="macosx"
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
     platform="Linux"
     install_platform="linux"
+elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    platform="Windows"
+    install_platform="mingw"
 elif [[ "$unamestr" == 'FreeBSD' ]]; then
     platform="FreeBSD"
     install_platform="freebsd"
-elif [[ "$unamestr" == 'Darwin' ]]; then
-    platform="Mac OSX"
-    install_platform="macosx"
 elif [[ "$unamestr" == 'SunOS' ]]; then
     platform="Solaris"
     install_platform="solaris"
