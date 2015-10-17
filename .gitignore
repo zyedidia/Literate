@@ -13,3 +13,9 @@ tools/w2lit/a.out
 lua/lua
 
 *.swp
+
+.dub
+docs.json
+__dummy.html
+*.o
+*.obj
