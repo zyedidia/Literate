@@ -321,7 +321,9 @@ end
 
 -- The chomp function
 function chomp(str)
-    return str:gsub("\n$", "")
+    local n = #str
+    while n > 0 and str:find("^%s", n) do n = n - 1 end
+    return str:sub(1, n)
 end
 
 -- The literalize function
@@ -467,7 +469,7 @@ function get_locations(lines, source_dir)
     local in_codeblock = false   -- Whether we are parsing a codeblock or not
 
     for line_num,line in pairs(lines) do
-        line = chomp(line) -- Use chomp to remove the \n
+        line = chomp(line) -- Use chomp to remove the trailing whitespace
 
         if startswith(line, "@code_type") then
             local command = split(line, " ")
