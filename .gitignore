@@ -13,3 +13,5 @@ tools/w2lit/a.out
 lua/lua
 
 *.swp
+
+.dub
