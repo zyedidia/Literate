@@ -56,7 +56,7 @@ function get_locations(lines, source_dir)
     local in_codeblock = false   -- Whether we are parsing a codeblock or not
 
     for line_num,line in pairs(lines) do
-        line = chomp(line) -- Use chomp to remove the \n
+        line = chomp(line) -- Use chomp to remove the trailing whitespace
 
         if startswith(line, "@code_type") then
             local command = split(line, " ")

@@ -62,11 +62,16 @@ end
 
 @s
 
-The chomp function removes trailing newlines
+The chomp function removes trailing newlines. Since lua pattern matching starts
+at the left, this implementation looks at characters one at a time from the
+right hand side of the string, until we hit a non whitespace character.  Copied
+from [lua-users](http://lua-users.org/wiki/CommonFunctions).
 
 --- The chomp function
 function chomp(str)
-    return str:gsub("\n$", "")
+    local n = #str
+    while n > 0 and str:find("^%s", n) do n = n - 1 end
+    return str:sub(1, n)
 end
 ---
 
