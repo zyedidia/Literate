@@ -189,6 +189,8 @@ function write_markdown(mkdown)
         end
         html = html:gsub("%$%$(.-)%$%$", "<div class=\"math\">%1</div>")
         html = html:gsub("%$(.-)%$", "<span class=\"math\">%1</span>")
+        html = html:gsub("(class=\"math\">.-)>(.-</span>)", "%1&gt;%2")
+        html = html:gsub("(class=\"math\">.-)<(.-</span>)", "%1&lt;%2")
         out = out .. strip(html)
     end
 end
