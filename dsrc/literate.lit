@@ -1,0 +1,49 @@
+@code_type d .d
+@comment_type // %s
+
+@title Literate
+<center><em>A Modern Literate Programming System</em></center>
+
+@s Introduction
+
+This is an implementation of a literate programming system in D.
+The goal is to be able to create books that one can read on a website,
+with chapters, subchapters, and sections, and additionally to be able
+to compile the code from the book into a working program.
+
+Literate proogramming aims to make the source code of a program
+understandable. The program can be structured in any way the
+programmer likes, and the code should be explained.
+
+The source code for a literate program will somewhat resemble
+CWEB, but differ in many key ways which simplify the source code
+and make it easier to read. Literate will use @ signs for commands
+and markdown to style the prose. 
+
+@s Directory Structure
+
+A Literate program may be just a single file, but it should also be
+possible to make a book out of it, with chapters and possibly multiple
+programs in a single book. If the literate command line tool is run on
+a single file, it should compile that file, if it is run on a directory,
+it should search for the `Summary.lit` file in the directory and create a
+book.
+
+What should the directory structure of a Literate book look like?
+I try to mimic the [Gitbook](https://github.com/GitbookIO/gitbook) software
+here. There will be a `Summary.lit` file which links to each of the
+different chapters in the book. An example `Summary.lit` file might look
+like this:
+
+    @title Title of the book
+
+    [Chapter 1](chapter1/intro.lit)
+        [Subchapter 1](chapter1/example1.lit)
+        [Subchapter 2](chapter1/example2.lit)
+    [Chapter 2](section2/intro.lit)
+        [Subchapter 1](chapter2/example1.lit)
+
+Sub chapters are denoted by tabs, and each chapter is linked to the correct
+`.lit` file using Markdown link syntax.
+
+
