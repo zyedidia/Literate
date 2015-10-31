@@ -1,4 +1,5 @@
 import std.stdio;
+import util;
 import std.string: split, startsWith, chomp, replace, strip;
 import std.algorithm: canFind;
 import std.regex: matchAll, regex;
@@ -22,6 +23,7 @@ class Command {
 }
 
 class Block {
+    public int startLine;
     public string name;
     public string type;
     public Line[] lines;
@@ -63,20 +65,12 @@ class Program {
     public Command[] commands;
     public string title;
     public Section[] sections;
+    public string file;
 
     this() {
         sections = [];
         commands = [];
     }
-}
-
-string readall(File file) {
-    string src = "";
-    while (!file.eof) {
-        src ~= file.readln();
-    }
-    file.close();
-    return src;
 }
 
 Program parse(File file, string filename="") {
@@ -86,6 +80,7 @@ Program parse(File file, string filename="") {
 
 Program parse(string src, string filename="") {
     Program p = new Program();
+    p.file = filename;
     Section curSection = new Section();
     Block curBlock = new Block();
     bool inCodeblock = false;
@@ -168,6 +163,7 @@ Program parse(string src, string filename="") {
                     curSection.blocks ~= curBlock;
                 }
                 curBlock = new Block();
+                curBlock.startLine = lineNum;
                 curBlock.type = "code";
                 curBlock.name = strip(line[3..$]);
                 inCodeblock = true;
@@ -179,6 +175,7 @@ Program parse(string src, string filename="") {
                 curSection.blocks ~= curBlock;
             }
             curBlock = new Block();
+            curBlock.startLine = lineNum;
             curBlock.type = "prose";
             inCodeblock = false;
         } else if (curBlock.type !is null) {
@@ -187,6 +184,8 @@ Program parse(string src, string filename="") {
     }
     if (curBlock.type == "prose") {
         curSection.blocks ~= curBlock;
+    } else if (curBlock.type == "code"){
+        writeln(filename, ":", lineNum - 1, ":error: {", curBlock.name, "} is never closed");
     }
     p.sections ~= curSection;
 

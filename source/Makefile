@@ -1,5 +1,5 @@
 all:
-	dmd main.d parser.d tangler.d
+	dmd main.d parser.d tangler.d util.d
 	rm *.o
 
 clean:

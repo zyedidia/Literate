@@ -1,6 +1,7 @@
 import std.string;
 import std.stdio;
 import parser;
+import main;
 
 void tangle(Program p) {
     Block[] tempCodeblocks = [];
@@ -26,17 +27,31 @@ void tangle(Program p) {
         if (b.name.endsWith("+=")) {
             auto index = b.name.length - 2;
             string name = strip(b.name[0..index]);
-            codeblocks[name].lines ~= b.lines;
+            if ((name in codeblocks) is null) {
+                writeln(p.file, ":", b.startLine, ":error: Trying to add to {", name, "} which does not exist");
+            } else {
+                codeblocks[name].lines ~= b.lines;
+            }
         } else if (b.name.endsWith(":=")) {
             auto index = b.name.length - 2;
             string name = strip(b.name[0..index]);
-            codeblocks[name].lines = b.lines;
+            if ((name in codeblocks) is null) {
+                writeln(p.file, ":", b.startLine, ":error: Trying to redefine {", name, "} which does not exist");
+            } else {
+                codeblocks[name].lines = b.lines;
+            }
         }
+    }
+
+    if (rootCodeblocks.length == 0) {
+        writeln(p.file, ":0:warning: No file codeblocks, not writing any code");
     }
 
     foreach (b; rootCodeblocks) {
         string filename = b.name;
-        File f = File(filename, "w");
+        File f;
+        if (!noOutput)
+            f = File(outDir ~ "/" ~ filename, "w");
 
         string commentString = "";
         foreach (c; p.commands) {
@@ -45,7 +60,8 @@ void tangle(Program p) {
             }
         }
         writeCode(codeblocks, filename, f, filename, "", commentString);
-        f.close();
+        if (!noOutput)
+            f.close();
     }
 }
 
@@ -53,7 +69,8 @@ void writeCode(Block[string] codeblocks, string blockName, File file, string fil
     Block block = codeblocks[blockName];
 
     if (commentString != "") {
-        file.writeln(whitespace ~ commentString.replace("%s", blockName));
+        if (!noOutput)
+            file.writeln(whitespace ~ commentString.replace("%s", blockName));
     }
 
     foreach (lineObj; block.lines) {
@@ -67,11 +84,13 @@ void writeCode(Block[string] codeblocks, string blockName, File file, string fil
             if ((newBlockName in codeblocks) !is null) {
                 writeCode(codeblocks, newBlockName, file, filename, whitespace ~ newWS, commentString);
             } else {
-                writeln(lineObj.file, ":", lineObj.lineNum, ":error:", newBlockName, " does not exist");
+                writeln(lineObj.file, ":", lineObj.lineNum, ":error: {", newBlockName, "} does not exist");
             }
         } else {
-            file.writeln(whitespace ~ line);
+            if (!noOutput)
+                file.writeln(whitespace ~ line);
         }
     }
-    file.writeln();
+    if (!noOutput)
+        file.writeln();
 }
