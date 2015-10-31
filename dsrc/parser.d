@@ -3,6 +3,7 @@ import std.stdio;
 import std.string;
 import std.algorithm;
 import std.regex;
+import std.array;
 
 class Line {
     public string file;
@@ -22,7 +23,7 @@ class Command {
     this() {}
 }
 
-class Content {
+class Block {
     public string name;
     public string type;
     public Line[] lines;
@@ -41,9 +42,22 @@ class Content {
 
 class Section {
     public string title;
-    public Content[] content;
+    public Block[] blocks;
     this() {
-        content = [];
+        blocks = [];
+    }
+}
+
+class Change {
+    public string filename;
+    public string[] searchText;
+    public string[] replaceText;
+    public int index;
+
+    this() {
+        searchText = [];
+        replaceText = [];
+        index = 0;
     }
 }
 
@@ -58,72 +72,119 @@ class Program {
     }
 }
 
-Program parse(in string filename) {
-    auto file = File(filename);
+string readall(File file) {
+    string src = "";
+    while (!file.eof) {
+        src ~= file.readln();
+    }
+    file.close();
+    return src;
+}
 
-    auto source = "";
+Program parse(File file, string filename="") {
+    string src = readall(file);
+    return parse(src, filename);
+}
+
+Program parse(string src, string filename="") {
     Program p = new Program();
     Section curSection = new Section();
-    Content curContent = new Content();
+    Block curBlock = new Block();
+    bool inCodeblock = false;
+    bool inSearchBlock = false;
+    bool inReplaceBlock = false;
+    Change curChange;
+    string[] lines = src.split("\n");
 
     string[] commands = ["@code_type", "@comment_type", "@compiler", "@error_format", "@add_css", "@overwrite_css", "@colorscheme", "@include"];
 
     int lineNum = 0;
-    while (!file.eof()) {
+    foreach(line; lines) {
         lineNum++;
-        auto line = file.readln();
-        source ~= line;
-        line = chomp(line);
 
-        if (line.split().length > 1) {
-            if (commands.canFind(line.split()[0])) {
-                Command cmd = new Command();
-                cmd.name = line.split()[0];
-                auto index = line.indexOf(cmd.name) + cmd.name.length;
-                cmd.args = strip(line[index..$]);
-
-                if (cmd.name == "@include") {
-                    Program includedProgram = parse(cmd.args);
-                    p.sections ~= includedProgram.sections;
+        if (!inCodeblock) {
+            if (startsWith(line, "@change") && !startsWith(line, "@change_end")) {
+                curChange = new Change();
+                curChange.filename = strip(line[7..$]);
+                continue;
+            } else if (startsWith(line, "@replace")) {
+                curChange.searchText ~= "";
+                curChange.replaceText ~= "";
+                inReplaceBlock = false;
+                inSearchBlock = true;
+                continue;
+            } else if (startsWith(line, "@with")) {
+                inReplaceBlock = true;
+                inSearchBlock = false;
+                continue;
+            } else if (startsWith(line, "@end")) {
+                inReplaceBlock = false;
+                inSearchBlock = false;
+                curChange.index++;
+                continue;
+            } else if (startsWith(line, "@change_end")) {
+                string text = readall(File(curChange.filename));
+                for (int i = 0; i < curChange.index; i++) {
+                    text = text.replace(curChange.searchText[i], curChange.replaceText[i]);
                 }
-
-                p.commands ~= cmd;
+                Program includedProgram = parse(text);
+                p.sections ~= includedProgram.sections;
             }
-        }
 
-        if (startsWith(line, "@title")) {
-            auto index = line.indexOf("@title") + 6;
-            p.title = strip(line[index..$]);
-        }
-
-        else if (startsWith(line, "@s")) {
-            if (curSection.title !is null) {
-                p.sections ~= curSection;
+            else if (inSearchBlock) {
+                writeln("Search: " ~ line);
+                curChange.searchText[curChange.index] ~= line ~ "\n";
+                continue;
+            } else if (inReplaceBlock) {
+                writeln("Replace: " ~ line);
+                curChange.replaceText[curChange.index] ~= line ~ "\n";
+                continue;
             }
-            curSection = new Section();
-            auto index = line.indexOf("@s") + 2;
-            curSection.title = strip(line[index..$]);
-        }
 
-        else if (matchAll(line, regex("^--- .+"))) {
-            if (curContent.type !is null) {
-                curSection.content ~= curContent;
+            if (line.split().length > 1) {
+                if (commands.canFind(line.split()[0])) {
+                    Command cmd = new Command();
+                    cmd.name = line.split()[0];
+                    auto index = cmd.name.length;
+                    cmd.args = strip(line[index..$]);
+
+                    if (cmd.name == "@include") {
+                        Program includedProgram = parse(cmd.args);
+                        p.sections ~= includedProgram.sections;
+                    }
+
+                    p.commands ~= cmd;
+                }
             }
-            curContent = new Content();
-            curContent.type = "code";
-            curContent.name = strip(line[3..$]);
-        }
 
-        else if (startsWith(line, "---")) {
-            if (curContent.type !is null) {
-                curSection.content ~= curContent;
+            if (startsWith(line, "@title")) {
+                p.title = strip(line[6..$]);
+            } else if (startsWith(line, "@s")) {
+                if (curSection.title !is null) {
+                    p.sections ~= curSection;
+                }
+                curSection = new Section();
+                curSection.title = strip(line[2..$]);
+            } else if (matchAll(line, regex("^---.+"))) {
+                if (curBlock.type !is null) {
+                    curSection.blocks ~= curBlock;
+                }
+                curBlock = new Block();
+                curBlock.type = "code";
+                curBlock.name = strip(line[3..$]);
+                inCodeblock = true;
+            } else if (curBlock.type !is null) {
+                curBlock.lines ~= new Line(line, filename, lineNum);
             }
-            curContent = new Content();
-            curContent.type = "prose";
-        }
-
-        else if (curContent.type !is null) {
-            curContent.lines ~= new Line(line, filename, lineNum);
+        } else if (startsWith(line, "---")) {
+            if (curBlock.type !is null) {
+                curSection.blocks ~= curBlock;
+            }
+            curBlock = new Block();
+            curBlock.type = "prose";
+            inCodeblock = false;
+        } else if (curBlock.type !is null) {
+            curBlock.lines ~= new Line(line, filename, lineNum);
         }
     }
 
@@ -132,17 +193,16 @@ Program parse(in string filename) {
         writeln(cmd.name, " ", cmd.args);
     }
     foreach (s; p.sections) {
-        foreach(c; s.content) {
-            writeln(c.type);
-            write(c.text());
+        foreach(b; s.blocks) {
+            writeln(b.type);
+            write(b.text());
         }
     }
-
-    file.close();
 
     return p;
 }
 
 void main(in string[] args) {
-    parse(args[1]);
+    File f = File(args[1]);
+    parse(f);
 }
