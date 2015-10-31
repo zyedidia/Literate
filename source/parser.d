@@ -1,9 +1,7 @@
-import std.file;
 import std.stdio;
-import std.string;
-import std.algorithm;
-import std.regex;
-import std.array;
+import std.string: split, startsWith, chomp, replace, strip;
+import std.algorithm: canFind;
+import std.regex: matchAll, regex;
 
 class Line {
     public string file;
@@ -129,14 +127,14 @@ Program parse(string src, string filename="") {
                 }
                 Program includedProgram = parse(text);
                 p.sections ~= includedProgram.sections;
+                p.commands ~= includedProgram.commands;
+                p.title = includedProgram.title;
             }
 
             else if (inSearchBlock) {
-                writeln("Search: " ~ line);
                 curChange.searchText[curChange.index] ~= line ~ "\n";
                 continue;
             } else if (inReplaceBlock) {
-                writeln("Replace: " ~ line);
                 curChange.replaceText[curChange.index] ~= line ~ "\n";
                 continue;
             }
@@ -187,22 +185,10 @@ Program parse(string src, string filename="") {
             curBlock.lines ~= new Line(line, filename, lineNum);
         }
     }
-
-    writeln(p.title);
-    foreach (cmd; p.commands) {
-        writeln(cmd.name, " ", cmd.args);
+    if (curBlock.type == "prose") {
+        curSection.blocks ~= curBlock;
     }
-    foreach (s; p.sections) {
-        foreach(b; s.blocks) {
-            writeln(b.type);
-            write(b.text());
-        }
-    }
+    p.sections ~= curSection;
 
     return p;
-}
-
-void main(in string[] args) {
-    File f = File(args[1]);
-    parse(f);
 }

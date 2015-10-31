@@ -1,5 +1,5 @@
 @code_type c .c
-@comment_type // %s
+@comment_type /* %s */
 @compiler gcc wc.c && rm a.out
 
 @title WC
