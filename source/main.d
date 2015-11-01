@@ -4,10 +4,10 @@ import util;
 import std.stdio;
 import std.file;
 
-bool codeOnly;
-bool webOnly;
+bool tangleOnly;
+bool weaveOnly;
 bool noOutput;
-string outDir;
+string outDir = ".";
 
 void main(in string[] args) {
     string[] files = [];
@@ -21,17 +21,17 @@ void main(in string[] args) {
                     "Usage: lit [options] <inputs>\n"
                     "\n"
                     "Options:\n"
-                    "--help    -h          Show this help text"
-                    "--code    -c          Only compile code files\n"
-                    "--web     -w          Only compile HTML files\n"
+                    "--help    -h          Show this help text\n"
+                    "--tangle  -t          Only compile code files\n"
+                    "--weave   -w          Only compile HTML files\n"
                     "--no-output           Do not generate any output files\n"
                     "--out-dir -odir DIR   Put the generated files in DIR\n"
                    );
             return;
-        } else if (arg == "--code" || arg == "-c") {
-            codeOnly = true;
-        } else if (arg == "--web" || arg == "-w") {
-            webOnly = true;
+        } else if (arg == "--tangle" || arg == "-t") {
+            tangleOnly = true;
+        } else if (arg == "--weave" || arg == "-w") {
+            weaveOnly = true;
         } else if (arg == "--no-output") {
             noOutput = true;
         } else if (arg == "--out-dir" || arg == "-odir") {
