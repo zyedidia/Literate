@@ -81,8 +81,8 @@ Program parse(File file, string filename) {
 Program parse(string src, string filename) {
     Program p = new Program();
     p.file = filename;
-    Section curSection = new Section();
-    Block curBlock = new Block();
+    Section curSection;
+    Block curBlock;
     bool inCodeblock = false;
     bool inSearchBlock = false;
     bool inReplaceBlock = false;
@@ -154,13 +154,13 @@ Program parse(string src, string filename) {
             if (startsWith(line, "@title")) {
                 p.title = strip(line[6..$]);
             } else if (startsWith(line, "@s")) {
-                if (curSection.title !is null) {
+                if (curSection !is null) {
                     p.sections ~= curSection;
                 }
                 curSection = new Section();
                 curSection.title = strip(line[2..$]);
             } else if (matchAll(line, regex("^---.+"))) {
-                if (curBlock.type !is null) {
+                if (curBlock !is null) {
                     curSection.blocks ~= curBlock;
                 }
                 curBlock = new Block();
@@ -168,18 +168,18 @@ Program parse(string src, string filename) {
                 curBlock.type = "code";
                 curBlock.name = strip(line[3..$]);
                 inCodeblock = true;
-            } else if (curBlock.type !is null) {
+            } else if (curBlock !is null) {
                 curBlock.lines ~= new Line(line, filename, lineNum);
             }
         } else if (startsWith(line, "---")) {
-            if (curBlock.type !is null) {
+            if (curBlock !is null) {
                 curSection.blocks ~= curBlock;
             }
             curBlock = new Block();
             curBlock.startLine = lineNum;
             curBlock.type = "prose";
             inCodeblock = false;
-        } else if (curBlock.type !is null) {
+        } else if (curBlock !is null) {
             curBlock.lines ~= new Line(line, filename, lineNum);
         }
     }

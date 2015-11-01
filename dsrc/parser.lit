@@ -270,7 +270,7 @@ function will take three inputs: a partially constructed chapter object, the sou
 The chapter object will already have a title, a source file, and a majorNum and minorNum. The
 function will return the complete chapter object. Here is an overview of the `parseChapter` function.
 
---- Parse Function
+--- Parse function
 Chapter parseChapter(Chapter chapter, string src) {
     @{Initialize some variables}
 
@@ -302,11 +302,11 @@ string[] commands = ["@code_type", "@comment_type", "@compiler", "@error_format"
 
 I also need to keep track of the current section that is being parsed, and the current block that
 is being parsed, because the parser is going through the file one line at a time. I'll also define
-the current change being parsed, but not initialize it.
+the current change being parsed.
 
 --- Initialize some variables +=
-Section curSection = new Section();
-Block curBlock = new Block();
+Section curSection;
+Block curBlock;
 Change curChange;
 ---
 
@@ -332,10 +332,12 @@ if (!inCodeblock) {
     @{Parse a title command}
     @{Parse a section definition}
     @{Parse the beginning of a code block}
-    @{Add the line to the list of lines}
+    else if (curBlock !is null) {
+        @{Add the line to the list of lines}
+    }
 } else if (startsWith(line, "---")) {
     @{Begin a new prose block}
-} else {
+} else if (curBlock !is null) {
     @{Add the line to the list of lines}
 }
 ---
@@ -391,10 +393,154 @@ current section.
 
 --- Parse a section definition
 else if (startsWith(line, "@s")) {
-    if (curSection.title !is null) {
+    // Make sure the section exists
+    if (curSection !is null) {
         chapter.sections ~= curSection;
     }
     curSection = new Section();
     curSection.title = strip(line[2..$]);
+}
+---
+
+@s Parse the Start of a Codeblock
+
+Codeblocks always begin with `--- title`, so we can use the regex `^---.+` to represent this.
+Once a new codeblock starts, the old one must be appended to the current section's list of
+blocks, and the current codeblock must be reset.
+
+--- Parse the beginning of a code block
+else if (matchAll(line, regex("^---.+"))) {
+    if (curBlock !is null) {
+        curSection.blocks ~= curBlock;
+    }
+    curBlock = new Block();
+    curBlock.startLine = lineNum;
+    curBlock.isCodeblock = true;
+    curBlock.name = strip(line[3..$]);
+    inCodeblock = true;
+}
+---
+
+@s Parse the End of a Codeblock
+
+Codeblocks end with just a `---`. When a codeblock ends, we do the same as when it begins,
+except the new block we create is a block of prose as opposed to code.
+
+--- Begin a new prose block
+if (curBlock !is null) {
+    curSection.blocks ~= curBlock;
+}
+curBlock = new Block();
+curBlock.startLine = lineNum;
+curBlock.isCodeblock = false;
+inCodeblock = false;
+---
+
+@s Add the current line
+
+Finally, if the current line is nothing interesting, we just add it to the current block's
+list of lines.
+
+--- Add the line to the list of lines
+curBlock.lines ~= new Line(line, filename, lineNum);
+---
+
+Now we're done parsing the line.
+
+@s Closing the last section
+
+When the end of the file is reached, the last section has not been closed and added to the
+chapter yet, so we should do that. Additionally, if the last block is a prose block, it should
+be closed and added to the section first. If the last block is a code block, it should have been
+closed with `---`. If it wasn't we'll throw an error.
+
+--- Close the last section
+if (curBlock !is null) {
+    if (!curBlock.isCodeblock) {
+        curSection.blocks ~= curBlock;
+    } else {
+        writeln(filename, ":", lineNum - 1, ":error: {", curBlock.name, "} is never closed");
+    }
+}
+if (curSection !is null) {
+    p.sections ~= curSection;
+}
+---
+
+@s Parsing the change block
+
+Parsing a change block is somewhat complex. Change blocks look like this:
+
+    @change file.lit
+
+    Some comments here...
+
+    @replace
+    replace this text
+    @with
+    with this text
+    @end
+
+    More comments ...
+
+    @replace
+    ...
+    @with
+    ...
+    @end
+
+    ...
+
+    @change_end
+
+You can make multiple changes on one file. We've got two nice flags for keeping track of
+which kind of block we are in: replaceText or searchText.
+
+--- Parse change block
+// Start a change block
+if (startsWith(line, "@change") && !startsWith(line, "@change_end")) {
+    curChange = new Change();
+    curChange.filename = strip(line[7..$]);
+    continue;
+} else if (startsWith(line, "@replace")) {
+    // Begin the search block
+    curChange.searchText ~= "";
+    curChange.replaceText ~= "";
+    inReplaceBlock = false;
+    inSearchBlock = true;
+    continue;
+} else if (startsWith(line, "@with")) {
+    // Begin the replace block and end the search block
+    inReplaceBlock = true;
+    inSearchBlock = false;
+    continue;
+} else if (startsWith(line, "@end")) {
+    // End the replace block
+    inReplaceBlock = false;
+    inSearchBlock = false;
+    // Increment the number of changes
+    curChange.index++;
+    continue;
+} else if (startsWith(line, "@change_end")) {
+    // Apply all the changes
+    string text = readall(File(curChange.filename));
+    for (int i = 0; i < curChange.index; i++) {
+        text = text.replace(curChange.searchText[i], curChange.replaceText[i]);
+    }
+    Program includedProgram = parse(text, curChange.filename);
+    // Overwrite the current file's title and add to the commands and sections
+    p.sections ~= includedProgram.sections;
+    p.commands ~= includedProgram.commands;
+    p.title = includedProgram.title;
+    continue;
+}
+
+// Just add the line to the search or replace text depending
+else if (inSearchBlock) {
+    curChange.searchText[curChange.index] ~= line ~ "\n";
+    continue;
+} else if (inReplaceBlock) {
+    curChange.replaceText[curChange.index] ~= line ~ "\n";
+    continue;
 }
 ---
