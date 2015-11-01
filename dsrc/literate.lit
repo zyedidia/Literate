@@ -265,4 +265,136 @@ Now let's get to the actual parse function to turn a text file into a program.
 
 @s The Parse Function
 
-The parse function will take a string and a filename, and it will turn the 
+For now, since we are focusing on single chapters, we'll make the `parseChapter` function. This
+function will take three inputs: a partially constructed chapter object, the source of the chapter.
+The chapter object will already have a title, a source file, and a majorNum and minorNum. The
+function will return the complete chapter object. Here is an overview of the `parseChapter` function.
+
+--- Parse Function
+Chapter parseChapter(Chapter chapter, string src) {
+    @{Initialize some variables}
+
+    string[] lines = src.split("\n");
+
+    int lineNum = 0;
+    foreach (line; lines) {
+        lineNum++;
+
+        @{Parse the line}
+    }
+    @{Close the last section}
+
+    return chapter;
+}
+---
+
+@s The Parse Function Setup
+
+For the initial variables, it would be nice to move the value for `chapter.file` into a variable
+called `filename`. Additionally, I'm going to need an array of all the possible commands that
+are recognized.
+
+--- Initialize some variables
+string filename = chapter.file;
+string[] commands = ["@code_type", "@comment_type", "@compiler", "@error_format", 
+                     "@add_css", "@overwrite_css", "@colorscheme", "@include"];
+---
+
+I also need to keep track of the current section that is being parsed, and the current block that
+is being parsed, because the parser is going through the file one line at a time. I'll also define
+the current change being parsed, but not initialize it.
+
+--- Initialize some variables +=
+Section curSection = new Section();
+Block curBlock = new Block();
+Change curChange;
+---
+
+Finally, I need 3 flags to keep track of if it is currently parsing a codeblock, a search block,
+or a replace block.
+
+--- Initialize some variables +=
+bool inCodeblock = false;
+bool inSearchBlock = false;
+bool inReplaceBlock = false;
+---
+
+@s Parsing the Line
+
+When parsing a line, we are either inside a code block, or inside a prose block, or we are transitioning
+from one to the other. So we'll have an if statement to separate the two.
+
+--- Parse the line
+if (!inCodeblock) {
+    // This might be a change block
+    @{Parse change block}
+    @{Parse a command}
+    @{Parse a title command}
+    @{Parse a section definition}
+    @{Parse the beginning of a code block}
+    @{Add the line to the list of lines}
+} else if (startsWith(line, "---")) {
+    @{Begin a new prose block}
+} else {
+    @{Add the line to the list of lines}
+}
+---
+
+Parsing a command and the title command are both fairly simple, so let's look at them first.
+
+To parse a command we first make sure that there is the command name, and any arguments.
+Then we check if the command is part of the list of commands we have. If it is, we
+create a new command object, fill in the name and arguments, and add it to the chapter object.
+
+We also do something special if it is a `@include` command. For these ones, we take the file
+read it, and parse it as a chapter (using the `parseChapter` function). Then we add the
+included chapter's sections to the current chapter's sections. In this case, we don't add
+the `@include` command to the list of chapter commands.
+
+--- Parse a command
+if (line.split().length > 1) {
+    if (commands.canFind(line.split()[0])) {
+        Command cmd = new Command();
+        cmd.name = line.split()[0];
+        auto index = cmd.name.length;
+        cmd.args = strip(line[index..$]);
+
+        if (cmd.name == "@include") {
+            Chapter c = new Chapter();
+            c.file = cmd.args;
+            // We can ignore these, but they need to be initialized
+            c.title = "";
+            c.majorNum = -1;
+            c.minorNum = -1;
+            Program includedProgram = parseChapter(c, readall(File(cmd.args)));
+            chapter.sections ~= includedProgram.sections;
+        } else {
+            chapter.commands ~= cmd;
+        }
+    }
+}
+---
+
+Parsing an `@title` command is even simpler.
+
+--- Parse a title command
+if (startsWith(line, "@title")) {
+    chapter.title = strip(line[6..$]);
+}
+---
+
+@s Parsing a Section Definition
+
+When a new section is created (using `@s`), we should add the current section to the list
+of sections for the chapter, and then we should create a new section, which becomes the
+current section.
+
+--- Parse a section definition
+else if (startsWith(line, "@s")) {
+    if (curSection.title !is null) {
+        chapter.sections ~= curSection;
+    }
+    curSection = new Section();
+    curSection.title = strip(line[2..$]);
+}
+---

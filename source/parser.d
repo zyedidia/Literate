@@ -124,6 +124,7 @@ Program parse(string src, string filename) {
                 p.sections ~= includedProgram.sections;
                 p.commands ~= includedProgram.commands;
                 p.title = includedProgram.title;
+                continue;
             }
 
             else if (inSearchBlock) {
