@@ -46,4 +46,223 @@ like this:
 Sub chapters are denoted by tabs, and each chapter is linked to the correct
 `.lit` file using Markdown link syntax.
 
+@s The Parser
 
+As a first step, I'll make a parser for single chapters only, and leave having
+multiple chapters and books for later.
+
+The parser will have 2 main parts to it: the which represent the various structures
+in a literate program, and the parse function.
+
+--- parser.d
+@{Imports}
+@{Classes}
+@{Parse function}
+---
+
+I'll quickly list the imports here.
+
+--- Imports
+import std.stdio;
+import util;
+import std.string: split, startsWith, chomp, replace, strip;
+import std.algorithm: canFind;
+import std.regex: matchAll, regex;
+---
+
+@s Util
+
+You may have noticed the `util` import which is not from the standard library. It's
+a small file which contains the `readall` function to read an entire text file, or
+read from stdin until `control-d` is pressed.
+
+--- util.d
+import std.stdio;
+
+// Read from a file
+string readall(File file) {
+    string src = "";
+    while (!file.eof) {
+        src ~= file.readln();
+    }
+    file.close();
+    return src;
+}
+
+// Read from stdin
+string readall() {
+    string src = "";
+    string line;
+    while ((line = readln()) !is null) {
+        src ~= line;
+    }
+    return src;
+}
+---
+
+@s
+
+Now we have to define the classes used to represent a literate program. There
+are 7 such classes:
+
+--- Classes
+@{Line class}
+@{Command class}
+@{Block class}
+@{Section class}
+@{Chapter class}
+@{Program class}
+@{Change class}
+---
+
+@s The Program Class
+
+What is a literate program at the highest level? A program has multiple chapters,
+it has a title, and it has various commands associated with it (although some of these
+commands may be overwritten by chapters or even sections). It also has the file it
+originally came from.
+
+--- Program class
+class Program {
+    public string title;
+    public Command[] commands;
+    public Chapter[] chapters;
+    public string file;
+
+    this() {
+        commands = [];
+        chapters = [];
+    }
+}
+---
+
+@s The Chapter class
+
+A chapter is very similar to a program. It has a title, commands, sections, and also
+an original file. In the case of a single file program (which is what we are focusing
+on for the moment) the Program's file and the Chapter's file will be the same. A chapter
+also has a minor number and a major number;
+
+--- Chapter class
+class Chapter {
+    public string title;
+    public Command[] commands;
+    public Section[] sections;
+    public string file;
+
+    public int majorNum;
+    public int minorNum;
+
+    this() {
+        commands = [];
+        sections = [];
+    }
+}
+---
+
+@s The Sections class
+
+A section has a title, commands, a number, and a series of blocks, which can either be
+blocks of code, or blocks of prose.
+
+--- Section class
+class Section {
+    public string title;
+    public Command[] commands;
+    public Block[] blocks;
+    public int num;
+
+    this() {
+        commands = []
+        blocks = []
+    }
+}
+---
+
+@s The Block Class
+
+A block is more interesting. It can either be a block of code, or a block of prose, so
+it has a boolean which represents what type it is. It also stores a start line. If it
+is a code block, it also has a name. Finally, it stores an array of lines, and has a function
+called `text()` which just returns the string of the text it contains.
+
+--- Block class
+class Block {
+    public int startLine;
+    public string name;
+    public bool isCodeblock;
+    public Line[] lines;
+
+    this() {
+        lines = [];
+    }
+
+    string text() {
+        string text = "";
+        foreach (line; lines) {
+            text ~= line.text ~ "\n";
+        }
+        return text;
+    }
+}
+---
+
+@s The Command Class
+
+A command is quite simple. It has a name, and any arguments that are passed.
+
+--- Command class
+class Command {
+    public string name;
+    public string args;
+    this() {}
+}
+---
+
+@s The Line Class
+
+A line is the lowest level. It stores the line number, the file the line is from, and the
+text for the line itself.
+
+--- Line class
+class Line {
+    public string file;
+    public int lineNum;
+    public string text;
+
+    this(string text, string file, int lineNum) {
+        this.text = text;
+        this.file = file;
+        this.lineNum = lineNum;
+    }
+}
+---
+
+@s The Change Class
+
+The change class helps when parsing a change statement. It stores the file that is being changed,
+what the text to search for is and what the text to replace it with is. These two things are arrays
+because you can make multiple changes (search and replaces) to one file. In order to
+keep track of the current change, an index is also stored.
+
+--- Change class
+class Change {
+    public string filename;
+    public string[] searchText;
+    public string[] replaceText;
+    public int index;
+
+    this() {
+        searchText = [];
+        replaceText = [];
+        index = 0;
+    }
+}
+---
+
+That's it for the classes. These 7 classes can be used to represent an entire literate program.
+Now let's get to the actual parse function to turn a text file into a program.
+
+@s The Parse Function
+
+The parse function will take a string and a filename, and it will turn the 

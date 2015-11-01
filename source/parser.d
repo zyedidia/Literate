@@ -73,12 +73,12 @@ class Program {
     }
 }
 
-Program parse(File file, string filename="") {
+Program parse(File file, string filename) {
     string src = readall(file);
     return parse(src, filename);
 }
 
-Program parse(string src, string filename="") {
+Program parse(string src, string filename) {
     Program p = new Program();
     p.file = filename;
     Section curSection = new Section();
@@ -120,7 +120,7 @@ Program parse(string src, string filename="") {
                 for (int i = 0; i < curChange.index; i++) {
                     text = text.replace(curChange.searchText[i], curChange.replaceText[i]);
                 }
-                Program includedProgram = parse(text);
+                Program includedProgram = parse(text, curChange.filename);
                 p.sections ~= includedProgram.sections;
                 p.commands ~= includedProgram.commands;
                 p.title = includedProgram.title;
@@ -142,7 +142,7 @@ Program parse(string src, string filename="") {
                     cmd.args = strip(line[index..$]);
 
                     if (cmd.name == "@include") {
-                        Program includedProgram = parse(cmd.args);
+                        Program includedProgram = parse(File(cmd.args), cmd.args);
                         p.sections ~= includedProgram.sections;
                     }
 
