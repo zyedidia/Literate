@@ -56,7 +56,7 @@ void error(string file, int line, string message) {
 ---
 
 --- warning function
-void error(string file, int line, string message) {
+void warn(string file, int line, string message) {
     writeln(file, ":", line, ":warning:", message);
 }
 ---

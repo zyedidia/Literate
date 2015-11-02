@@ -143,8 +143,8 @@ class Section {
     public int num;
 
     this() {
-        commands = []
-        blocks = []
+        commands = [];
+        blocks = [];
     }
 }
 ---
@@ -154,7 +154,8 @@ class Section {
 A block is more interesting. It can either be a block of code, or a block of prose, so
 it has a boolean which represents what type it is. It also stores a start line. If it
 is a code block, it also has a name. Finally, it stores an array of lines, and has a function
-called `text()` which just returns the string of the text it contains.
+called `text()` which just returns the string of the text it contains. A block also contains
+a `codeType` and a `commentString`.
 
 --- Block class
 class Block {
@@ -162,6 +163,9 @@ class Block {
     public string name;
     public bool isCodeblock;
     public Line[] lines;
+
+    public string codeType;
+    public string commentString;
 
     this() {
         lines = [];
@@ -338,10 +342,14 @@ if (line.split().length > 1) {
             c.title = "";
             c.majorNum = -1;
             c.minorNum = -1;
-            Program includedProgram = parseChapter(c, readall(File(cmd.args)));
-            chapter.sections ~= includedProgram.sections;
+            Chapter includedChapter = parseChapter(c, readall(File(cmd.args)));
+            chapter.sections ~= includedChapter.sections;
         } else {
-            chapter.commands ~= cmd;
+            if (curSection is null) {
+                chapter.commands ~= cmd;
+            } else {
+                curSection.commands ~= cmd;
+            }
         }
     }
 }
@@ -369,6 +377,7 @@ else if (startsWith(line, "@s")) {
     }
     curSection = new Section();
     curSection.title = strip(line[2..$]);
+    curSection.commands = chapter.commands ~ curSection.commands;
 }
 ---
 
@@ -387,6 +396,15 @@ else if (matchAll(line, regex("^---.+"))) {
     curBlock.startLine = lineNum;
     curBlock.isCodeblock = true;
     curBlock.name = strip(line[3..$]);
+
+    foreach (cmd; curSection.commands) {
+        if (cmd.name == "@code_type") {
+            curBlock.codeType = cmd.args;
+        } else if (cmd.name == "@comment_type") {
+            curBlock.commentString = cmd.args;
+        }
+    }
+
     inCodeblock = true;
 }
 ---
@@ -433,7 +451,7 @@ if (curBlock !is null) {
     }
 }
 if (curSection !is null) {
-    p.sections ~= curSection;
+    chapter.sections ~= curSection;
 }
 ---
 
@@ -497,11 +515,17 @@ if (startsWith(line, "@change") && !startsWith(line, "@change_end")) {
     for (int i = 0; i < curChange.index; i++) {
         text = text.replace(curChange.searchText[i], curChange.replaceText[i]);
     }
-    Program includedProgram = parse(text, curChange.filename);
+    Chapter c = new Chapter();
+    c.file = curChange.filename;
+    // We can ignore these, but they need to be initialized
+    c.title = "";
+    c.majorNum = -1;
+    c.minorNum = -1;
+    Chapter includedChapter = parseChapter(c, text);
     // Overwrite the current file's title and add to the commands and sections
-    p.sections ~= includedProgram.sections;
-    p.commands ~= includedProgram.commands;
-    p.title = includedProgram.title;
+    chapter.sections ~= includedChapter.sections;
+    chapter.commands ~= includedChapter.commands;
+    chapter.title = includedChapter.title;
     continue;
 }
 

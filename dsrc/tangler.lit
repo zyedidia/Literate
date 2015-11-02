@@ -14,12 +14,149 @@ import std.string;
 import std.stdio;
 import parser;
 import main;
+import util;
 
-@{tangle function}
+void tangle(Program p) {
+    @{tangle function}
+}
 
 @{writeCode function}
 ---
 
+@s Overview
+
+The `tangle` function will take a program in, go through all the chapters, sections
+and find all the codeblocks. It will then apply the codeblock with `+=` and `:=`.
+Another thing it must do is find the root blocks, that is, the files that need
+to be generated. Starting with those, it will recursively write code to a file using
+the `writeCode` function.
+
 @s The Tangle Function
 
+The tangle function should find the codeblocks, apply the `+=` and `:=`, find the
+root codeblocks, and call `writeCode` from those.
 
+We'll start with these three variables.
+
+--- tangle function
+Block[] tempCodeblocks = [];
+Block[string] rootCodeblocks;
+Block[string] codeblocks;
+---
+
+`tempCodeblocks` is an array that contains only codeblocks that
+have `+=` or `:=`. `rootCodeblocks` and `codeblocks` are both associative arrays
+which will hold more important information. `codeblocks` will contain every
+codeblock after the `+=` and `:=` transformations have been applied.
+
+Here we go through every single block in the program, and add it to the
+`tempCodeblocks` array if it has a `+=` or `:=`. Otherwise, we add it to
+the `codeblocks` array, and if it matches the filename regex `.*\.\w+`, we add
+it to the `rootCodeblocks` array.
+
+--- tangle function +=
+foreach (c; p.chapters) {
+    foreach (s; c.sections) {
+        foreach (b; s.blocks) {
+            if (b.isCodeblock) {
+                if ((!b.name.endsWith("+=")) && (!b.name.endsWith(":="))) {
+                    codeblocks[b.name] = b;
+                    if (matchAll(b.name, regex(".*\\.\\w+"))) {
+                        rootCodeblocks[b.name] = b;
+                    }
+                } else {
+                    tempCodeblocks ~= b;
+                }
+            }
+        }
+    }
+}
+---
+
+Now we go through every codeblock in `tempCodeblocks` and apply the `+=` and `:=`
+
+--- tangle function +=
+foreach (b; tempCodeblocks) {
+    if (b.name.endsWith("+=")) {
+        auto index = b.name.length - 2;
+        string name = strip(b.name[0..index]);
+        if ((name in codeblocks) is null) {
+            error(p.file, b.startLine, "Trying to add to {" ~ name ~ "} which does not exist");
+        } else {
+            codeblocks[name].lines ~= b.lines;
+        }
+    } else if (b.name.endsWith(":=")) {
+        auto index = b.name.length - 2;
+        string name = strip(b.name[0..index]);
+        if ((name in codeblocks) is null) {
+            error(p.file, b.startLine, "Trying to redefine {" ~ name ~ "} which does not exist");
+        } else {
+            codeblocks[name].lines = b.lines;
+        }
+    }
+}
+---
+
+Now we check if there are any root codeblocks.
+
+--- tangle function +=
+if (rootCodeblocks.length == 0) {
+    warn(p.file, 0, "No file codeblocks, not writing any code");
+}
+---
+
+Finally we go through every root codeblock, and run writeCode on it. We open a file
+(making sure it is in `outDir`). We get the `commentString` from the list of commands.
+Then we call `writeCode`, which will recursively follow the links and generate all
+the code.
+
+--- tangle function +=
+foreach (b; rootCodeblocks) {
+    string filename = b.name;
+    File f;
+    if (!noOutput)
+        f = File(outDir ~ "/" ~ filename, "w");
+
+    writeCode(codeblocks, filename, f, filename, "");
+    if (!noOutput)
+        f.close();
+}
+---
+
+@s The writeCode Function
+
+The writeCode function recursively follows the links inside a codeblock and writes
+all the code for a codeblock. It also keeps the leading whitespace to make sure
+indentation in the target file is correct.
+
+--- writeCode function
+void writeCode(Block[string] codeblocks, string blockName, File file, string filename, string whitespace) {
+    Block block = codeblocks[blockName];
+
+    if (block.commentString != "") {
+        if (!noOutput)
+            file.writeln(whitespace ~ block.commentString.replace("%s", blockName));
+    }
+
+    foreach (lineObj; block.lines) {
+        string line = lineObj.text;
+        string stripLine = strip(line);
+        if (stripLine.startsWith("@{") && stripLine.endsWith("}")) {
+            auto firstChar = line.indexOf(stripLine[0]);
+            string newWS = line[0..firstChar];
+            auto index = stripLine.length - 1;
+            auto newBlockName = stripLine[2..index];
+            if ((newBlockName in codeblocks) !is null) {
+                writeCode(codeblocks, newBlockName, file, filename, whitespace ~ newWS);
+            } else {
+                writeln(lineObj.file, ":", lineObj.lineNum, ":error: {", newBlockName, "} does not exist");
+            }
+        } else {
+            if (!noOutput)
+                file.writeln(whitespace ~ line);
+        }
+    }
+    if (!noOutput)
+        file.writeln();
+}
+---
