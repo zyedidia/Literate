@@ -1,0 +1,155 @@
+@code_type d .d
+@comment_type // %s
+
+@title Main.d
+
+@s Introduction
+
+This file contains the source code for `main.d` the file which contains the
+main function for Literate. This will parse any arguments, show help text
+and finally run tangle or weave (or both) on any input files.
+
+Here is an overview:
+
+--- main.d
+@{Imports}
+@{Globals}
+
+void main(in string[] args) {
+    string[] files = [];
+
+    @{Parse the arguments}
+
+    @{Run Literate}
+}
+---
+
+@s Parsing the Arguments
+
+The arguments will consist of either flags or input files. The flags Literate
+accepts are:
+
+* --help       -h          Show the help text
+* --tangle     -t          Only run tangle
+* --weave      -w          Only run weave
+* --no-output              Do not generate any output
+* --out-dir    -odir DIR   Put the generated files in DIR
+
+All other inputs are input files.
+
+We also need some variables to store these flags in, and they should be global
+so that the rest of the program can access them.
+
+--- Globals
+bool tangleOnly;
+bool weaveOnly;
+bool noOutput;
+string outDir = "."; // Default is current directory
+---
+
+Now, to actually parse the arguments:
+
+--- Parse the arguments
+for (int i = 1; i < args.length; i++) {
+    string arg = args[i];
+
+    if (arg == "--help" || arg == "-h") {
+        writeln("Lit: Literate Programming System\n"
+                "\n"
+                "Usage: lit [options] <inputs>\n"
+                "\n"
+                "Options:\n"
+                "--help    -h          Show this help text\n"
+                "--tangle  -t          Only compile code files\n"
+                "--weave   -w          Only compile HTML files\n"
+                "--no-output           Do not generate any output files\n"
+                "--out-dir -odir DIR   Put the generated files in DIR\n"
+               );
+        return;
+    } else if (arg == "--tangle" || arg == "-t") {
+        tangleOnly = true;
+    } else if (arg == "--weave" || arg == "-w") {
+        weaveOnly = true;
+    } else if (arg == "--no-output") {
+        noOutput = true;
+    } else if (arg == "--out-dir" || arg == "-odir") {
+        if (i == args.length - 1) {
+            writeln("No output directory provided.");
+            return;
+        }
+        outDir = args[++i];
+    } else {
+        files ~= arg;
+    }
+}
+---
+
+@s Run Literate
+
+To run literate we go through every file that was passed in, check if it exists,
+and run tangle and weave on it (unless `tangleOnly` or `weaveOnly` was specified).
+
+--- Run Literate
+if (files.length > 0) {
+    foreach (filename; files) {
+        if (!filename.exists()) {
+            writeln("File ", filename, " does not exist!");
+            continue;
+        }
+        File f = File(filename);
+
+        Program p = new Program();
+        p.file = filename;
+        Chapter c = new Chapter();
+        c.file = filename;
+        c.majorNum = 1; c.minorNum = 0;
+
+        c = parseChapter(c, readall(f));
+        p.chapters ~= c;
+
+        if (!weaveOnly) {
+            tangle(p);
+        }
+        if (!tangleOnly) {
+            // TODO: Implement weave
+            // weave(p);
+        }
+    }
+}
+---
+
+In addition, we also accept input from stdin if no files were specified.
+
+--- Run Literate +=
+else {
+
+    Program p = new Program();
+    p.file = "stdin";
+    Chapter c = new Chapter();
+    c.file = "stdin";
+    c.majorNum = 1; c.minorNum = 0;
+
+    c = parse(c, readall());
+    p.chapters ~= c;
+
+    if (!weaveOnly) {
+        tangle(p);
+    }
+    if (!tangleOnly) {
+        // TODO: Implement weave
+        // weave(p);
+    }
+}
+---
+
+Finally, we also have to add the imports.
+
+--- Imports
+import parser;
+import tangler;
+// TODO: Implement weave
+// import weaver;
+import util;
+import std.stdio;
+import std.file;
+---
