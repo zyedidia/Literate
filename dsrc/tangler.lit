@@ -1,0 +1,25 @@
+@code_type d .d
+@comment_type // %s
+
+@title tangler.d
+
+@s Introduction
+
+This is the source for tangle. This compiles code from a `.lit` file into runnable code.
+
+Here is an overview of the file:
+
+--- tangler.d
+import std.string;
+import std.stdio;
+import parser;
+import main;
+
+@{tangle function}
+
+@{writeCode function}
+---
+
+@s The Tangle Function
+
+

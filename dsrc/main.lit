@@ -129,7 +129,7 @@ else {
     c.file = "stdin";
     c.majorNum = 1; c.minorNum = 0;
 
-    c = parse(c, readall());
+    c = parseChapter(c, readall());
     p.chapters ~= c;
 
     if (!weaveOnly) {

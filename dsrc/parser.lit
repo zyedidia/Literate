@@ -70,36 +70,6 @@ import std.algorithm: canFind;
 import std.regex: matchAll, regex;
 ---
 
-@s Util
-
-You may have noticed the `util` import which is not from the standard library. It's
-a small file which contains the `readall` function to read an entire text file, or
-read from stdin until `control-d` is pressed.
-
---- util.d
-import std.stdio;
-
-// Read from a file
-string readall(File file) {
-    string src = "";
-    while (!file.eof) {
-        src ~= file.readln();
-    }
-    file.close();
-    return src;
-}
-
-// Read from stdin
-string readall() {
-    string src = "";
-    string line;
-    while ((line = readln()) !is null) {
-        src ~= line;
-    }
-    return src;
-}
----
-
 @s
 
 Now we have to define the classes used to represent a literate program. There

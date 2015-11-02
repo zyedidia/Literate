@@ -1,0 +1,62 @@
+@code_type d .d
+@comment_type // %s
+
+@title util.d
+
+@s Introduction
+
+This file contains some utilities for the rest of the literate program.
+
+It has functions for reading the entire source of a file, and functions
+for reporting errors and warnings.
+
+--- util.d
+import std.stdio;
+
+@{readall function}
+@{error function}
+@{warning function}
+---
+
+@s Readall
+
+The `readall` function reads an entire text file, or
+reads from stdin until `control-d` is pressed, and returns the string.
+
+--- readall function
+// Read from a file
+string readall(File file) {
+    string src = "";
+    while (!file.eof) {
+        src ~= file.readln();
+    }
+    file.close();
+    return src;
+}
+
+// Read from stdin
+string readall() {
+    string src = "";
+    string line;
+    while ((line = readln()) !is null) {
+        src ~= line;
+    }
+    return src;
+}
+---
+
+@s Error and Warning
+
+These functions simply write errors or warnings to stdout.
+
+--- error function
+void error(string file, int line, string message) {
+    writeln(file, ":", line, ":error:", message);
+}
+---
+
+--- warning function
+void error(string file, int line, string message) {
+    writeln(file, ":", line, ":warning:", message);
+}
+---
