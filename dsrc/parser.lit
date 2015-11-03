@@ -1,7 +1,7 @@
 @code_type d .d
 @comment_type // %s
 
-@title Literate
+@title Parser
 <center><em>A Modern Literate Programming System</em></center>
 
 @s Introduction
@@ -280,6 +280,7 @@ the current change being parsed.
 
 --- Initialize some variables +=
 Section curSection;
+int sectionNum = 0;
 Block curBlock;
 Change curChange;
 ---
@@ -371,6 +372,13 @@ current section.
 
 --- Parse a section definition
 else if (startsWith(line, "@s")) {
+    if (curBlock !is null && !curBlock.isCodeblock) {
+        if (strip(curBlock.text()) != "") {
+            curSection.blocks ~= curBlock;
+        }
+    } else if (curBlock !is null && curBlock.isCodeblock) {
+        error(chapter.file, curBlock.startLine, "Unclosed block {" ~ curBlock.name ~ "}");
+    }
     // Make sure the section exists
     if (curSection !is null) {
         chapter.sections ~= curSection;
@@ -378,6 +386,10 @@ else if (startsWith(line, "@s")) {
     curSection = new Section();
     curSection.title = strip(line[2..$]);
     curSection.commands = chapter.commands ~ curSection.commands;
+    curSection.num = ++sectionNum;
+
+    curBlock = new Block();
+    curBlock.isCodeblock = false;
 }
 ---
 

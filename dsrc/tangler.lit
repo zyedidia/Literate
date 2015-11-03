@@ -1,7 +1,7 @@
 @code_type d .d
 @comment_type // %s
 
-@title tangler.d
+@title Tangler
 
 @s Introduction
 

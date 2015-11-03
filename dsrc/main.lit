@@ -1,7 +1,7 @@
 @code_type d .d
 @comment_type // %s
 
-@title Main.d
+@title Main
 
 @s Introduction
 
@@ -29,11 +29,11 @@ void main(in string[] args) {
 The arguments will consist of either flags or input files. The flags Literate
 accepts are:
 
-* --help       -h          Show the help text
-* --tangle     -t          Only run tangle
-* --weave      -w          Only run weave
-* --no-output              Do not generate any output
-* --out-dir    -odir DIR   Put the generated files in DIR
+* `--help       -h`          Show the help text
+* `--tangle     -t`          Only run tangle
+* `--weave      -w`          Only run weave
+* `--no-output`              Do not generate any output
+* `--out-dir    -odir DIR`   Put the generated files in DIR
 
 All other inputs are input files.
 
@@ -111,8 +111,7 @@ if (files.length > 0) {
             tangle(p);
         }
         if (!tangleOnly) {
-            // TODO: Implement weave
-            // weave(p);
+            weave(p);
         }
     }
 }
@@ -122,7 +121,6 @@ In addition, we also accept input from stdin if no files were specified.
 
 --- Run Literate +=
 else {
-
     Program p = new Program();
     p.file = "stdin";
     Chapter c = new Chapter();
@@ -136,8 +134,7 @@ else {
         tangle(p);
     }
     if (!tangleOnly) {
-        // TODO: Implement weave
-        // weave(p);
+        weave(p);
     }
 }
 ---
@@ -147,8 +144,7 @@ Finally, we also have to add the imports.
 --- Imports
 import parser;
 import tangler;
-// TODO: Implement weave
-// import weaver;
+import weaver;
 import util;
 import std.stdio;
 import std.file;
