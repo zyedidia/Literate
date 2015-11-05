@@ -142,14 +142,17 @@ void writeCode(Block[string] codeblocks, string blockName, File file, string fil
         string line = lineObj.text;
         string stripLine = strip(line);
         if (stripLine.startsWith("@{") && stripLine.endsWith("}")) {
-            auto firstChar = line.indexOf(stripLine[0]);
-            string newWS = line[0..firstChar];
+            string newWS = leadingWS(line);
             auto index = stripLine.length - 1;
             auto newBlockName = stripLine[2..index];
+            if (newBlockName == blockName) {
+                error(lineObj.file, lineObj.lineNum, "{" ~ blockName ~ "} refers to itself");
+                return;
+            }
             if ((newBlockName in codeblocks) !is null) {
                 writeCode(codeblocks, newBlockName, file, filename, whitespace ~ newWS);
             } else {
-                writeln(lineObj.file, ":", lineObj.lineNum, ":error: {", newBlockName, "} does not exist");
+                error(lineObj.file, lineObj.lineNum, "{" ~ newBlockName ~ "} does not exist");
             }
         } else {
             if (!noOutput)

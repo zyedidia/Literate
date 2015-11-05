@@ -12,10 +12,13 @@ for reporting errors and warnings.
 
 --- util.d
 import std.stdio;
+import std.string;
 
 @{readall function}
 @{error function}
 @{warning function}
+@{realname function}
+@{leadingWS function}
 ---
 
 @s Readall
@@ -58,5 +61,33 @@ void error(string file, int line, string message) {
 --- warning function
 void warn(string file, int line, string message) {
     writeln(file, ":", line, ":warning:", message);
+}
+---
+
+@s Realname function
+
+Sometimes a block name will be `name +=` and here it is useful to strip
+off the end `+=` because that is not really part of the block name. This
+function does that.
+
+--- realname function
+string realname(string name) {
+    name = strip(name);
+    if (name.endsWith("+=") || name.endsWith(":=")) {
+        return strip(name[0..$ - 2]);
+    } else {
+        return name;
+    }
+}
+---
+
+@s Leading Whitespace function
+
+This function returns the leading whitespace of the input string.
+
+--- leadingWS function
+string leadingWS(string str) {
+    auto firstChar = str.indexOf(strip(str)[0]);
+    return str[0..firstChar];
 }
 ---
