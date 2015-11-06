@@ -21,6 +21,8 @@ void main(in string[] args) {
     @{Parse the arguments}
 
     @{Run Literate}
+
+    @{Check for compiler errors}
 }
 ---
 
@@ -137,6 +139,9 @@ else {
         weave(p);
     }
 }
+---
+
+--- Check for compiler errors
 ---
 
 Finally, we also have to add the imports.
