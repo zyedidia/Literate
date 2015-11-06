@@ -210,7 +210,7 @@ foreach (s; c.sections) {
                 string[] locations = dup(addLocations[realname(block.name)]);
 
                 if (locations.canFind(to!string(s.num))) {
-                    locations = remove(locations, 0);
+                    locations = remove(locations, locations.countUntil(to!string(s.num)));
                 }
 
                 string seealso = "<p class=\"seealso\">See also section";
