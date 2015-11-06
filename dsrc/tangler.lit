@@ -6,6 +6,11 @@
 @s Introduction
 
 This is the source for tangle. This compiles code from a `.lit` file into runnable code.
+We do this by going through all the codeblocks, and storing them in an associative array.
+Then we apply additions and redefinitions so that the array just contains the code for
+each codeblock (indexed with a string: the codeblock name). Then we find the root codeblocks,
+i.e. the ones that are a filename, and recursively parse all the codeblocks, following each
+link and adding in the code for it.
 
 Here is an overview of the file:
 
