@@ -36,7 +36,7 @@ different chapters in the book. An example `Summary.lit` file might look
 like this:
 
     @title Title of the book
-
+    
     [Chapter 1](chapter1/intro.lit)
         [Subchapter 1](chapter1/example1.lit)
         [Subchapter 2](chapter1/example2.lit)
@@ -472,25 +472,25 @@ if (curSection !is null) {
 Parsing a change block is somewhat complex. Change blocks look like this:
 
     @change file.lit
-
+    
     Some comments here...
-
+    
     @replace
     replace this text
     @with
     with this text
     @end
-
+    
     More comments ...
-
+    
     @replace
     ...
     @with
     ...
     @end
-
+    
     ...
-
+    
     @change_end
 
 You can make multiple changes on one file. We've got two nice flags for keeping track of
