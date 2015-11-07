@@ -21,8 +21,6 @@ void main(in string[] args) {
     @{Parse the arguments}
 
     @{Run Literate}
-
-    @{Check for compiler errors}
 }
 ---
 
@@ -115,6 +113,7 @@ if (files.length > 0) {
         if (!tangleOnly) {
             weave(p);
         }
+
     }
 }
 ---
@@ -138,10 +137,46 @@ else {
     if (!tangleOnly) {
         weave(p);
     }
+
 }
 ---
 
 --- Check for compiler errors
+string compilerCmd;
+string errorFormat;
+foreach (cmd; p.commands) {
+    if (cmd.name == "@compiler") {
+        compilerCmd = cmd.args;
+    } else if (cmd.name == "@error_format") {
+        errorFormat = cmd.args;
+    }
+}
+foreach (cmd; c.commands) {
+    if (cmd.name == "@compiler") {
+        compilerCmd = cmd.args;
+    } else if (cmd.name == "@error_format") {
+        errorFormat = cmd.args;
+    }
+}
+writeln(compilerCmd);
+auto output = executeShell(compilerCmd).output.split("\n");
+foreach (line; output) {
+    writeln(line);
+    writeln(errorFormat.replaceAll(regex("%s"), ".*?")
+                                                     .replaceAll(regex("%l"), "(?P<linenum>\\d+?)")
+                                                     .replaceAll(regex("%f"), "(?P<filename>.*?)")
+                                                     .replaceAll(regex("%m"), "(?P<message>.*?)"));
+
+    auto matches = matchFirst(line, regex("^" ~ errorFormat.replaceAll(regex("%s"), ".*?")
+                                                     .replaceAll(regex("%l"), "(?P<linenum>\\d+?)")
+                                                     .replaceAll(regex("%f"), "(?P<filename>.*?)")
+                                                     .replaceAll(regex("%m"), "(?P<message>.*?)") ~ "$"));
+
+
+    writeln("Line num ", matches["linenum"]);
+    writeln("Filename ", matches["filename"]);
+    writeln("Message ", matches["message"]);
+}
 ---
 
 Finally, we also have to add the imports.
@@ -153,4 +188,7 @@ import weaver;
 import util;
 import std.stdio;
 import std.file;
+import std.string;
+import std.process;
+import std.regex;
 ---
