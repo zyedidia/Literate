@@ -15,6 +15,8 @@ Here is an overview:
 @{Imports}
 @{Globals}
 
+@{getLinenums function}
+
 void main(in string[] args) {
     string[] files = [];
 
@@ -97,6 +99,7 @@ if (files.length > 0) {
             continue;
         }
         File f = File(filename);
+        string fileSrc = readall(f);
 
         Program p = new Program();
         p.file = filename;
@@ -104,16 +107,26 @@ if (files.length > 0) {
         c.file = filename;
         c.majorNum = 1; c.minorNum = 0;
 
-        c = parseChapter(c, readall(f));
+        c = parseChapter(c, fileSrc);
         p.chapters ~= c;
 
         if (!weaveOnly) {
             tangle(p);
         }
+        p = new Program();
+        p.file = filename;
+        c = new Chapter();
+        c.file = filename;
+        c.majorNum = 1; c.minorNum = 0;
+
+        c = parseChapter(c, fileSrc);
+        p.chapters ~= c;
+
         if (!tangleOnly) {
             weave(p);
         }
 
+        @{Check for compiler errors}
     }
 }
 ---
@@ -122,26 +135,48 @@ In addition, we also accept input from stdin if no files were specified.
 
 --- Run Literate +=
 else {
+    string stdinSrc = readall();
+
     Program p = new Program();
     p.file = "stdin";
     Chapter c = new Chapter();
     c.file = "stdin";
     c.majorNum = 1; c.minorNum = 0;
 
-    c = parseChapter(c, readall());
+    c = parseChapter(c, stdinSrc);
     p.chapters ~= c;
 
     if (!weaveOnly) {
         tangle(p);
     }
+
+    p = new Program();
+    p.file = "stdin";
+    c = new Chapter();
+    c.file = "stdin";
+    c.majorNum = 1; c.minorNum = 0;
+
+    c = parseChapter(c, stdinSrc);
+    p.chapters ~= c;
     if (!tangleOnly) {
         weave(p);
     }
 
+    @{Check for compiler errors}
 }
 ---
 
 --- Check for compiler errors
+Line[][string] codeLinenums;
+
+Block[string] rootCodeblocks;
+Block[string] codeblocks;
+getCodeblocks(p, codeblocks, rootCodeblocks);
+
+foreach (b; rootCodeblocks) {
+    codeLinenums = getLinenums(codeblocks, b.name, b.name, codeLinenums);
+}
+
 string compilerCmd;
 string errorFormat;
 foreach (cmd; p.commands) {
@@ -176,6 +211,32 @@ foreach (line; output) {
     writeln("Line num ", matches["linenum"]);
     writeln("Filename ", matches["filename"]);
     writeln("Message ", matches["message"]);
+}
+---
+
+--- getLinenums function
+Line[][string] getLinenums(Block[string] codeblocks, string blockName, 
+                 string rootName, Line[][string] codeLinenums) {
+    Block block = codeblocks[blockName];
+
+    if (block.commentString != "") {
+        codeLinenums[rootName] ~= new Line("comment", "", 0);
+    }
+
+    foreach (lineObj; block.lines) {
+        string line = lineObj.text;
+        string stripLine = strip(line);
+        if (stripLine.startsWith("@{") && stripLine.endsWith("}")) {
+            auto index = stripLine.length - 1;
+            auto newBlockName = stripLine[2..index];
+            getLinenums(codeblocks, newBlockName, rootName, codeLinenums);
+        } else {
+            codeLinenums[rootName] ~= lineObj;
+        }
+    }
+    codeLinenums[rootName] ~= new Line("", "", 0);
+
+    return codeLinenums;
 }
 ---
 

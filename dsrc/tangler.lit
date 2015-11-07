@@ -44,62 +44,10 @@ root codeblocks, and call `writeCode` from those.
 We'll start with these three variables.
 
 --- tangle function
-Block[] tempCodeblocks = [];
 Block[string] rootCodeblocks;
 Block[string] codeblocks;
----
 
-`tempCodeblocks` is an array that contains only codeblocks that
-have `+=` or `:=`. `rootCodeblocks` and `codeblocks` are both associative arrays
-which will hold more important information. `codeblocks` will contain every
-codeblock after the `+=` and `:=` transformations have been applied.
-
-Here we go through every single block in the program, and add it to the
-`tempCodeblocks` array if it has a `+=` or `:=`. Otherwise, we add it to
-the `codeblocks` array, and if it matches the filename regex `.*\.\w+`, we add
-it to the `rootCodeblocks` array.
-
---- tangle function +=
-foreach (c; p.chapters) {
-    foreach (s; c.sections) {
-        foreach (b; s.blocks) {
-            if (b.isCodeblock) {
-                if ((!b.name.endsWith("+=")) && (!b.name.endsWith(":="))) {
-                    codeblocks[b.name] = b;
-                    if (matchAll(b.name, regex(".*\\.\\w+"))) {
-                        rootCodeblocks[b.name] = b;
-                    }
-                } else {
-                    tempCodeblocks ~= b;
-                }
-            }
-        }
-    }
-}
----
-
-Now we go through every codeblock in `tempCodeblocks` and apply the `+=` and `:=`
-
---- tangle function +=
-foreach (b; tempCodeblocks) {
-    if (b.name.endsWith("+=")) {
-        auto index = b.name.length - 2;
-        string name = strip(b.name[0..index]);
-        if ((name in codeblocks) is null) {
-            error(p.file, b.startLine, "Trying to add to {" ~ name ~ "} which does not exist");
-        } else {
-            codeblocks[name].lines ~= b.lines;
-        }
-    } else if (b.name.endsWith(":=")) {
-        auto index = b.name.length - 2;
-        string name = strip(b.name[0..index]);
-        if ((name in codeblocks) is null) {
-            error(p.file, b.startLine, "Trying to redefine {" ~ name ~ "} which does not exist");
-        } else {
-            codeblocks[name].lines = b.lines;
-        }
-    }
-}
+getCodeblocks(p, codeblocks, rootCodeblocks);
 ---
 
 Now we check if there are any root codeblocks.
