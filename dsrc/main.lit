@@ -1,5 +1,7 @@
 @code_type d .d
 @comment_type // %s
+@compiler make
+@error_format .*/%f\(%l,%s\):%s: %m
 
 @title Main
 
@@ -36,6 +38,7 @@ accepts are:
 * `--weave      -w`          Only run weave
 * `--no-output`              Do not generate any output
 * `--out-dir    -odir DIR`   Put the generated files in DIR
+* `--compiler`               Don't ignore the `@compiler` command
 
 All other inputs are input files.
 
@@ -46,6 +49,7 @@ so that the rest of the program can access them.
 bool tangleOnly;
 bool weaveOnly;
 bool noOutput;
+bool noCompCmd = true;
 string outDir = "."; // Default is current directory
 ---
 
@@ -53,8 +57,7 @@ Now, to actually parse the arguments:
 
 --- Parse the arguments
 for (int i = 1; i < args.length; i++) {
-    string arg = args[i];
-
+    auto arg = args[i];
     if (arg == "--help" || arg == "-h") {
         writeln("Lit: Literate Programming System\n"
                 "\n"
@@ -66,6 +69,7 @@ for (int i = 1; i < args.length; i++) {
                 "--weave   -w          Only compile HTML files\n"
                 "--no-output           Do not generate any output files\n"
                 "--out-dir -odir DIR   Put the generated files in DIR\n"
+                "--compiler     Don't ignore the @compiler command\n"
                );
         return;
     } else if (arg == "--tangle" || arg == "-t") {
@@ -80,6 +84,8 @@ for (int i = 1; i < args.length; i++) {
             return;
         }
         outDir = args[++i];
+    } else if (arg == "--compiler") {
+        noCompCmd = false;
     } else {
         files ~= arg;
     }
@@ -126,7 +132,9 @@ if (files.length > 0) {
             weave(p);
         }
 
-        @{Check for compiler errors}
+        if (!noCompCmd) {
+            @{Check for compiler errors}
+        }
     }
 }
 ---
@@ -162,7 +170,9 @@ else {
         weave(p);
     }
 
-    @{Check for compiler errors}
+    if (!noCompCmd) {
+        @{Check for compiler errors}
+    }
 }
 ---
 
@@ -196,11 +206,6 @@ foreach (cmd; c.commands) {
 writeln(compilerCmd);
 auto output = executeShell(compilerCmd).output.split("\n");
 foreach (line; output) {
-    writeln(line);
-    writeln(errorFormat.replaceAll(regex("%s"), ".*?")
-                                                     .replaceAll(regex("%l"), "(?P<linenum>\\d+?)")
-                                                     .replaceAll(regex("%f"), "(?P<filename>.*?)")
-                                                     .replaceAll(regex("%m"), "(?P<message>.*?)"));
 
     auto matches = matchFirst(line, regex("^" ~ errorFormat.replaceAll(regex("%s"), ".*?")
                                                      .replaceAll(regex("%l"), "(?P<linenum>\\d+?)")
@@ -208,9 +213,16 @@ foreach (line; output) {
                                                      .replaceAll(regex("%m"), "(?P<message>.*?)") ~ "$"));
 
 
-    writeln("Line num ", matches["linenum"]);
-    writeln("Filename ", matches["filename"]);
-    writeln("Message ", matches["message"]);
+    auto linenum = matches["linenum"];
+    auto fname = matches["filename"];
+    auto message = matches["message"];
+
+    if (linenum != "" && fname != "") {
+        auto codeline = codeLinenums[fname][to!int(linenum)];
+        error(codeline.file, codeline.lineNum - 1, message);
+    } else {
+        writeln(line);
+    }
 }
 ---
 
@@ -252,4 +264,5 @@ import std.file;
 import std.string;
 import std.process;
 import std.regex;
+import std.conv;
 ---
