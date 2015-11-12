@@ -203,25 +203,28 @@ foreach (cmd; c.commands) {
         errorFormat = cmd.args;
     }
 }
-writeln(compilerCmd);
-auto output = executeShell(compilerCmd).output.split("\n");
-foreach (line; output) {
+if (errorFormat !is null) {
+    if (errorFormat.indexOf("%l") != -1 && errorFormat.indexOf("%f") != -1 && errorFormat.indexOf("%m") != -1) {
+        writeln(compilerCmd);
+        auto output = executeShell(compilerCmd).output.split("\n");
+        foreach (line; output) {
+            auto matches = matchFirst(line, regex("^" ~ errorFormat.replaceAll(regex("%s"), ".*?")
+                                                             .replaceAll(regex("%l"), "(?P<linenum>\\d+?)")
+                                                             .replaceAll(regex("%f"), "(?P<filename>.*?)")
+                                                             .replaceAll(regex("%m"), "(?P<message>.*?)") ~ "$"));
 
-    auto matches = matchFirst(line, regex("^" ~ errorFormat.replaceAll(regex("%s"), ".*?")
-                                                     .replaceAll(regex("%l"), "(?P<linenum>\\d+?)")
-                                                     .replaceAll(regex("%f"), "(?P<filename>.*?)")
-                                                     .replaceAll(regex("%m"), "(?P<message>.*?)") ~ "$"));
 
+            string linenum = matches["linenum"];
+            string fname = matches["filename"];
+            string message = matches["message"];
 
-    auto linenum = matches["linenum"];
-    auto fname = matches["filename"];
-    auto message = matches["message"];
-
-    if (linenum != "" && fname != "") {
-        auto codeline = codeLinenums[fname][to!int(linenum)];
-        error(codeline.file, codeline.lineNum - 1, message);
-    } else {
-        writeln(line);
+            if (linenum != "" && fname != "") {
+                auto codeline = codeLinenums[fname][to!int(linenum)];
+                error(codeline.file, codeline.lineNum - 1, message);
+            } else {
+                writeln(line);
+            }
+        }
     }
 }
 ---
