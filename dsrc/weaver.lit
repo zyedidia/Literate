@@ -38,18 +38,18 @@ foreach (chapter; p.chapters) {
             if (block.isCodeblock) {
                 if (block.name.indexOf("+=") != -1) {
                     if (realname(block.name) !in addLocations || !addLocations[realname(block.name)].canFind(to!string(s.num)))
-                        addLocations[realname(block.name)] ~= to!string(s.num);
+                        addLocations[realname(block.name)] ~= chapter.num() ~ ":" ~ to!string(s.num);
                 } else if (block.name.indexOf(":=") != -1) {
                     if (realname(block.name) !in redefLocations || !redefLocations[realname(block.name)].canFind(to!string(s.num)))
-                        redefLocations[realname(block.name)] ~= to!string(s.num);
+                        redefLocations[realname(block.name)] ~= chapter.num() ~ ":" ~ to!string(s.num);
                 } else {
-                    defLocations[realname(block.name)] = to!string(s.num);
+                    defLocations[realname(block.name)] = chapter.num() ~ ":" ~ to!string(s.num);
                 }
 
                 foreach (lineObj; block.lines) {
                     string line = strip(lineObj.text);
                     if (line.startsWith("@{") && line.endsWith("}")) {
-                        useLocations[line[2..$ - 1]] ~= to!string(s.num);
+                        useLocations[line[2..$ - 1]] ~= chapter.num() ~ ":" ~ to!string(s.num);
                     }
                 }
             }
@@ -112,6 +112,19 @@ string weaveChapter(Chapter c, Program p, string[string] defLocations,
 DELIMITER";
     }
 
+    output ~= q"DELIMITER
+<script>
+    $("#chapter1").hide();
+
+    function show(chapternum) {
+        $("chapter").each(function(index) {
+            $(this).hide();
+        });
+        $("#chapter" + chapternum).show();
+    }
+</script>
+DELIMITER";
+
     output ~= "</body>\n";
 
     return output;
@@ -153,6 +166,7 @@ output ~= "<!DOCTYPE html>\n"
              "<head>\n"
              "<meta charset=\"utf-8\">\n"
              "<title>" ~ c.title ~ "</title>\n" ~
+             "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js\"></script>\n" ~
              scripts ~
              "<style>\n" ~
              css ~
@@ -169,7 +183,7 @@ output ~= "<h1>" ~ c.title ~ "</h1>\n";
 --- Write the body
 foreach (s; c.sections) {
     string noheading = s.title == "" ? " class=\"noheading\"" : "";
-    output ~= "<a name=\"section" ~ to!string(s.num) ~ "\"><div class=\"section\"><h4" ~
+    output ~= "<a name=\"section" ~ c.num() ~ ":" ~ to!string(s.num) ~ "\"><div class=\"section\"><h4" ~
               noheading ~ ">" ~ to!string(s.num) ~ ". " ~ s.title ~ "</h4></a>\n";
 
     foreach (block; s.blocks) {
@@ -185,18 +199,26 @@ foreach (s; c.sections) {
             output ~= html ~ "\n";
         } else {
             output ~= "<div class=\"codeblock\">\n";
+            string chapterNum;
             string def;
+            string defLocation;
             if (realname(block.name) !in defLocations) {
                 error(c.file, block.startLine, "{" ~ realname(block.name) ~ "} is never defined");
             } else {
                 def = defLocations[realname(block.name)];
+                defLocation = def;
+                auto index = def.indexOf(":");
+                string chapter = def[0..index];
+                if (chapter == c.num()) {
+                    defLocation = def[index + 1..$];
+                }
             }
             string extra = "";
             if (strip(block.name).endsWith("+=") || strip(block.name).endsWith(":=")) {
                 extra = " " ~ strip(block.name)[$ - 2..$];
             }
             output ~= "<span class=\"codeblock_name\">{" ~ realname(block.name) ~ 
-                      " <a href=\"#section" ~ def ~ "\">" ~ def ~ "</a>}" ~ extra ~ "</span>\n";
+                      " <a onclick=\"show(" ~ chapterNum ~ ")\" href=\"#section" ~ def ~ "\">" ~ defLocation ~ "</a>}" ~ extra ~ "</span>\n";
 
             if (block.codeType.split().length > 0) {
                 output ~= "<pre class=\"prettyprint lang-" ~ block.codeType.split()[0] ~ "\">\n";
@@ -209,11 +231,18 @@ foreach (s; c.sections) {
                 string strippedLine = strip(line);
                 if (strippedLine.startsWith("@{") && strippedLine.endsWith("}")) {
                     def = "";
+                    defLocation = "";
                     if (strip(strippedLine[2..$ - 1]) !in defLocations) {
                         error(c.file, lineObj.lineNum, "{" ~ strip(strippedLine[2..$ - 1]) ~ "} is never defined");
                     } else {
                         def = defLocations[strippedLine[2..$ - 1]];
-                        def = ", <a href=\"#section" ~ def ~ "\">" ~ def ~ "</a>";
+                        defLocation = def;
+                        auto index = def.indexOf(":");
+                        string chapter = def[0..index];
+                        if (chapter == c.num()) {
+                            defLocation = def[index + 1..$];
+                        }
+                        def = ", <a onclick=\"show(" ~ chapter ~ ")\" href=\"#section" ~ def ~ "\">" ~ defLocation ~ "</a>";
                     }
                     output ~= "<span class=\"nocode pln\">" ~ leadingWS(line) ~ "{" ~ strippedLine[2..$ - 1] ~ def ~ "}</span>\n";
                 } else {
@@ -225,61 +254,77 @@ foreach (s; c.sections) {
             if (realname(block.name) in addLocations) {
                 string[] locations = dup(addLocations[realname(block.name)]);
 
-                if (locations.canFind(to!string(s.num))) {
-                    locations = remove(locations, locations.countUntil(to!string(s.num)));
+                if (locations.canFind(c.num() ~ ":" ~ to!string(s.num))) {
+                    locations = remove(locations, locations.countUntil(c.num() ~ ":" ~ to!string(s.num)));
                 }
 
-                string seealso = "<p class=\"seealso\">See also section";
+                if (locations.length > 0) {
+                    string seealso = "<p class=\"seealso\">See also section";
 
-                if (locations.length > 1) {
-                    seealso ~= "s ";
-                } else {
-                    seealso ~= " ";
-                }
-
-                for (int i = 0; i < locations.length; i++) {
-                    string loc = locations[i];
-                    loc = "<a href=\"#section" ~ loc ~ "\">" ~ loc ~ "</a>";
-                    if (i == 0) {
-                        seealso ~= loc;
-                    } else if (i == locations.length - 1) {
-                        seealso ~= " and " ~ loc;
+                    if (locations.length > 1) {
+                        seealso ~= "s ";
                     } else {
-                        seealso ~= ", " ~ loc;
+                        seealso ~= " ";
                     }
+
+                    for (int i = 0; i < locations.length; i++) {
+                        string loc = locations[i];
+                        string locName = loc;
+                        auto index = loc.indexOf(":");
+                        string chapter = loc[0..index];
+                        if (chapter == c.num()) {
+                            locName = loc[index + 1..$];
+                        }
+                        loc = "<a onclick=\"show(" ~ chapter ~ ")\" href=\"#section" ~ loc ~ "\">" ~ locName ~ "</a>";
+                        if (i == 0) {
+                            seealso ~= loc;
+                        } else if (i == locations.length - 1) {
+                            seealso ~= " and " ~ loc;
+                        } else {
+                            seealso ~= ", " ~ loc;
+                        }
+                    }
+                    seealso ~= "</p>";
+                    output ~= seealso ~ "\n";
                 }
-                seealso ~= "</p>";
-                output ~= seealso ~ "\n";
             }
 
             if (realname(block.name) in useLocations) {
-                string[] locations = useLocations[realname(block.name)];
+                string[] locations = dup(useLocations[realname(block.name)]);
 
-                if (locations.canFind(to!string(s.num))) {
-                    locations.remove(locations.countUntil(to!string(s.num)));
+                if (locations.canFind(c.num() ~ ":" ~ to!string(s.num))) {
+                    locations.remove(locations.countUntil(c.num() ~ ":" ~ to!string(s.num)));
                 }
 
-                string seealso = "<p class=\"seealso\">This code is used in section";
+                if (locations.length > 0) {
+                    string seealso = "<p class=\"seealso\">This code is used in section";
 
-                if (locations.length > 1) {
-                    seealso ~= "s ";
-                } else {
-                    seealso ~= " ";
-                }
-
-                for (int i = 0; i < locations.length; i++) {
-                    string loc = locations[i];
-                    loc = "<a href=\"#section" ~ loc ~ "\">" ~ loc ~ "</a>";
-                    if (i == 0) {
-                        seealso ~= loc;
-                    } else if (i == locations.length - 1) {
-                        seealso ~= " and " ~ loc;
+                    if (locations.length > 1) {
+                        seealso ~= "s ";
                     } else {
-                        seealso ~= ", " ~ loc;
+                        seealso ~= " ";
                     }
+
+                    for (int i = 0; i < locations.length; i++) {
+                        string loc = locations[i];
+                        string locName = loc;
+                        auto index = loc.indexOf(":");
+                        string chapter = loc[0..index];
+                        if (chapter == c.num()) {
+                            locName = loc[index + 1..$];
+                        }
+                        loc = "<a onclick=\"show(" ~ chapter ~ ")\" href=\"#section" ~ loc ~ "\">" ~ locName ~ "</a>";
+                        if (i == 0) {
+                            seealso ~= loc;
+                        } else if (i == locations.length - 1) {
+                            seealso ~= " and " ~ loc;
+                        } else {
+                            seealso ~= ", " ~ loc;
+                        }
+                    }
+                    seealso ~= "</p>";
+                    output ~= seealso ~ "\n";
                 }
-                seealso ~= "</p>";
-                output ~= seealso ~ "\n";
             }
 
             output ~= "</div>\n";

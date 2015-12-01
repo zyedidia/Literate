@@ -68,6 +68,7 @@ import util;
 import std.string: split, startsWith, chomp, replace, strip;
 import std.algorithm: canFind;
 import std.regex: matchAll, regex;
+import std.conv;
 ---
 
 @s
@@ -126,6 +127,14 @@ class Chapter {
     this() {
         commands = [];
         sections = [];
+    }
+
+    string num() {
+        if (minorNum != 0) {
+            return to!string(majorNum) ~ "." ~ to!string(minorNum);
+        } else {
+            return to!string(majorNum);
+        }
     }
 }
 ---
