@@ -56,13 +56,13 @@ These functions simply write errors or warnings to stdout.
 
 --- error function
 void error(string file, int line, string message) {
-    writeln(file, ":", line, ":error:", message);
+    writeln(file, ":", line, ":error: ", message);
 }
 ---
 
 --- warning function
 void warn(string file, int line, string message) {
-    writeln(file, ":", line, ":warning:", message);
+    writeln(file, ":", line, ":warning: ", message);
 }
 ---
 
@@ -115,12 +115,12 @@ void getCodeblocks(Program p,
             foreach (b; s.blocks) {
                 if (b.isCodeblock) {
                     if ((!b.name.endsWith("+=")) && (!b.name.endsWith(":="))) {
-                        codeblocks[b.name] = b;
+                        codeblocks[b.name] = b.dup();
                         if (matchAll(b.name, regex(".*\\.\\w+"))) {
-                            rootCodeblocks[b.name] = b;
+                            rootCodeblocks[b.name] = b.dup();
                         }
                     } else {
-                        tempCodeblocks ~= b;
+                        tempCodeblocks ~= b.dup();
                     }
                 }
             }

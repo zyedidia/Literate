@@ -187,6 +187,21 @@ class Block {
         }
         return text;
     }
+
+    Block dup() {
+        Block b = new Block();
+        b.startLine = startLine;
+        b.name = name;
+        b.isCodeblock = isCodeblock;
+        b.codeType = codeType;
+        b.commentString = commentString;
+
+        foreach (Line l; lines) {
+            b.lines ~= l.dup();
+        }
+
+        return b;
+    }
 }
 ---
 
@@ -217,6 +232,10 @@ class Line {
         this.text = text;
         this.file = file;
         this.lineNum = lineNum;
+    }
+
+    Line dup() {
+        return new Line(text, file, lineNum);
     }
 }
 ---

@@ -119,14 +119,6 @@ if (files.length > 0) {
         if (!weaveOnly) {
             tangle(p);
         }
-        p = new Program();
-        p.file = filename;
-        c = new Chapter();
-        c.file = filename;
-        c.majorNum = 1; c.minorNum = 0;
-
-        c = parseChapter(c, fileSrc);
-        p.chapters ~= c;
 
         if (!tangleOnly) {
             weave(p);
@@ -158,14 +150,6 @@ else {
         tangle(p);
     }
 
-    p = new Program();
-    p.file = "stdin";
-    c = new Chapter();
-    c.file = "stdin";
-    c.majorNum = 1; c.minorNum = 0;
-
-    c = parseChapter(c, stdinSrc);
-    p.chapters ~= c;
     if (!tangleOnly) {
         weave(p);
     }
