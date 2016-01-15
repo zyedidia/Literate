@@ -1,0 +1,8 @@
+name "tangle"
+description "Tangler for Literate"
+authors "Zachary Yedidia"
+homepage "literate.zbyedidia.webfactional.com"
+license "MIT"
+dependency "dmarkdown" version="~>0.2.1"
+targetName "tangle"
+targetPath "../../bin"

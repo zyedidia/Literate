@@ -69,7 +69,7 @@ for (int i = 1; i < args.length; i++) {
                 "--weave   -w          Only compile HTML files\n"
                 "--no-output           Do not generate any output files\n"
                 "--out-dir -odir DIR   Put the generated files in DIR\n"
-                "--compiler     Don't ignore the @compiler command\n"
+                "--compiler            Don't ignore the @compiler command\n"
                );
         return;
     } else if (arg == "--tangle" || arg == "-t") {

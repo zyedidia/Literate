@@ -1,6 +1,6 @@
 *.html
 
-bin/lit
+bin
 
 examples/*.jl
 examples/*.c
