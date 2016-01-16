@@ -18,8 +18,10 @@ If you like the project, make sure to leave a star :smile:
 ### Building from Source
 Literate is made with the [D programming language](http://dlang.org) so you must install dmd (D compiler) and dub (D package manager). Then you should download the zip or clone the repository and run the following commands:
 
+```
 $ cd Literate/dsrc
 $ make
+```
 
 You can find the binary in path/to/Literate/bin (you may want to add this to your path).
 
