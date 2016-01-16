@@ -1,5 +1,0 @@
-These are in no particular order
-
-- User adjustable css/fonts -- needs more work
-- Improve w2lit converter -- convert CWEB to Literate
-- Add option to include line directives
