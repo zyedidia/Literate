@@ -187,10 +187,19 @@ foreach (cmd; c.commands) {
         errorFormat = cmd.args;
     }
 }
+if (compilerCmd.indexOf("clang") != -1) { errorFormat = "%f:%l:%s: %s: %m"; }
+else if (compilerCmd.indexOf("gcc") != -1) { errorFormat = "%f:%l:%s: %s: %m"; }
+else if (compilerCmd.indexOf("g++") != -1) { errorFormat = "%f:%l:%s: %s: %m"; }
+else if (compilerCmd.indexOf("javac") != -1) { errorFormat = "%f:%l: %s: %m"; }
+else if (compilerCmd.indexOf("pyflakes") != -1) { errorFormat = "%f:%l:%s: %m"; }
+else if (compilerCmd.indexOf("jshint") != -1) { errorFormat = "%f: line %l,%s, %m"; }
+else if (compilerCmd.indexOf("dmd") != -1) { errorFormat = "%f\\(%l\\):%s: %m"; }
+
 if (errorFormat !is null) {
     if (errorFormat.indexOf("%l") != -1 && errorFormat.indexOf("%f") != -1 && errorFormat.indexOf("%m") != -1) {
         writeln(compilerCmd);
         auto output = executeShell(compilerCmd).output.split("\n");
+        int i = 0;
         foreach (line; output) {
             auto matches = matchFirst(line, regex("^" ~ errorFormat.replaceAll(regex("%s"), ".*?")
                                                              .replaceAll(regex("%l"), "(?P<linenum>\\d+?)")
@@ -203,11 +212,19 @@ if (errorFormat !is null) {
             string message = matches["message"];
 
             if (linenum != "" && fname != "") {
-                auto codeline = codeLinenums[fname][to!int(linenum)];
-                error(codeline.file, codeline.lineNum - 1, message);
+                if (codeLinenums[fname].length > to!int(linenum)) {
+                    auto codeline = codeLinenums[fname][to!int(linenum) - 1];
+                    error(codeline.file, codeline.lineNum, message);
+                } else {
+                    auto codeline = codeLinenums[fname][codeLinenums[fname].length - 2];
+                    error(codeline.file, codeline.lineNum, message);
+                }
             } else {
-                writeln(line);
+                if (!(line == "" && i == output.length - 1)) {
+                    writeln(line);
+                }
             }
+            i++;
         }
     }
 }

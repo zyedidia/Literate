@@ -1,7 +1,6 @@
 @code_type c .c
 @comment_type /* %s */
-@compiler lit wc.lit && gcc wc.c && rm a.out
-@error_format %f:%l:%s: %s: %m
+@compiler gcc wc.c && rm a.out
 
 @title WC
 
