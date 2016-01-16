@@ -11,31 +11,17 @@ Literate source code is readable whether you are looking at the `.lit` file, or 
 
 You can view the main website about Literate [here] (http://zbyedidia.webfactional.com/literate) including complete [documentation] (http://zbyedidia.webfactional.com/literate/manual.php).
 
-If you want to see what features I am working on, check out my [Todolist](src/TodoList.txt).
+If you like the project, make sure to leave a star :smile:
 
 # Installation
 
-### Unix
-If you're on a Mac and you have brew installed, you can use brew to install literate:
+### Building from Source
+Literate is made with the [D programming language](http://dlang.org) so you must install dmd (D compiler) and dub (D package manager). Then you should download the zip or clone the repository and run the following commands:
 
-```
-$ brew tap zyedidia/literate
-$ brew install --HEAD literate
-```
+$ cd Literate/dsrc
+$ make
 
-If you don't want to use brew, you can install it manually:
-
-The compiler is made with Lua, so please make sure you have lua installed before running Literate. You can download it [here] (http://www.lua.org/download.html). You can also install it with brew, apt-get, and yum.
-In addition, there is a script that comes in the zip called `install_lua.sh`. This will install lua for you into the directory of your choice. You can install lua locally
-or you can install it to `/usr/local/bin`
-
-Once you have it installed, add `path/to/Literate/bin` to your `$PATH`
-
-In addition, if you would like an index to be generated, you must have exuberant or [universal ctags] (https://github.com/universal-ctags/ctags) installed. You can find instructions for installing with homebrew [here] (https://github.com/universal-ctags/homebrew-universal-ctags).
-
-### Windows
-Download the zip, or clone the repository, and just add path\to\Literate\bin to your
-PATH. Index generation with ctags does not work with Windows yet.
+You can find the binary in path/to/Literate/bin (you may want to add this to your path).
 
 # Usage
 
@@ -47,11 +33,11 @@ $ lit examples/wc.lit
 
 Additional command line flags are:
 
-* -html: Only generate HTML output
-* -code: Only generate code output
-* -noindex: Do not create an index
-* --out-dir=dir: Put the output files in the specified directory
+* --weave -w: Only generate HTML output
+* --tangle -t: Only generate code output
+* --out-dir -odir DIR: Put the output files in the specified directory
 * --no-output: Do not generate any files, only show errors
+* --compiler: Run the `@compiler` command
 
 # Features
 ### In addition to those of CWEB
@@ -60,10 +46,9 @@ Additional command line flags are:
 * Supports any language including syntax highlighting and pretty printing in HTML
 * Compatible with Vim ([literate.vim] (https://github.com/zyedidia/literate.vim))
 * Highly customizable (you can add your own HTML or CSS)
-* Runs fast -- wc.lit compiled for me in 82ms for both code and HTML output and 10ms for just code output
+* Runs fast -- wc.lit compiled for me in 7ms for both code and HTML output
 * Supports TeX equations with `$` notation.
 
 ### Inspired from CWEB
 * Automatically generates hyperlinks between code sections
 * Formatted output similar to CWEB
-* Creates an index with identifiers used (You need to have exuberant or universal ctags installed to use this feature)
