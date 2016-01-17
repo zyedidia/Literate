@@ -15,15 +15,26 @@ If you like the project, make sure to leave a star :smile:
 
 # Installation
 
+### Mac
+
+On Mac you can use brew to install Literate:
+
+```
+$ brew tap zyedidia/literate
+$ brew install --HEAD literate
+```
+
+For now, Literate is head only.
+
 ### Building from Source
-Literate is made with the [D programming language](http://dlang.org) so you must install dmd (D compiler) and dub (D package manager). Then you should download the zip or clone the repository and run the following commands:
+Literate is made with the [D programming language](http://dlang.org) so you must install [dmd](http://dlang.org/download.html#dmd) (D compiler) and [dub](https://code.dlang.org/download) (D package manager). Then you should download the zip or clone the repository and run the following commands:
 
 ```
 $ cd Literate
 $ make
 ```
 
-You can find the binary in path/to/Literate/bin (you may want to add this to your path).
+You can find the binary in path/to/Literate/bin (you may want to add this to your path or move it to `/usr/local/bin`).
 
 # Usage
 
