@@ -1,5 +1,6 @@
-@code_type julia .jl
+@code_type python .py
 @comment_type # %s
+@compiler pyflakes hangman.py
 
 @title Hangman
 
@@ -7,15 +8,18 @@
 This is a Hangman program. It lets you make guesses about which letters are in an unknown word. On the eighth incorrect guess you lose.
 The structure of the hangman program will look like this:
 
---- hangman.jl
-println("Welcome to hangman!")
+--- hangman.py
+import random
+import sys
+
+print "Welcome to hangman!"
 @{Setup}
 guesses_left = 8
-while guesses_left > 0
+while guesses_left > 0:
 	@{User input}
 	@{Check input}
 	@{Check win}
-end
+
 @{End}
 ---
 
@@ -24,17 +28,16 @@ end
 First, we have the computer come up with a secret word which it chooses randomly from a list of words read from a text file.
 
 --- Setup
-words = readlines(open("words.txt"))
-secret_word = words[rand(1:length(words))] |> chomp # Use chomp to remove the '\n'
+words = open("words.txt").read().split("\n")
+secret_word = random.choice(words)
 ---
 
 Next we initialize the variable to hold the dashes.
 
 --- Setup +=
-dashes = Array(Char, length(secret_word))
-for i = 1:length(secret_word)
-	dashes[i] = '-'
-end
+dashes = []
+for i in range(0, len(secret_word)):
+	dashes.append('-')
 ---
 
 @s Getting User Input
@@ -45,9 +48,9 @@ We ask for the user's guess, and accept one `Char`.
 
 --- User input
 @{print dashes array}
-println("You have $(guesses_left) guesses left")
-println("What's your guess? ")
-guess = readline(STDIN)[1]
+print "You have " + str(guesses_left) + " guesses left"
+print "What's your guess? "
+guess = raw_input()
 ---
 
 @s Checking the User's Guess
@@ -55,17 +58,14 @@ guess = readline(STDIN)[1]
 We loop through the secret word, checking if any of its letters were guessed. If they were, reveal that letter in the dashes array. If none of the letters in secret word were equal to the guess, then `got_one_correct` will be false, and one guess will be added.
 
 --- Check input
-got_one_correct = false
-for i = 1:length(secret_word)
-	if secret_word[i] == guess
-		got_one_correct = true
+got_one_correct = False
+for i in range(0, len(secret_word)):
+	if secret_word[i] == guess:
+		got_one_correct = True
 		dashes[i] = guess
-	end
-end
 
-if !got_one_correct
+if not got_one_correct:
 	guesses_left -= 1
-end
 ---
 
 @s Checking for Victory
@@ -75,10 +75,9 @@ Now we should check if the user has guessed all the letters.
 Here we see if there are any dashes left in the array that holds the dashes. If there aren't, the user has won.
 
 --- Check win
-if !('-' in dashes)
-	println("You win! The word was $secret_word")
+if not ('-' in dashes):
+	print "You win! The word was " + secret_word
 	exit()
-end
 ---
 
 @s Pretty Printing the Dashes
@@ -86,13 +85,12 @@ end
 We want the dashes to look pretty when they are printed, not look like an array of chars. Instead of `['-', '-', '-', '-']`, we want `----`.
 
 --- print dashes array
-for letter in dashes
-	print(letter)
-end
-println()
+for letter in dashes:
+	sys.stdout.write(letter)
+print "\n",
 ---
 
 @s
 --- End
-println("You lose. The word was $secret_word")
+print "You lose. The word was " + secret_word
 ---
