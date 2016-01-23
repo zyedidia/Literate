@@ -9,7 +9,7 @@ The goal of this project is to create a modern literate programming system which
 
 Literate source code is readable whether you are looking at the `.lit` file, or the generated HTML.
 
-You can view the main website about Literate [here] (http://zbyedidia.webfactional.com/literate) including complete [documentation] (http://zbyedidia.webfactional.com/literate/manual.php).
+You can view the main website about Literate [here](http://zbyedidia.webfactional.com/literate) including a [manual](http://zbyedidia.webfactional.com/literate/manual.php) on how to use Literate.
 
 If you like the project, make sure to leave a star :smile:
 
@@ -52,10 +52,13 @@ Additional command line flags are:
 * --no-output: Do not generate any files, only show errors
 * --compiler: Run the `@compiler` command
 
+For more information see the [manual](http://zbyedidia.webfactional.com/literate/manual.php).
+
 # Features
 ### In addition to those of CWEB
 * Markdown based -- very easy to read and write Literate source.
 * Generates readable and commented code in the target language (the generated code is usable by others)
+* Reports syntax errors back from the compiler to the right line in the literate source
 * Supports any language including syntax highlighting and pretty printing in HTML
 * Compatible with Vim ([literate.vim] (https://github.com/zyedidia/literate.vim))
 * Highly customizable (you can add your own HTML or CSS)
