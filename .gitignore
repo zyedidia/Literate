@@ -2,7 +2,7 @@
 
 bin
 
-examples/*.jl
+examples/*.py
 examples/*.c
 examples/*.pdf
 examples/a.out
