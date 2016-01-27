@@ -1,6 +1,6 @@
 @code_type python .py
 @comment_type # %s
-@compiler pyflakes hangman.py
+@compiler lit hangman.lit && pyflakes hangman.py
 
 @title Hangman
 

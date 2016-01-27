@@ -69,7 +69,7 @@ for (int i = 1; i < args.length; i++) {
                 "--weave   -w          Only compile HTML files\n"
                 "--no-output           Do not generate any output files\n"
                 "--out-dir -odir DIR   Put the generated files in DIR\n"
-                "--compiler            Don't ignore the @compiler command\n"
+                "--compiler            Report compiler errors (needs @compiler to be defined)\n"
                );
         return;
     } else if (arg == "--tangle" || arg == "-t") {
@@ -86,6 +86,7 @@ for (int i = 1; i < args.length; i++) {
         outDir = args[++i];
     } else if (arg == "--compiler") {
         noCompCmd = false;
+        noOutput = true;
     } else {
         files ~= arg;
     }
@@ -187,13 +188,15 @@ foreach (cmd; c.commands) {
         errorFormat = cmd.args;
     }
 }
-if (compilerCmd.indexOf("clang") != -1) { errorFormat = "%f:%l:%s: %s: %m"; }
-else if (compilerCmd.indexOf("gcc") != -1) { errorFormat = "%f:%l:%s: %s: %m"; }
-else if (compilerCmd.indexOf("g++") != -1) { errorFormat = "%f:%l:%s: %s: %m"; }
-else if (compilerCmd.indexOf("javac") != -1) { errorFormat = "%f:%l: %s: %m"; }
-else if (compilerCmd.indexOf("pyflakes") != -1) { errorFormat = "%f:%l:(%s:)? %m"; }
-else if (compilerCmd.indexOf("jshint") != -1) { errorFormat = "%f: line %l,%s, %m"; }
-else if (compilerCmd.indexOf("dmd") != -1) { errorFormat = "%f\\(%l\\):%s: %m"; }
+if (errorFormat is null) {
+    if (compilerCmd.indexOf("clang") != -1) { errorFormat = "%f:%l:%s: %s: %m"; }
+    else if (compilerCmd.indexOf("gcc") != -1) { errorFormat = "%f:%l:%s: %s: %m"; }
+    else if (compilerCmd.indexOf("g++") != -1) { errorFormat = "%f:%l:%s: %s: %m"; }
+    else if (compilerCmd.indexOf("javac") != -1) { errorFormat = "%f:%l: %s: %m"; }
+    else if (compilerCmd.indexOf("pyflakes") != -1) { errorFormat = "%f:%l:(%s:)? %m"; }
+    else if (compilerCmd.indexOf("jshint") != -1) { errorFormat = "%f: line %l,%s, %m"; }
+    else if (compilerCmd.indexOf("dmd") != -1) { errorFormat = "%f\\(%l\\):%s: %m"; }
+}
 
 if (errorFormat !is null) {
     if (errorFormat.indexOf("%l") != -1 && errorFormat.indexOf("%f") != -1 && errorFormat.indexOf("%m") != -1) {
