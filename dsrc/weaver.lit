@@ -200,6 +200,12 @@ foreach (s; c.sections) {
             html = html.replaceAll(regex(r"\$(.*?)\$"), "<span class=\"math\">$1</span>");
             output ~= html ~ "\n";
         } else {
+            if (matchAll(block.name, regex(".*\\.\\w+")) || matchAll(block.name, regex("\".*\""))) {
+                block.isRootBlock = true;
+                if (matchAll(block.name, regex("\".*\""))) {
+                    block.name = block.name[1..$-1];
+                }
+            }
             output ~= "<div class=\"codeblock\">\n";
             string chapterNum;
             string def;

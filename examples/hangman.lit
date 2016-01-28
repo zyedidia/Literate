@@ -42,9 +42,7 @@ for i in range(0, len(secret_word)):
 
 @s Getting User Input
 
-Now we can start the game.
-
-We ask for the user's guess, and accept one `Char`.
+Now we can start the game. We ask for the user's guess and store it in the `guess` variable.
 
 --- User input
 @{print dashes array}
@@ -103,20 +101,35 @@ Here is the file containing all the words for the game. It's just a simple text 
 @comment_type none
 
 --- words.txt
-able about account acid across act addition adjustment advertisement after again against agreement almost among
-attempt attention attraction authority automatic awake baby back bad bag balance ball band base basin basket bath be
-beautiful because bed bee before behaviour belief bell bent berry between bird birth bit bite bitter black blade blood
-carriage cart cat cause certain chain chalk chance change cheap cheese chemical chest chief chin church circle clean clear
-clock cloth cloud coal coat cold collar colour comb come comfort committee common company comparison competition complete
-complex condition connection conscious control cook copper copy cord cork cotton cough country cover cow crack credit crime
-delicate dependent design desire destruction detail development different digestion direction dirty discovery discussion disease
-last late laugh law lead leaf learning leather left letter level library lift light like limit line linen lip liquid
-morning mother motion mountain mouth move much muscle music nail name narrow nation natural near necessary neck need needle
-private probable process produce profit property prose protest public pull pump punishment purpose push put quality question
-seem selection self send sense separate serious servant shade shake shame sharp sheep shelf ship shirt shock shoe short
-square stage stamp star start statement station steam steel stem step stick sticky stiff still stitch stocking stomach stone
-stop store story straight strange street stretch strong structure substance such sudden sugar suggestion summer sun support surprise
-very vessel view violent voice waiting walk wall war warm wash waste watch water wave wax way weather week weight well west
-wet wheel when where while whip whistle white who why wide will wind window wine wing winter wire wise with woman wood wool word
+able about account acid across act addition adjustment 
+advertisement after again against agreement almost among
+attempt attention attraction authority automatic awake 
+baby back bad bag balance ball band base basin basket bath be
+beautiful because bed bee before behaviour belief bell 
+bent berry between bird birth bit bite bitter black blade blood
+carriage cart cat cause certain chain chalk chance 
+change cheap cheese chemical chest chief chin church circle clean clear
+clock cloth cloud coal coat cold collar colour comb 
+come comfort committee common company comparison competition complete
+complex condition connection conscious control cook copper copy 
+cord cork cotton cough country cover cow crack credit crime
+delicate dependent design desire destruction detail development 
+different digestion direction dirty discovery discussion disease
+last late laugh law lead leaf learning leather left letter level 
+library lift light like limit line linen lip liquid
+morning mother motion mountain mouth move much muscle music nail 
+name narrow nation natural near necessary neck need needle
+private probable process produce profit property prose protest public 
+pull pump punishment purpose push put quality question
+seem selection self send sense separate serious servant shade shake 
+shame sharp sheep shelf ship shirt shock shoe short
+square stage stamp star start statement station steam steel stem step 
+stick sticky stiff still stitch stocking stomach stone
+stop store story straight strange street stretch strong structure 
+substance such sudden sugar suggestion summer sun support surprise
+very vessel view violent voice waiting walk wall war warm wash waste 
+watch water wave wax way weather week weight well west
+wet wheel when where while whip whistle white who why wide will wind 
+window wine wing winter wire wise with woman wood wool word
 work worm wound writing wrong year yellow yesterday young
 ---

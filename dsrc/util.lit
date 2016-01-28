@@ -117,19 +117,20 @@ void getCodeblocks(Program p,
             foreach (b; s.blocks) {
                 bool isRootBlock = false;
                 if (b.isCodeblock) {
-                    if (matchAll(b.name, regex(".*\\.\\w+")) || matchAll(b.name, regex("\".*\""))) {
-                        b.isRootBlock = true;
-                        if (matchAll(b.name, regex("\".*\""))) {
-                            b.name = b.name[1..$-1];
+                    Block copy = b.dup();
+                    if (matchAll(copy.name, regex(".*\\.\\w+")) || matchAll(copy.name, regex("\".*\""))) {
+                        copy.isRootBlock = true;
+                        if (matchAll(copy.name, regex("\".*\""))) {
+                            copy.name = copy.name[1..$-1];
                         }
                     }
-                    if ((!b.name.endsWith("+=")) && (!b.name.endsWith(":="))) {
-                        codeblocks[b.name] = b.dup();
-                        if (b.isRootBlock) {
-                            rootCodeblocks[b.name] = b.dup();
+                    if ((!copy.name.endsWith("+=")) && (!copy.name.endsWith(":="))) {
+                        codeblocks[copy.name] = copy;
+                        if (copy.isRootBlock) {
+                            rootCodeblocks[copy.name] = copy;
                         }
                     } else {
-                        tempCodeblocks ~= b.dup();
+                        tempCodeblocks ~= copy;
                     }
                 }
             }
