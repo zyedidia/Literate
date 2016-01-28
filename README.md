@@ -38,7 +38,7 @@ $ make
 
 You can find the binary in path/to/Literate/bin (you may want to add this to your path or move it to `/usr/local/bin`).
 
----
+### The Vim Plugin
 
 You might also want to go install the [Vim plugin](https://github.com/zyedidia/literate.vim) (it has syntax highlighting of the embedded code, linting with Neomake, and jumping to codeblock definitions). 
 I'm sorry that no other editors are supported -- I don't know how to make plugins for other editors.
