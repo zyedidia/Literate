@@ -53,11 +53,11 @@ $ lit examples/wc.lit
 
 Additional command line flags are:
 
-* --weave -w: Only generate HTML output
-* --tangle -t: Only generate code output
-* --out-dir -odir DIR: Put the output files in the specified directory
-* --no-output: Do not generate any files, only show errors
-* --compiler: Run the `@compiler` command
+* `--weave -w`: Only generate HTML output
+* `--tangle -t`: Only generate code output
+* `--out-dir -odir DIR`: Put the output files in the specified directory
+* `--no-output`: Do not generate any files, only show errors
+* `--compiler`: Run the `@compiler` command
 
 For more information see the [manual](http://zbyedidia.webfactional.com/literate/manual.php).
 
