@@ -68,9 +68,6 @@ the code.
 --- tangle function +=
 foreach (b; rootCodeblocks) {
     string filename = b.name;
-    if (b.name.matchAll(regex("\".*\""))) {
-        filename = filename[1..$-1];
-    }
     File f;
     if (!noOutput)
         f = File(outDir ~ "/" ~ filename, "w");

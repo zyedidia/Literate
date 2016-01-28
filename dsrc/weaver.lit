@@ -219,7 +219,13 @@ foreach (s; c.sections) {
             if (strip(block.name).endsWith("+=") || strip(block.name).endsWith(":=")) {
                 extra = " " ~ strip(block.name)[$ - 2..$];
             }
-            output ~= "<span class=\"codeblock_name\">{" ~ realname(block.name) ~ 
+            string name;
+            if (block.isRootBlock) {
+                name = "<strong>" ~ realname(block.name) ~ "</strong>";
+            } else {
+                name = realname(block.name);
+            }
+            output ~= "<span class=\"codeblock_name\">{" ~ name ~ 
                       " <a onclick=\"show(" ~ chapterNum ~ ")\" href=\"#section" ~ def ~ "\">" ~ defLocation ~ "</a>}" ~ extra ~ "</span>\n";
 
             if (block.codeType.split().length > 0) {

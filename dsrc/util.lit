@@ -115,10 +115,17 @@ void getCodeblocks(Program p,
     foreach (c; p.chapters) {
         foreach (s; c.sections) {
             foreach (b; s.blocks) {
+                bool isRootBlock = false;
                 if (b.isCodeblock) {
+                    if (matchAll(b.name, regex(".*\\.\\w+")) || matchAll(b.name, regex("\".*\""))) {
+                        b.isRootBlock = true;
+                        if (matchAll(b.name, regex("\".*\""))) {
+                            b.name = b.name[1..$-1];
+                        }
+                    }
                     if ((!b.name.endsWith("+=")) && (!b.name.endsWith(":="))) {
                         codeblocks[b.name] = b.dup();
-                        if (matchAll(b.name, regex(".*\\.\\w+")) || matchAll(b.name, regex("\".*\""))) {
+                        if (b.isRootBlock) {
                             rootCodeblocks[b.name] = b.dup();
                         }
                     } else {

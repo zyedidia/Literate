@@ -173,6 +173,7 @@ class Block {
     public int startLine;
     public string name;
     public bool isCodeblock;
+    public bool isRootBlock;
     public Line[] lines;
 
     public string codeType;
