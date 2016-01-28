@@ -7,6 +7,7 @@ examples/*.c
 examples/*.pdf
 examples/a.out
 examples/wc
+examples/*.txt
 
 tools/w2lit/*.lit
 tools/w2lit/*.c

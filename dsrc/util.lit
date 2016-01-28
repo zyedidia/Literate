@@ -118,7 +118,7 @@ void getCodeblocks(Program p,
                 if (b.isCodeblock) {
                     if ((!b.name.endsWith("+=")) && (!b.name.endsWith(":="))) {
                         codeblocks[b.name] = b.dup();
-                        if (matchAll(b.name, regex(".*\\.\\w+"))) {
+                        if (matchAll(b.name, regex(".*\\.\\w+")) || matchAll(b.name, regex("\".*\""))) {
                             rootCodeblocks[b.name] = b.dup();
                         }
                     } else {

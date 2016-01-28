@@ -338,6 +338,11 @@ if (!inCodeblock) {
     @{Parse a section definition}
     @{Parse the beginning of a code block}
     else if (curBlock !is null) {
+        if (line.split().length > 1) {
+            if (commands.canFind(line.split()[0])) {
+                continue;
+            }
+        }
         @{Add the line to the list of lines}
     }
 } else if (startsWith(line, "---")) {
@@ -365,6 +370,9 @@ if (line.split().length > 1) {
         cmd.name = line.split()[0];
         auto index = cmd.name.length;
         cmd.args = strip(line[index..$]);
+        if (cmd.args == "none") {
+            cmd.args = "";
+        }
 
         if (cmd.name == "@include") {
             Chapter c = new Chapter();
