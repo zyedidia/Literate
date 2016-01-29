@@ -196,8 +196,9 @@ foreach (s; c.sections) {
                 use_katex = true;
             }
 
-            html = html.replaceAll(regex(r"\$\$(.*?)\$\$"), "<div class=\"math\">$1</div>");
-            html = html.replaceAll(regex(r"\$(.*?)\$"), "<span class=\"math\">$1</span>");
+            html = html.replaceAll(regex(r"(?<!\\)[\$](?<!\\)[\$](.*?)(?<!\\)[\$](?<!\\)[\$]"), "<div class=\"math\">$1</div>");
+            html = html.replaceAll(regex(r"(?<!\\)[\$](.*?)(?<!\\)[\$]"), "<span class=\"math\">$1</span>");
+            html = html.replaceAll(regex(r"\\\$"), "$$");
             output ~= html ~ "\n";
         } else {
             if (matchAll(block.name, regex(".*\\.\\w+")) || matchAll(block.name, regex("\".*\""))) {
