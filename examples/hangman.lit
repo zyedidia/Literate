@@ -14,8 +14,8 @@ import sys
 
 print "Welcome to hangman!"
 @{Setup}
-guesses_left = 8
-while guesses_left > 0:
+lives_left = 8
+while lives_left > 0:
     @{User input}
     @{Check input}
     @{Check win}
@@ -46,7 +46,7 @@ Now we can start the game. We ask for the user's guess and store it in the `gues
 
 --- User input
 @{print dashes array}
-print "You have " + str(guesses_left) + " guesses left"
+print "You have " + str(lives_left) + " lives left"
 print "What's your guess? "
 guess = raw_input()
 ---
@@ -63,7 +63,7 @@ for i in range(0, len(secret_word)):
         dashes[i] = guess
 
 if not got_one_correct:
-    guesses_left -= 1
+    lives_left -= 1
 ---
 
 @s Checking for Victory

@@ -1,7 +1,5 @@
 # Literate
 
-[Website] (http://zbyedidia.webfactional.com/literate).
-
 Literate (lit for short) is a computer programming system to create literate programs. It works with any programming language, generates HTML pages as output (which can be converted to PDF by using your browser's 'print to pdf'),
 and generates readable code. The code that is generated is indented properly and is commented using the names of codeblocks that you choose.
 
@@ -14,6 +12,8 @@ You can view the main website about Literate [here](http://zbyedidia.webfactiona
 If you like the project, make sure to leave a star :smile:
 
 If you find any bugs in the software please report them here.
+
+[Website] (http://zbyedidia.webfactional.com/literate).
 
 # Installation
 
@@ -48,7 +48,10 @@ I'm sorry that no other editors are supported -- I don't know how to make plugin
 Add `path/to/Literate/bin` to your PATH and then you can generate html and/or code from `.lit` files.
 
 ```
-$ lit examples/wc.lit
+$ cd Literate/examples
+$ lit wc.lit
+$ ls
+wc.c    wc.html
 ```
 
 Additional command line flags are:
@@ -57,7 +60,7 @@ Additional command line flags are:
 * `--tangle -t`: Only generate code output
 * `--out-dir -odir DIR`: Put the output files in the specified directory
 * `--no-output`: Do not generate any files, only show errors
-* `--compiler`: Run the `@compiler` command
+* `--compiler`: Report compiler errors (needs `@compiler` to be defined)
 
 For more information see the [manual](http://zbyedidia.webfactional.com/literate/manual.php).
 
