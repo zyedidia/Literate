@@ -5,4 +5,4 @@ examples: wc.lit hangman.lit
 	gcc wc.c -o wc
 
 clean:
-	rm -f *.html *.py *.c *.pdf *.txt wc a.out SomeFile
+	rm -f *.html *.css *.py *.c *.pdf *.txt wc a.out SomeFile

@@ -5,9 +5,10 @@ bin
 examples/*.py
 examples/*.c
 examples/*.pdf
+examples/*.css
+examples/*.txt
 examples/a.out
 examples/wc
-examples/*.txt
 examples/SomeFile
 
 tools/w2lit/*.lit
