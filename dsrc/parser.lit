@@ -568,7 +568,7 @@ if (startsWith(line, "@change") && !startsWith(line, "@change_end")) {
 } else if (startsWith(line, "@change_end")) {
     // Apply all the changes
     string text = readall(File(curChange.filename));
-    for (int i = 0; i < curChange.index; i++) {
+    foreach (i; 0 .. curChange.index) {
         text = text.replace(curChange.searchText[i], curChange.replaceText[i]);
     }
     Chapter c = new Chapter();

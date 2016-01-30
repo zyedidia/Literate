@@ -282,7 +282,7 @@ foreach (s; c.sections) {
                         seealso ~= " ";
                     }
 
-                    for (int i = 0; i < locations.length; i++) {
+                    foreach (i; 0 .. locations.length) {
                         string loc = locations[i];
                         string locName = loc;
                         auto index = loc.indexOf(":");
@@ -320,7 +320,7 @@ foreach (s; c.sections) {
                         seealso ~= " ";
                     }
 
-                    for (int i = 0; i < locations.length; i++) {
+                    foreach (i; 0 .. locations.length) {
                         string loc = locations[i];
                         string locName = loc;
                         auto index = loc.indexOf(":");

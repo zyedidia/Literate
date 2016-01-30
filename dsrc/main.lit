@@ -56,7 +56,7 @@ string outDir = "."; // Default is current directory
 Now, to actually parse the arguments:
 
 --- Parse the arguments
-for (int i = 1; i < args.length; i++) {
+foreach (i; 1 .. args.length) {
     auto arg = args[i];
     if (arg == "--help" || arg == "-h") {
         writeln("Lit: Literate Programming System\n"
