@@ -15,10 +15,10 @@ If you find any bugs in the software please report them here.
 
 # Features
 ### In addition to those of CWEB
+* Supports any language including syntax highlighting and pretty printing in HTML
 * Markdown based -- very easy to read and write Literate source.
 * Generates readable and commented code in the target language (the generated code is usable by others)
 * Reports syntax errors back from the compiler to the right line in the literate source
-* Supports any language including syntax highlighting and pretty printing in HTML
 * Literate source code is readable whether you are looking at the `.lit` file, or the generated HTML.
 * Compatible with Vim ([literate.vim] (https://github.com/zyedidia/literate.vim))
 * Highly customizable (you can add your own HTML or CSS)
