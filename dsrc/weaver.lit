@@ -1,11 +1,14 @@
 @code_type d .d
 @comment_type // %s
-@compiler make not-release -C ..
+@compiler make debug -C ..
 @error_format .*/%f\(%l,%s\):%s: %m
 
 @title Weaver
 
-@s
+@s Introduction
+
+Here is an overview of the weave program. This file turns a literate source
+file into one or more html files.
 
 --- weaver.d
 @{Imports}
@@ -60,12 +63,22 @@ foreach (chapter; p.chapters) {
 }
 ---
 
+Here we simply loop through all the chapters in the program and get the html for them.
+If `noOutput` is false, we generate html files in the `outDir`.
+
 --- Run weaveChapter
 foreach (c; p.chapters) {
     string output = weaveChapter(c, p, defLocations, redefLocations,
                                  addLocations, useLocations);
     if (!noOutput) {
-        File f = File(outDir ~ "/" ~ stripExtension(c.file) ~ ".html", "w");
+        string dir = outDir;
+        if (isBook) {
+            dir = outDir ~ "/_book";
+            if (!dir.exists()) {
+                mkdir(dir);
+            }
+        }
+        File f = File(dir ~ "/" ~ stripExtension(c.file) ~ ".html", "w");
         f.write(output);
         f.close();
     }
@@ -90,42 +103,23 @@ string weaveChapter(Chapter c, Program p, string[string] defLocations,
     @{Write the body}
 
     if (use_katex) {
-        output ~= "<link rel=\"stylesheet\" href=\"http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.css\">\n"
-        "<script src=\"http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js\"></script>\n";
-        output ~= katex;
-        output ~= q"DELIMITER
-        <script>
-        var mathDivs = document.getElementsByClassName("math")
-        for (var i = 0; i < mathDivs.length; i++) {
-            var el = mathDivs[i];
-            var texTxt = el.textContent;
-            try {
-                var displayMode = false;
-                if (el.tagName == 'DIV') {
-                    displayMode = true;
-                }
-                katex.render(texTxt, el, {displayMode: displayMode});
+@{Write the katex source}
+    }
+
+    // Leave this out for now
+    /*
+    if (isBook) {
+        output ~= "</section><ul class=\"nav\">";
+        foreach (Chapter chapter; p.chapters) {
+            string active = "";
+            if (chapter == c) {
+                active = "class=\"active\"";
             }
-            catch(err) {
-                el.innerHTML = "<span class='err'>"+err+"</span>";
-            }
+            output ~= "<li><a " ~ active ~ " href=\"" ~ stripExtension(chapter.file) ~ ".html" ~ "\">" ~ chapter.num() ~ " " ~ chapter.title ~ "</a></li>";
         }
-        </script>
-DELIMITER";
+        output ~= "<ul>";
     }
-
-    output ~= q"DELIMITER
-<script>
-    $("#chapter1").hide();
-
-    function show(chapternum) {
-        $("chapter").each(function(index) {
-            $(this).hide();
-        });
-        $("#chapter" + chapternum).show();
-    }
-</script>
-DELIMITER";
+    */
 
     output ~= "</body>\n";
 
@@ -168,13 +162,13 @@ output ~= "<!DOCTYPE html>\n"
              "<head>\n"
              "<meta charset=\"utf-8\">\n"
              "<title>" ~ c.title ~ "</title>\n" ~
-             "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js\"></script>\n" ~
              scripts ~
              "<style>\n" ~
              css ~
              "</style>\n"
              "</head>\n"
              "<body onload=\"prettyPrint()\">\n"
+             "<section>\n"
             ;
 
 output ~= "<h1>" ~ c.title ~ "</h1>\n";
@@ -185,7 +179,7 @@ output ~= "<h1>" ~ c.title ~ "</h1>\n";
 --- Write the body
 foreach (s; c.sections) {
     string noheading = s.title == "" ? " class=\"noheading\"" : "";
-    output ~= "<a name=\"section" ~ c.num() ~ ":" ~ to!string(s.num) ~ "\"><div class=\"section\"><h4" ~
+    output ~= "<a name=\"" ~ c.num() ~ ":" ~ to!string(s.num) ~ "\"><div class=\"section\"><h4" ~
               noheading ~ ">" ~ to!string(s.num) ~ ". " ~ s.title ~ "</h4></a>\n";
 
     foreach (block; s.blocks) {
@@ -211,6 +205,7 @@ foreach (s; c.sections) {
             string chapterNum;
             string def;
             string defLocation;
+            string htmlFile = "";
             if (realname(block.name) !in defLocations) {
                 error(c.file, block.startLine, "{" ~ realname(block.name) ~ "} is never defined");
             } else {
@@ -218,6 +213,7 @@ foreach (s; c.sections) {
                 defLocation = def;
                 auto index = def.indexOf(":");
                 string chapter = def[0..index];
+                htmlFile = getChapterHtmlFile(p.chapters, chapter);
                 if (chapter == c.num()) {
                     defLocation = def[index + 1..$];
                 }
@@ -233,7 +229,7 @@ foreach (s; c.sections) {
                 name = realname(block.name);
             }
             output ~= "<span class=\"codeblock_name\">{" ~ name ~ 
-                      " <a onclick=\"show(" ~ chapterNum ~ ")\" href=\"#section" ~ def ~ "\">" ~ defLocation ~ "</a>}" ~ extra ~ "</span>\n";
+                      " <a href=\"" ~ htmlFile ~ "#" ~ def ~ "\">" ~ defLocation ~ "</a>}" ~ extra ~ "</span>\n";
 
             if (block.codeType.split().length > 0) {
                 output ~= "<pre class=\"prettyprint lang-" ~ block.codeType.split()[0] ~ "\">\n";
@@ -254,10 +250,11 @@ foreach (s; c.sections) {
                         defLocation = def;
                         auto index = def.indexOf(":");
                         string chapter = def[0..index];
+                        htmlFile = getChapterHtmlFile(p.chapters, chapter);
                         if (chapter == c.num()) {
                             defLocation = def[index + 1..$];
                         }
-                        def = ", <a onclick=\"show(" ~ chapter ~ ")\" href=\"#section" ~ def ~ "\">" ~ defLocation ~ "</a>";
+                        def = ", <a href=\"" ~ htmlFile ~ "#" ~ def ~ "\">" ~ defLocation ~ "</a>";
                     }
                     output ~= "<span class=\"nocode pln\">" ~ leadingWS(line) ~ "{" ~ strippedLine[2..$ - 1] ~ def ~ "}</span>\n";
                 } else {
@@ -287,10 +284,11 @@ foreach (s; c.sections) {
                         string locName = loc;
                         auto index = loc.indexOf(":");
                         string chapter = loc[0..index];
+                        htmlFile = getChapterHtmlFile(p.chapters, chapter);
                         if (chapter == c.num()) {
                             locName = loc[index + 1..$];
                         }
-                        loc = "<a onclick=\"show(" ~ chapter ~ ")\" href=\"#section" ~ loc ~ "\">" ~ locName ~ "</a>";
+                        loc = "<a href=\"" ~ htmlFile ~ "#" ~ loc ~ "\">" ~ locName ~ "</a>";
                         if (i == 0) {
                             seealso ~= loc;
                         } else if (i == locations.length - 1) {
@@ -325,10 +323,11 @@ foreach (s; c.sections) {
                         string locName = loc;
                         auto index = loc.indexOf(":");
                         string chapter = loc[0..index];
+                        htmlFile = getChapterHtmlFile(p.chapters, chapter);
                         if (chapter == c.num()) {
                             locName = loc[index + 1..$];
                         }
-                        loc = "<a onclick=\"show(" ~ chapter ~ ")\" href=\"#section" ~ loc ~ "\">" ~ locName ~ "</a>";
+                        loc = "<a href=\"" ~ htmlFile ~ "#" ~ loc ~ "\">" ~ locName ~ "</a>";
                         if (i == 0) {
                             seealso ~= loc;
                         } else if (i == locations.length - 1) {
@@ -349,7 +348,45 @@ foreach (s; c.sections) {
 }
 ---
 
+@s Katex source
+
+This is the source code for katex which should only be used if math is used in the literate
+file. We include a script which uses the cdn first because that will use better fonts, however
+it needs the user to be connected to the internet. In the case that the user is offline, we include
+the entire source for katex, but it will use worse fonts (still better than nothing though).
+
+--- Write the katex source
+output ~= "<link rel=\"stylesheet\" href=\"http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.css\">\n"
+"<script src=\"http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js\"></script>\n";
+output ~= katex;
+---
+
+Then we loop over all the math divs and spans and render the katex.
+
+--- Write the katex source +=
+output ~= q"DELIMITER
+<script>
+var mathDivs = document.getElementsByClassName("math")
+for (var i = 0; i < mathDivs.length; i++) {
+    var el = mathDivs[i];
+    var texTxt = el.textContent;
+    try {
+        var displayMode = false;
+        if (el.tagName == 'DIV') {
+            displayMode = true;
+        }
+        katex.render(texTxt, el, {displayMode: displayMode});
+    }
+    catch(err) {
+        el.innerHTML = "<span class='err'>"+err+"</span>";
+    }
+}
+</script>
+DELIMITER";
+---
+
 --- Imports
+import std.file;
 import std.conv;
 import std.algorithm;
 import std.regex;

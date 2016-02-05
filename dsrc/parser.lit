@@ -1,10 +1,9 @@
 @code_type d .d
 @comment_type // %s
-@compiler make not-release -C ..
+@compiler make debug -C ..
 @error_format .*/%f\(%l,%s\):%s: %m
 
 @title Parser
-<center><em>A Modern Literate Programming System</em></center>
 
 @s Introduction
 
@@ -69,7 +68,7 @@ import std.stdio;
 import util;
 import std.string: split, startsWith, chomp, replace, strip;
 import std.algorithm: canFind;
-import std.regex: matchAll, regex;
+import std.regex: matchAll, matchFirst, regex;
 import std.conv;
 import std.path: extension;
 ---
@@ -277,6 +276,42 @@ The chapter object will already have a title, a source file, and a majorNum and 
 function will return the complete chapter object. Here is an overview of the `parseChapter` function.
 
 --- Parse function
+Program parseProgram(Program p, string src) {
+    string filename = p.file;
+
+    string[] lines = src.split("\n");
+    int lineNum;
+    int majorNum;
+    int minorNum;
+    foreach (line; lines) {
+        lineNum++;
+
+        if (line.startsWith("@title")) {
+            p.title = strip(line[6..$]);
+        } else if (auto matches = matchFirst(line, regex(r"\[(?P<chapterName>.*)\]\((?P<filepath>.*)\)"))) {
+            if (matches["filepath"] == "") {
+                error(filename, lineNum, "No filepath for " ~ matches["chapterName"]);
+                continue;
+            }
+            if (leadingWS(line).length > 0) {
+                minorNum++;
+            } else {
+                majorNum++;
+                minorNum = 0;
+            }
+            Chapter c = new Chapter();
+            c.file = matches["filepath"];
+            c.title = matches["chapterName"];
+            c.majorNum = majorNum;
+            c.minorNum = minorNum;
+
+            p.chapters ~= parseChapter(c, readall(File(matches["filepath"])));
+        }
+    }
+
+    return p;
+}
+
 Chapter parseChapter(Chapter chapter, string src) {
     @{Initialize some variables}
 
