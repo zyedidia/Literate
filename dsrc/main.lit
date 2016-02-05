@@ -47,6 +47,7 @@ so that the rest of the program can access them.
 
 --- Globals
 bool tangleOnly;
+bool isBook;
 bool weaveOnly;
 bool noOutput;
 bool noCompCmd = true;
@@ -87,6 +88,8 @@ foreach (i; 1 .. args.length) {
     } else if (arg == "--compiler") {
         noCompCmd = false;
         noOutput = true;
+    } else if (arg == "--book" || arg == "-b") {
+        isBook = true;
     } else {
         files ~= arg;
     }
@@ -108,14 +111,21 @@ if (files.length > 0) {
         File f = File(filename);
         string fileSrc = readall(f);
 
-        Program p = new Program();
-        p.file = filename;
-        Chapter c = new Chapter();
-        c.file = filename;
-        c.majorNum = 1; c.minorNum = 0;
+        Program p;
+        if (isBook) {
+            p = new Program();
+            p.file = filename;
+            p = parseProgram(p, fileSrc);
+        } else {
+            p = new Program();
+            p.file = filename;
+            Chapter c = new Chapter();
+            c.file = filename;
+            c.majorNum = 1; c.minorNum = 0;
 
-        c = parseChapter(c, fileSrc);
-        p.chapters ~= c;
+            c = parseChapter(c, fileSrc);
+            p.chapters ~= c;
+        }
 
         if (!weaveOnly) {
             tangle(p);
@@ -138,14 +148,21 @@ In addition, we also accept input from stdin if no files were specified.
 else {
     string stdinSrc = readall();
 
-    Program p = new Program();
-    p.file = "stdin";
-    Chapter c = new Chapter();
-    c.file = "stdin";
-    c.majorNum = 1; c.minorNum = 0;
+    Program p;
+    if (isBook) {
+        p = new Program();
+        p.file = "stdin";
+        p = parseProgram(p, stdinSrc);
+    } else {
+        p = new Program();
+        p.file = "stdin";
+        Chapter c = new Chapter();
+        c.file = "stdin";
+        c.majorNum = 1; c.minorNum = 0;
 
-    c = parseChapter(c, stdinSrc);
-    p.chapters ~= c;
+        c = parseChapter(c, stdinSrc);
+        p.chapters ~= c;
+    }
 
     if (!weaveOnly) {
         tangle(p);
@@ -181,11 +198,14 @@ foreach (cmd; p.commands) {
         errorFormat = cmd.args;
     }
 }
-foreach (cmd; c.commands) {
-    if (cmd.name == "@compiler") {
-        compilerCmd = cmd.args;
-    } else if (cmd.name == "@error_format") {
-        errorFormat = cmd.args;
+if (p.chapters.length == 1) {
+    Chapter c = p.chapters[0];
+    foreach (cmd; c.commands) {
+        if (cmd.name == "@compiler") {
+            compilerCmd = cmd.args;
+        } else if (cmd.name == "@error_format") {
+            errorFormat = cmd.args;
+        }
     }
 }
 if (errorFormat is null) {

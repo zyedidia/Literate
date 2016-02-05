@@ -14,8 +14,10 @@ for reporting errors and warnings.
 
 --- util.d
 import std.stdio;
+import std.conv;
 import parser;
 import std.string;
+import std.path;
 
 @{readall function}
 @{error function}
@@ -23,6 +25,7 @@ import std.string;
 @{realname function}
 @{leadingWS function}
 @{getCodeblocks function}
+@{getChapterHtmlFile function}
 ---
 
 @s Readall
@@ -96,6 +99,8 @@ string leadingWS(string str) {
 }
 ---
 
+@s getCodeblocks function
+
 `tempCodeblocks` is an array that contains only codeblocks that
 have `+=` or `:=`. `rootCodeblocks` and `codeblocks` are both associative arrays
 which will hold more important information. `codeblocks` will contain every
@@ -157,5 +162,28 @@ void getCodeblocks(Program p,
             }
         }
     }
+}
+---
+
+@s getChapterHtmlFile function
+
+This function returns the html file for a chapter given the major and minor
+numbers for it. The minor and major nums are passed in as a string formatted as:
+`major.minor`.
+
+--- getChapterHtmlFile function
+string getChapterHtmlFile(Chapter[] chapters, string num) {
+    string[] nums = num.split(".");
+    int majorNum = to!int(nums[0]);
+    int minorNum = 0;
+    if (nums.length > 1) {
+        minorNum = to!int(nums[1]);
+    }
+    foreach (Chapter c; chapters) {
+        if (c.majorNum == majorNum && c.minorNum == minorNum) {
+            return stripExtension(c.file) ~ ".html";
+        }
+    }
+    return "";
 }
 ---
