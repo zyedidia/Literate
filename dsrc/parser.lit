@@ -280,6 +280,8 @@ function will return the complete chapter object. Here is an overview of the `pa
 Chapter parseChapter(Chapter chapter, string src) {
     @{Initialize some variables}
 
+    // Handle the @include statements
+    src = std.regex.replaceAll!(match => readall(File(match[1])))(src, regex(`@include (.*)`));
     string[] lines = src.split("\n");
 
     int lineNum = 0;
@@ -376,36 +378,10 @@ if (line.split().length > 1) {
             cmd.args = "";
         }
 
-        if (cmd.name == "@include") {
-            if (extension(cmd.args) == ".lit") {
-                if (cmd.args == filename) {
-                    error(filename, lineNum, "Recursive include");
-                    continue;
-                }
-                Chapter c = new Chapter();
-                c.file = cmd.args;
-                // We can ignore these, but they need to be initialized
-                c.title = "";
-                c.majorNum = -1;
-                c.minorNum = -1;
-                Chapter includedChapter = parseChapter(c, readall(File(cmd.args)));
-                chapter.sections ~= includedChapter.sections;
-            } else {
-                if (curBlock is null) {
-                    error(filename, lineNum, "Cannot include before the first section");
-                    continue;
-                }
-                string includedSrc = readall(File(cmd.args));
-                foreach (int i, string s; includedSrc.split("\n")) {
-                    curBlock.lines ~= new Line(s, cmd.args, i);
-                }
-            }
+        if (curSection is null) {
+            chapter.commands ~= cmd;
         } else {
-            if (curSection is null) {
-                chapter.commands ~= cmd;
-            } else {
-                curSection.commands ~= cmd;
-            }
+            curSection.commands ~= cmd;
         }
     }
 }
