@@ -4,7 +4,6 @@
 @error_format .*/%f\(%l,%s\):%s: %m
 
 @title Parser
-<center><em>A Modern Literate Programming System</em></center>
 
 @s Introduction
 

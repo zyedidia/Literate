@@ -89,6 +89,7 @@ foreach (i; 1 .. args.length) {
         noCompCmd = false;
         noOutput = true;
     } else if (arg == "--book" || arg == "-b") {
+        // Book feature is a work in progress and undocumented for now
         isBook = true;
     } else {
         files ~= arg;
