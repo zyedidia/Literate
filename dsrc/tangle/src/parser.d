@@ -134,7 +134,6 @@ class Change {
     }
 }
 
-
 // Parse function
 Chapter parseChapter(Chapter chapter, string src) {
     // Initialize some variables
@@ -148,7 +147,6 @@ Chapter parseChapter(Chapter chapter, string src) {
     bool inCodeblock = false;
     bool inSearchBlock = false;
     bool inReplaceBlock = false;
-
 
     string[] lines = src.split("\n");
 
@@ -266,7 +264,6 @@ Chapter parseChapter(Chapter chapter, string src) {
                 curBlock = new Block();
                 curBlock.isCodeblock = false;
             }
-
             // Parse the beginning of a code block
             else if (matchAll(line, regex("^---.+"))) {
                 if (curBlock !is null) {
@@ -291,7 +288,6 @@ Chapter parseChapter(Chapter chapter, string src) {
             else if (curBlock !is null) {
                 // Add the line to the list of lines
                 curBlock.lines ~= new Line(line, filename, lineNum);
-
             }
         } else if (startsWith(line, "---")) {
             // Begin a new prose block
@@ -302,13 +298,10 @@ Chapter parseChapter(Chapter chapter, string src) {
             curBlock.startLine = lineNum;
             curBlock.isCodeblock = false;
             inCodeblock = false;
-
         } else if (curBlock !is null) {
             // Add the line to the list of lines
             curBlock.lines ~= new Line(line, filename, lineNum);
-
         }
-
     }
     // Close the last section
     if (curBlock !is null) {
@@ -322,8 +315,5 @@ Chapter parseChapter(Chapter chapter, string src) {
         chapter.sections ~= curSection;
     }
 
-
     return chapter;
 }
-
-

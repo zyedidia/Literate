@@ -14,16 +14,6 @@ string readall(File file) {
     return src;
 }
 
-// Read from stdin
-string readall() {
-    string src = "";
-    string line;
-    while ((line = readln()) !is null) {
-        src ~= line;
-    }
-    return src;
-}
-
 // error function
 void error(string file, int line, string message) {
     writeln(file, ":", line, ":error: ", message);
@@ -32,16 +22,6 @@ void error(string file, int line, string message) {
 // warning function
 void warn(string file, int line, string message) {
     writeln(file, ":", line, ":warning: ", message);
-}
-
-// realname function
-string realname(string name) {
-    name = strip(name);
-    if (name.endsWith("+=") || name.endsWith(":=")) {
-        return strip(name[0..$ - 2]);
-    } else {
-        return name;
-    }
 }
 
 // leadingWS function
@@ -94,5 +74,3 @@ void getCodeblocks(Program p,
         }
     }
 }
-
-
