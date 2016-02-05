@@ -281,19 +281,30 @@ Program parseProgram(Program p, string src) {
     string filename = p.file;
 
     string[] lines = src.split("\n");
-    int lineNum = 0;
-    int numMajorChapters = 0;
+    int lineNum;
+    int majorNum;
+    int minorNum;
     foreach (line; lines) {
         lineNum++;
 
         if (line.startsWith("@title")) {
             p.title = strip(line[6..$]);
         } else if (auto matches = matchFirst(line, regex(r"\[(?P<chapterName>.*)\]\((?P<filepath>.*)\)"))) {
+            if (matches["filepath"] == "") {
+                error(filename, lineNum, "No filepath for " ~ matches["chapterName"]);
+                continue;
+            }
+            if (leadingWS(line).length > 0) {
+                minorNum++;
+            } else {
+                majorNum++;
+                minorNum = 0;
+            }
             Chapter c = new Chapter();
             c.file = matches["filepath"];
             c.title = matches["chapterName"];
-            c.majorNum = ++numMajorChapters;
-            c.minorNum = 0;
+            c.majorNum = majorNum;
+            c.minorNum = minorNum;
 
             p.chapters ~= parseChapter(c, readall(File(matches["filepath"])));
         }

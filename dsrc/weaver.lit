@@ -5,7 +5,10 @@
 
 @title Weaver
 
-@s
+@s Introduction
+
+Here is an overview of the weave program. This file turns a literate source
+file into one or more html files.
 
 --- weaver.d
 @{Imports}
@@ -60,12 +63,22 @@ foreach (chapter; p.chapters) {
 }
 ---
 
+Here we simply loop through all the chapters in the program and get the html for them.
+If `noOutput` is false, we generate html files in the `outDir`.
+
 --- Run weaveChapter
 foreach (c; p.chapters) {
     string output = weaveChapter(c, p, defLocations, redefLocations,
                                  addLocations, useLocations);
     if (!noOutput) {
-        File f = File(outDir ~ "/" ~ stripExtension(c.file) ~ ".html", "w");
+        string dir = outDir;
+        if (isBook) {
+            dir = outDir ~ "/_book";
+            if (!dir.exists()) {
+                mkdir(dir);
+            }
+        }
+        File f = File(dir ~ "/" ~ stripExtension(c.file) ~ ".html", "w");
         f.write(output);
         f.close();
     }
@@ -90,29 +103,23 @@ string weaveChapter(Chapter c, Program p, string[string] defLocations,
     @{Write the body}
 
     if (use_katex) {
-        output ~= "<link rel=\"stylesheet\" href=\"http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.css\">\n"
-        "<script src=\"http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js\"></script>\n";
-        output ~= katex;
-        output ~= q"DELIMITER
-        <script>
-        var mathDivs = document.getElementsByClassName("math")
-        for (var i = 0; i < mathDivs.length; i++) {
-            var el = mathDivs[i];
-            var texTxt = el.textContent;
-            try {
-                var displayMode = false;
-                if (el.tagName == 'DIV') {
-                    displayMode = true;
-                }
-                katex.render(texTxt, el, {displayMode: displayMode});
-            }
-            catch(err) {
-                el.innerHTML = "<span class='err'>"+err+"</span>";
-            }
-        }
-        </script>
-DELIMITER";
+@{Write the katex source}
     }
+
+    // Leave this out for now
+    /*
+    if (isBook) {
+        output ~= "</section><ul class=\"nav\">";
+        foreach (Chapter chapter; p.chapters) {
+            string active = "";
+            if (chapter == c) {
+                active = "class=\"active\"";
+            }
+            output ~= "<li><a " ~ active ~ " href=\"" ~ stripExtension(chapter.file) ~ ".html" ~ "\">" ~ chapter.num() ~ " " ~ chapter.title ~ "</a></li>";
+        }
+        output ~= "<ul>";
+    }
+    */
 
     output ~= "</body>\n";
 
@@ -161,6 +168,7 @@ output ~= "<!DOCTYPE html>\n"
              "</style>\n"
              "</head>\n"
              "<body onload=\"prettyPrint()\">\n"
+             "<section>\n"
             ;
 
 output ~= "<h1>" ~ c.title ~ "</h1>\n";
@@ -340,7 +348,45 @@ foreach (s; c.sections) {
 }
 ---
 
+@s Katex source
+
+This is the source code for katex which should only be used if math is used in the literate
+file. We include a script which uses the cdn first because that will use better fonts, however
+it needs the user to be connected to the internet. In the case that the user is offline, we include
+the entire source for katex, but it will use worse fonts (still better than nothing though).
+
+--- Write the katex source
+output ~= "<link rel=\"stylesheet\" href=\"http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.css\">\n"
+"<script src=\"http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js\"></script>\n";
+output ~= katex;
+---
+
+Then we loop over all the math divs and spans and render the katex.
+
+--- Write the katex source +=
+output ~= q"DELIMITER
+<script>
+var mathDivs = document.getElementsByClassName("math")
+for (var i = 0; i < mathDivs.length; i++) {
+    var el = mathDivs[i];
+    var texTxt = el.textContent;
+    try {
+        var displayMode = false;
+        if (el.tagName == 'DIV') {
+            displayMode = true;
+        }
+        katex.render(texTxt, el, {displayMode: displayMode});
+    }
+    catch(err) {
+        el.innerHTML = "<span class='err'>"+err+"</span>";
+    }
+}
+</script>
+DELIMITER";
+---
+
 --- Imports
+import std.file;
 import std.conv;
 import std.algorithm;
 import std.regex;
