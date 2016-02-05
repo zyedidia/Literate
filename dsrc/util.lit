@@ -1,6 +1,6 @@
 @code_type d .d
 @comment_type // %s
-@compiler make not-release -C ..
+@compiler make debug -C ..
 @error_format .*/%f\(%l,%s\):%s: %m
 
 @title Util
