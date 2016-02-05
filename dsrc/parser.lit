@@ -378,6 +378,10 @@ if (line.split().length > 1) {
 
         if (cmd.name == "@include") {
             if (extension(cmd.args) == ".lit") {
+                if (cmd.args == filename) {
+                    error(filename, lineNum, "Recursive include");
+                    continue;
+                }
                 Chapter c = new Chapter();
                 c.file = cmd.args;
                 // We can ignore these, but they need to be initialized
@@ -387,15 +391,14 @@ if (line.split().length > 1) {
                 Chapter includedChapter = parseChapter(c, readall(File(cmd.args)));
                 chapter.sections ~= includedChapter.sections;
             } else {
-                string includedSrc = readall(File(cmd.args));
-                Block b = new Block();
-                foreach (int i, string s; includedSrc.split("\n")) {
-                    b.lines ~= new Line(s, cmd.args, i);
-                }
-                if (curSection is null) {
+                if (curBlock is null) {
+                    error(filename, lineNum, "Cannot include before the first section");
                     continue;
                 }
-                curSection.blocks ~= b;
+                string includedSrc = readall(File(cmd.args));
+                foreach (int i, string s; includedSrc.split("\n")) {
+                    curBlock.lines ~= new Line(s, cmd.args, i);
+                }
             }
         } else {
             if (curSection is null) {
