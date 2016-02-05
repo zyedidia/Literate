@@ -71,6 +71,7 @@ import std.string: split, startsWith, chomp, replace, strip;
 import std.algorithm: canFind;
 import std.regex: matchAll, regex;
 import std.conv;
+import std.path: extension;
 ---
 
 @s
@@ -376,14 +377,26 @@ if (line.split().length > 1) {
         }
 
         if (cmd.name == "@include") {
-            Chapter c = new Chapter();
-            c.file = cmd.args;
-            // We can ignore these, but they need to be initialized
-            c.title = "";
-            c.majorNum = -1;
-            c.minorNum = -1;
-            Chapter includedChapter = parseChapter(c, readall(File(cmd.args)));
-            chapter.sections ~= includedChapter.sections;
+            if (extension(cmd.args) == ".lit") {
+                Chapter c = new Chapter();
+                c.file = cmd.args;
+                // We can ignore these, but they need to be initialized
+                c.title = "";
+                c.majorNum = -1;
+                c.minorNum = -1;
+                Chapter includedChapter = parseChapter(c, readall(File(cmd.args)));
+                chapter.sections ~= includedChapter.sections;
+            } else {
+                string includedSrc = readall(File(cmd.args));
+                Block b = new Block();
+                foreach (int i, string s; includedSrc.split("\n")) {
+                    b.lines ~= new Line(s, cmd.args, i);
+                }
+                if (curSection is null) {
+                    continue;
+                }
+                curSection.blocks ~= b;
+            }
         } else {
             if (curSection is null) {
                 chapter.commands ~= cmd;
