@@ -323,6 +323,10 @@ Chapter parseChapter(Chapter chapter, string src) {
     foreach (line; lines) {
         lineNum++;
 
+        if (strip(line).startsWith("//") && !inCodeblock) {
+            continue;
+        }
+
         @{Parse the line}
     }
     @{Close the last section}
