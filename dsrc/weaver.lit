@@ -166,17 +166,27 @@ output ~= "<!DOCTYPE html>\n"
              "<style>\n" ~
              css ~
              "</style>\n"
-             "</head>\n"
-             "<body onload=\"prettyPrint()\">\n"
-             "<section>\n"
-            ;
-
-output ~= "<h1>" ~ c.title ~ "</h1>\n";
+             "</head>\n";
 ---
 
 @s Parse the Chapter
 
+Now we write the body -- this is the meat of the weaver. First we write
+a couple things at the beginning: making sure the `prettyprint` function is
+called when the page loads, and writing out the title as an `h1`.
+
+Then we loop through each section in the chapter. At the beginning of each section,
+we write the title, and an empty `a` link so that the section title can be linked to.
+We also have to determine if the section title should be a `noheading` class. If the
+section title is empty, then the class should be `noheading` which means that the prose
+will be moved up a bit towards it -- otherwise it looks like there is too much empty space
+between the title and the prose.
+
 --- Write the body
+output ~= "<body onload=\"prettyPrint()\">\n"
+          "<section>\n"
+          "<h1>" ~ c.title ~ "</h1>\n";
+
 foreach (s; c.sections) {
     string noheading = s.title == "" ? " class=\"noheading\"" : "";
     output ~= "<a name=\"" ~ c.num() ~ ":" ~ to!string(s.num) ~ "\"><div class=\"section\"><h4" ~
@@ -184,167 +194,291 @@ foreach (s; c.sections) {
 
     foreach (block; s.blocks) {
         if (!block.isCodeblock) {
-            string html = filterMarkdown(block.text(), MarkdownFlags.disableUnderscoreEmphasis).replace("<code class=\"prettyprint\">", "<code>");
-
-            if (html.matchAll(regex(r"(?<!\\)[\$](?<!\\)[\$](.*?)(?<!\\)[\$](?<!\\)[\$]")) || html.matchAll(regex(r"(?<!\\)[\$](.*?)(?<!\\)[\$]"))) {
-                use_katex = true;
-            }
-
-            html = html.replaceAll(regex(r"(?<!\\)[\$](?<!\\)[\$](.*?)(?<!\\)[\$](?<!\\)[\$]"), "<div class=\"math\">$1</div>");
-            html = html.replaceAll(regex(r"(?<!\\)[\$](.*?)(?<!\\)[\$]"), "<span class=\"math\">$1</span>");
-            html = html.replaceAll(regex(r"\\\$"), "$$");
-            output ~= html ~ "\n";
+            @{Weave a prose block}
         } else {
-            if (matchAll(block.name, regex(".*\\.\\w+")) || matchAll(block.name, regex("\".*\""))) {
-                block.isRootBlock = true;
-                if (matchAll(block.name, regex("\".*\""))) {
-                    block.name = block.name[1..$-1];
-                }
-            }
-            output ~= "<div class=\"codeblock\">\n";
-            string chapterNum;
-            string def;
-            string defLocation;
-            string htmlFile = "";
-            if (realname(block.name) !in defLocations) {
-                error(c.file, block.startLine, "{" ~ realname(block.name) ~ "} is never defined");
-            } else {
-                def = defLocations[realname(block.name)];
-                defLocation = def;
-                auto index = def.indexOf(":");
-                string chapter = def[0..index];
-                htmlFile = getChapterHtmlFile(p.chapters, chapter);
-                if (chapter == c.num()) {
-                    defLocation = def[index + 1..$];
-                }
-            }
-            string extra = "";
-            if (strip(block.name).endsWith("+=") || strip(block.name).endsWith(":=")) {
-                extra = " " ~ strip(block.name)[$ - 2..$];
-            }
-            string name;
-            if (block.isRootBlock) {
-                name = "<strong>" ~ realname(block.name) ~ "</strong>";
-            } else {
-                name = realname(block.name);
-            }
-            output ~= "<span class=\"codeblock_name\">{" ~ name ~ 
-                      " <a href=\"" ~ htmlFile ~ "#" ~ def ~ "\">" ~ defLocation ~ "</a>}" ~ extra ~ "</span>\n";
-
-            if (block.codeType.split().length > 0) {
-                output ~= "<pre class=\"prettyprint lang-" ~ block.codeType.split()[0] ~ "\">\n";
-            } else {
-                output ~= "<pre class=\"prettyprint\">\n";
-            }
-
-            foreach (lineObj; block.lines) {
-                string line = lineObj.text;
-                string strippedLine = strip(line);
-                if (strippedLine.startsWith("@{") && strippedLine.endsWith("}")) {
-                    def = "";
-                    defLocation = "";
-                    if (strip(strippedLine[2..$ - 1]) !in defLocations) {
-                        error(c.file, lineObj.lineNum, "{" ~ strip(strippedLine[2..$ - 1]) ~ "} is never defined");
-                    } else {
-                        def = defLocations[strippedLine[2..$ - 1]];
-                        defLocation = def;
-                        auto index = def.indexOf(":");
-                        string chapter = def[0..index];
-                        htmlFile = getChapterHtmlFile(p.chapters, chapter);
-                        if (chapter == c.num()) {
-                            defLocation = def[index + 1..$];
-                        }
-                        def = ", <a href=\"" ~ htmlFile ~ "#" ~ def ~ "\">" ~ defLocation ~ "</a>";
-                    }
-                    output ~= "<span class=\"nocode pln\">" ~ leadingWS(line) ~ "{" ~ strippedLine[2..$ - 1] ~ def ~ "}</span>\n";
-                } else {
-                    output ~= line.replace("&", "&amp;").replace(">", "&gt;").replace("<", "&lt;") ~ "\n";
-                }
-            }
-            output ~= "</pre>\n";
-
-            if (realname(block.name) in addLocations) {
-                string[] locations = dup(addLocations[realname(block.name)]);
-
-                if (locations.canFind(c.num() ~ ":" ~ to!string(s.num))) {
-                    locations = remove(locations, locations.countUntil(c.num() ~ ":" ~ to!string(s.num)));
-                }
-
-                if (locations.length > 0) {
-                    string seealso = "<p class=\"seealso\">See also section";
-
-                    if (locations.length > 1) {
-                        seealso ~= "s ";
-                    } else {
-                        seealso ~= " ";
-                    }
-
-                    foreach (i; 0 .. locations.length) {
-                        string loc = locations[i];
-                        string locName = loc;
-                        auto index = loc.indexOf(":");
-                        string chapter = loc[0..index];
-                        htmlFile = getChapterHtmlFile(p.chapters, chapter);
-                        if (chapter == c.num()) {
-                            locName = loc[index + 1..$];
-                        }
-                        loc = "<a href=\"" ~ htmlFile ~ "#" ~ loc ~ "\">" ~ locName ~ "</a>";
-                        if (i == 0) {
-                            seealso ~= loc;
-                        } else if (i == locations.length - 1) {
-                            seealso ~= " and " ~ loc;
-                        } else {
-                            seealso ~= ", " ~ loc;
-                        }
-                    }
-                    seealso ~= "</p>";
-                    output ~= seealso ~ "\n";
-                }
-            }
-
-            if (realname(block.name) in useLocations) {
-                string[] locations = dup(useLocations[realname(block.name)]);
-
-                if (locations.canFind(c.num() ~ ":" ~ to!string(s.num))) {
-                    locations.remove(locations.countUntil(c.num() ~ ":" ~ to!string(s.num)));
-                }
-
-                if (locations.length > 0) {
-                    string seealso = "<p class=\"seealso\">This code is used in section";
-
-                    if (locations.length > 1) {
-                        seealso ~= "s ";
-                    } else {
-                        seealso ~= " ";
-                    }
-
-                    foreach (i; 0 .. locations.length) {
-                        string loc = locations[i];
-                        string locName = loc;
-                        auto index = loc.indexOf(":");
-                        string chapter = loc[0..index];
-                        htmlFile = getChapterHtmlFile(p.chapters, chapter);
-                        if (chapter == c.num()) {
-                            locName = loc[index + 1..$];
-                        }
-                        loc = "<a href=\"" ~ htmlFile ~ "#" ~ loc ~ "\">" ~ locName ~ "</a>";
-                        if (i == 0) {
-                            seealso ~= loc;
-                        } else if (i == locations.length - 1) {
-                            seealso ~= " and " ~ loc;
-                        } else {
-                            seealso ~= ", " ~ loc;
-                        }
-                    }
-                    seealso ~= "</p>";
-                    output ~= seealso ~ "\n";
-                }
-            }
-
-            output ~= "</div>\n";
+            @{Weave a code block}
         }
     }
     output ~= "</div>\n";
+}
+---
+
+@s Weave a prose block
+
+Weaving a prose block is not very complicated. First we get the html by sending it
+through the markdown compiler by using the `filterMarkdown` function. We disable the
+use of underscores for italics because that interferes with the katex use of underscores
+for math.
+
+Then use a giant regex to determine if any katex is being used. Really what that regex does
+is determine if there is something in dollar signs or double dollar signs which aren't escaped
+by backslashes. Most of the regex is negative look behind to make sure the dollar sign isn't
+escaped.
+
+--- Weave a prose block
+string html = filterMarkdown(block.text(), MarkdownFlags.disableUnderscoreEmphasis);
+
+if (html.matchAll(regex(r"(?<!\\)[\$](?<!\\)[\$](.*?)(?<!\\)[\$](?<!\\)[\$]")) || html.matchAll(regex(r"(?<!\\)[\$](.*?)(?<!\\)[\$]"))) {
+    use_katex = true;
+}
+---
+
+Here we use the same regex to actually perform the substitution. Double dollars mean a block math
+which means we have to use a div. For inline math (single dollars) we use a span. After that substitution
+we replace all backslash dollars to real dollar signs.
+
+Finally we add this html to the output and add a newline for good measure.
+
+--- Weave a prose block +=
+html = html.replaceAll(regex(r"(?<!\\)[\$](?<!\\)[\$](.*?)(?<!\\)[\$](?<!\\)[\$]"), "<div class=\"math\">$1</div>");
+html = html.replaceAll(regex(r"(?<!\\)[\$](.*?)(?<!\\)[\$]"), "<span class=\"math\">$1</span>");
+html = html.replaceAll(regex(r"\\\$"), "$$");
+output ~= html ~ "\n";
+---
+
+@s Weave a code block
+
+--- Weave a code block
+output ~= "<div class=\"codeblock\">\n";
+
+@{Check if it's a root block}
+@{Write the title out}
+@{Write the actual code}
+@{Write the 'see also' links}
+@{Write the 'also used in' links}
+
+output ~= "</div>\n";
+---
+
+@s Root block check
+
+First we check if the block is a root code block. We check this using
+a regex that basically checks if it the name has an extension. Additionally,
+users can put the block name in quotes to force it to be a root block.
+
+If the block name is in quotes, we have to make sure to remove those once
+we're done.
+
+--- Check if it's a root block
+if (matchAll(block.name, regex(".*\\.\\w+")) || matchAll(block.name, regex("\".*\""))) {
+    block.isRootBlock = true;
+    if (matchAll(block.name, regex("\".*\""))) {
+        block.name = block.name[1..$-1];
+    }
+}
+---
+
+@s The codeblock title
+
+Here we create the title for the codeblock. For the title, we have to link
+to the definition (which is usually the current block, but sometimes not
+because of `+=`). We also need to make the title bold (`<strong>`) if it
+is a root code block.
+
+--- Write the title out
+@{Find the definition location}
+@{Make the title bold if necessary}
+
+output ~= "<span class=\"codeblock_name\">{" ~ name ~ 
+          " <a href=\"" ~ htmlFile ~ "#" ~ def ~ "\">" ~ defLocation ~ "</a>}" ~ extra ~ "</span>\n";
+---
+
+To find the definition location we use the handy `defLocation` array that we made
+earlier. The reason we have both the variables `def` and `defLocation` is because
+the definition location might be in another chapter, in which case it should be
+displayed as `chapterNum:sectionNum` but if it's in the current file, the `chapterNum`
+can be removed. `def` gives us the real definition location, and `defLocation` is the
+one that will be used -- it strips out the `chapterNum` if necessary.
+
+--- Find the definition location
+string chapterNum;
+string def;
+string defLocation;
+string htmlFile = "";
+if (realname(block.name) !in defLocations) {
+    error(c.file, block.startLine, "{" ~ realname(block.name) ~ "} is never defined");
+} else {
+    def = defLocations[realname(block.name)];
+    defLocation = def;
+    auto index = def.indexOf(":");
+    string chapter = def[0..index];
+    htmlFile = getChapterHtmlFile(p.chapters, chapter);
+    if (chapter == c.num()) {
+        defLocation = def[index + 1..$];
+    }
+}
+---
+
+We also add the `+=` or `:=` if necessary. This needs to be the `extra` because
+it goes outside the `{}` and is not really part of the name anymore.
+
+--- Find the definition location +=
+string extra = "";
+if (strip(block.name).endsWith("+=") || strip(block.name).endsWith(":=")) {
+    extra = " " ~ strip(block.name)[$ - 2..$];
+}
+---
+
+We simple put the title in in a strong tag if it is a root codeblock to make it bold.
+
+--- Make the title bold if necessary
+string name;
+if (block.isRootBlock) {
+    name = "<strong>" ~ realname(block.name) ~ "</strong>";
+} else {
+    name = realname(block.name);
+}
+---
+
+@s The actual code
+
+At the beginning, we open the pre tag. If a codetype is defined, we tell the prettyprinter
+to use that, otherwise, the pretty printer will try to figure out how to syntax highlight
+on its own -- and it's pretty good at that.
+
+--- Write the actual code
+if (block.codeType.split().length > 0) {
+    output ~= "<pre class=\"prettyprint lang-" ~ block.codeType.split()[0] ~ "\">\n";
+} else {
+    output ~= "<pre class=\"prettyprint\">\n";
+}
+
+foreach (lineObj; block.lines) {
+    @{Write the line}
+}
+output ~= "</pre>\n";
+---
+
+Now we loop through each line. The only complicated thing here is if the line is
+a codeblock use. Then we have to link to the correct definition location.
+
+Also we escape all ampersands and greater than and less than signs before writing them.
+
+--- Write the line
+string line = lineObj.text;
+string strippedLine = strip(line);
+if (strippedLine.startsWith("@{") && strippedLine.endsWith("}")) {
+    @{Link a used codeblock}
+} else {
+    output ~= line.replace("&", "&amp;").replace(">", "&gt;").replace("<", "&lt;") ~ "\n";
+}
+---
+
+For linking the used codeblock, it's pretty much the same deal as before. We
+reuse the `def` and `defLocation` variables. We also write the final html as
+a span with the `nocode` class, that way it won't be syntax highlighted by the
+pretty printer.
+
+--- Link a used codeblock
+def = "";
+defLocation = "";
+if (strip(strippedLine[2..$ - 1]) !in defLocations) {
+    error(c.file, lineObj.lineNum, "{" ~ strip(strippedLine[2..$ - 1]) ~ "} is never defined");
+} else {
+    def = defLocations[strippedLine[2..$ - 1]];
+    defLocation = def;
+    auto index = def.indexOf(":");
+    string chapter = def[0..index];
+    htmlFile = getChapterHtmlFile(p.chapters, chapter);
+    if (chapter == c.num()) {
+        defLocation = def[index + 1..$];
+    }
+    def = ", <a href=\"" ~ htmlFile ~ "#" ~ def ~ "\">" ~ defLocation ~ "</a>";
+}
+output ~= "<span class=\"nocode pln\">" ~ leadingWS(line) ~ "{" ~ strippedLine[2..$ - 1] ~ def ~ "}</span>\n";
+---
+
+@s See also links
+
+Writing the 'see also' links is pretty similar to figuring out where a codeblock
+was defined because we have access to the `addLocations` array. Then we just
+have a few if statements to figure out the grammar -- where to put the `and`
+and whether to have plurals and whatnot.
+
+--- Write the 'see also' links
+if (realname(block.name) in addLocations) {
+    string[] locations = dup(addLocations[realname(block.name)]);
+
+    if (locations.canFind(c.num() ~ ":" ~ to!string(s.num))) {
+        locations = remove(locations, locations.countUntil(c.num() ~ ":" ~ to!string(s.num)));
+    }
+
+    if (locations.length > 0) {
+        string seealso = "<p class=\"seealso\">See also section";
+
+        if (locations.length > 1) {
+            seealso ~= "s ";
+        } else {
+            seealso ~= " ";
+        }
+
+        foreach (i; 0 .. locations.length) {
+            string loc = locations[i];
+            string locName = loc;
+            auto index = loc.indexOf(":");
+            string chapter = loc[0..index];
+            htmlFile = getChapterHtmlFile(p.chapters, chapter);
+            if (chapter == c.num()) {
+                locName = loc[index + 1..$];
+            }
+            loc = "<a href=\"" ~ htmlFile ~ "#" ~ loc ~ "\">" ~ locName ~ "</a>";
+            if (i == 0) {
+                seealso ~= loc;
+            } else if (i == locations.length - 1) {
+                seealso ~= " and " ~ loc;
+            } else {
+                seealso ~= ", " ~ loc;
+            }
+        }
+        seealso ~= "</p>";
+        output ~= seealso ~ "\n";
+    }
+}
+---
+
+@s Also used in links
+
+This is pretty much the same as the 'see also' links except we use the
+`useLocations` array.
+
+--- Write the 'also used in' links
+if (realname(block.name) in useLocations) {
+    string[] locations = dup(useLocations[realname(block.name)]);
+
+    if (locations.canFind(c.num() ~ ":" ~ to!string(s.num))) {
+        locations.remove(locations.countUntil(c.num() ~ ":" ~ to!string(s.num)));
+    }
+
+    if (locations.length > 0) {
+        string seealso = "<p class=\"seealso\">This code is used in section";
+
+        if (locations.length > 1) {
+            seealso ~= "s ";
+        } else {
+            seealso ~= " ";
+        }
+
+        foreach (i; 0 .. locations.length) {
+            string loc = locations[i];
+            string locName = loc;
+            auto index = loc.indexOf(":");
+            string chapter = loc[0..index];
+            htmlFile = getChapterHtmlFile(p.chapters, chapter);
+            if (chapter == c.num()) {
+                locName = loc[index + 1..$];
+            }
+            loc = "<a href=\"" ~ htmlFile ~ "#" ~ loc ~ "\">" ~ locName ~ "</a>";
+            if (i == 0) {
+                seealso ~= loc;
+            } else if (i == locations.length - 1) {
+                seealso ~= " and " ~ loc;
+            } else {
+                seealso ~= ", " ~ loc;
+            }
+        }
+        seealso ~= "</p>";
+        output ~= seealso ~ "\n";
+    }
 }
 ---
 
