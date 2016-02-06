@@ -316,7 +316,7 @@ Chapter parseChapter(Chapter chapter, string src) {
     @{Initialize some variables}
 
     // Handle the @include statements
-    src = std.regex.replaceAll!(match => readall(File(match[1])))(src, regex(`@include (.*)`));
+    src = std.regex.replaceAll!(match => readall(File(match[1])))(src, regex(`^@include (.*)`));
     string[] lines = src.split("\n");
 
     int lineNum = 0;

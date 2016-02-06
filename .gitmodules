@@ -1,0 +1,3 @@
+[submodule "dsrc/markdown"]
+	path = dsrc/markdown
+	url = https://github.com/zyedidia/dmarkdown

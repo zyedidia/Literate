@@ -1,5 +1,11 @@
 release:
-	dub --root=dsrc/tangle build --build=release
+	@if [ ! -s dsrc/markdown ]; then \
+		git submodule init; \
+		git submodule update; \
+	fi;
+	@if [ ! -s bin/tangle ]; then \
+		dub --root=dsrc/tangle build --build=release; \
+	fi;
 	bin/tangle dsrc/*.lit
 	@mkdir -p source
 	@mv *.d source
@@ -7,7 +13,13 @@ release:
 	dub build --build=release
 
 debug:
-	dub --root=dsrc/tangle build
+	if [ ! -s dsrc/markdown ]; then \
+		git submodule init; \
+		git submodule update; \
+	fi;
+	if [ ! -s bin/tangle ]; then \
+		dub --root=dsrc/tangle build
+	fi;
 	bin/tangle dsrc/*.lit
 	@mkdir -p source
 	@mv *.d source
