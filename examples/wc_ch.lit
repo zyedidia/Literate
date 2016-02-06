@@ -5,9 +5,9 @@ This is a change file for wc.lit.
 We will use this to change the title from WC to Word Count.
 
 @replace
-@title WC
+@title Word Count Program
 @with
-@title Word Count
+@title WC
 @end
 
 Additionally we will also change the comment type from // %s to /* %s */.

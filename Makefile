@@ -25,3 +25,14 @@ debug:
 	@mv *.d source
 	@mkdir -p bin
 	dub build
+
+clean:
+	dub clean
+	dub clean --root=dsrc/markdown
+	dub clean --root=dsrc/tangle
+
+clean-all:
+	dub clean
+	dub clean --root=dsrc/markdown
+	dub clean --root=dsrc/tangle
+	rm -rf bin source

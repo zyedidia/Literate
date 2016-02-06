@@ -2,6 +2,8 @@
 
 bin
 
+.DS_STORE
+
 examples/*.py
 examples/*.c
 examples/*.pdf

@@ -5,7 +5,7 @@
 @s
 
 If you want to see an actual example of a literate program, check out
-wc.lit.
+`wc.lit` or `hangman.lit`.
 
 This file attempts to showcase most of, if not all of the features
 of Literate. It is meant to be used as a reference for writing
