@@ -1,5 +1,5 @@
 release:
-	@if [ ! -s dsrc/markdown ]; then \
+	@if [ ! -s dsrc/markdown/source ]; then \
 		git submodule init; \
 		git submodule update; \
 	fi;
@@ -13,12 +13,12 @@ release:
 	dub build --build=release
 
 debug:
-	if [ ! -s dsrc/markdown ]; then \
+	@if [ ! -s dsrc/markdown/source ]; then \
 		git submodule init; \
 		git submodule update; \
 	fi;
-	if [ ! -s bin/tangle ]; then \
-		dub --root=dsrc/tangle build
+	@if [ ! -s bin/tangle ]; then \
+		dub --root=dsrc/tangle build; \
 	fi;
 	bin/tangle dsrc/*.lit
 	@mkdir -p source
