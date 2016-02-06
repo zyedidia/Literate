@@ -4,7 +4,7 @@ release:
 		git submodule update; \
 	fi;
 	@if [ ! -s bin/tangle ]; then \
-		dub --root=dsrc/tangle build --build=release; \
+		dub --root=dsrc/tangle build; \
 	fi;
 	bin/tangle dsrc/*.lit
 	@mkdir -p source
