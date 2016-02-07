@@ -325,7 +325,7 @@ Chapter parseChapter(Chapter chapter, string src) {
             error(filename, 1, "File " ~ file ~ " does not exist");
             return "";
         }
-        return fileSrc;
+        return readall(File(file));
     }
 
     // Handle the @include statements
