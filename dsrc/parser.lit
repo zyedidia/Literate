@@ -71,6 +71,7 @@ import std.algorithm: canFind;
 import std.regex: matchAll, matchFirst, regex;
 import std.conv;
 import std.path: extension;
+import std.file;
 ---
 
 @s
@@ -315,8 +316,20 @@ Program parseProgram(Program p, string src) {
 Chapter parseChapter(Chapter chapter, string src) {
     @{Initialize some variables}
 
+    string include(string file) {
+        if (file == filename) {
+            error(filename, 1, "Recursive include");
+            return "";
+        }
+        if (!exists(file)){
+            error(filename, 1, "File " ~ file ~ " does not exist");
+            return "";
+        }
+        return fileSrc;
+    }
+
     // Handle the @include statements
-    src = std.regex.replaceAll!(match => readall(File(match[1])))(src, regex(`^@include (.*)`));
+    src = std.regex.replaceAll!(match => include(match[1]))(src, regex(`\n@include (.*)`));
     string[] lines = src.split("\n");
 
     int lineNum = 0;
