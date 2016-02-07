@@ -1,35 +1,78 @@
 # Literate
 
-Literate (lit for short) is a computer programming system to create literate programs. It works with any programming language, generates HTML pages as output (which can be converted to PDF by using your browser's 'print to pdf'),
-and generates readable code. The code that is generated is indented properly and is commented using the names of codeblocks that you choose.
+## What is Literate programming?
 
-The goal of this project is to create a modern literate programming system which keeps most, if not all of the features of Knuth and Levy's CWEB system, but simplifies the system and adds even more features.
+Literate programming is a style of programming invented by Donald Knuth, where the main idea is that a program's source code is made primarily to be read and understood by other people, and secondarily to be executed by the computer.
+
+This frees the programmer from the structure of a program imposed by the computer and means that the programmer can develop programs in the order of the flow of their thoughts.
+
+A Literate program generally consists of explanation of the code in a natural language such as English, interspersed with snippets of code to be executed. This means that Literate programs are very easy to understand and share, as all the code is well explained.
+
+---
+
+Literate is a tool for creating literate programs.
+
+The goal of this project is to create a literate programming tool which keeps most, if not all of the features of Knuth and Levy's original CWEB system, but simplifies the system and adds even more features.
 
 You can view the main website about Literate [here](http://zbyedidia.webfactional.com/literate) including a [manual](http://zbyedidia.webfactional.com/literate/manual.php) on how to use Literate.
 
 If you like the project, make sure to leave a star :smile:
 
-If you find any bugs in the software please report them here.
+## Features
 
-[Website] (http://zbyedidia.webfactional.com/literate).
-
-# Features
-### In addition to those of CWEB
 * Supports any language including syntax highlighting and pretty printing in HTML
 * Markdown based -- very easy to read and write Literate source.
-* Generates readable and commented code in the target language (the generated code is usable by others)
 * Reports syntax errors back from the compiler to the right line in the literate source
+* Generates readable and commented code in the target language (the generated code is usable by others)
+* Supports TeX equations with `$` notation.
 * Literate source code is readable whether you are looking at the `.lit` file, or the generated HTML.
-* Compatible with Vim ([literate.vim] (https://github.com/zyedidia/literate.vim))
 * Highly customizable (you can add your own HTML or CSS)
 * Runs fast -- wc.lit compiled for me in 7ms for both code and HTML output
-* Supports TeX equations with `$` notation.
-
-### Inspired from CWEB
 * Automatically generates hyperlinks between code sections
 * Formatted output similar to CWEB
+* Compatible with Vim ([literate.vim] (https://github.com/zyedidia/literate.vim))
 
-# Installation
+## Example
+
+Here is an example literate program saved in the file `hello.c`.
+
+```
+@title Hello world in C
+
+@s Introduction
+
+This is an example hello world C program.
+We can define codeblocks with `---`
+
+--- hello.c
+@{Includes}
+
+int main() {
+    @{Print a string}
+    return 0;
+}
+---
+
+Now we can define the `Includes` codeblock:
+
+--- Includes
+#include <stdio.h>
+---
+
+Finally, our program needs to print "hello world"
+
+--- Print a string
+printf("hello world\n");
+---
+```
+
+To compile this code simply run
+
+`$ lit hello.lit`
+
+Which generates `hello.c` and `hello.html`.
+
+## Installation
 
 ### Mac
 
@@ -57,23 +100,24 @@ You can find the binary in path/to/Literate/bin (you may want to add this to you
 You might also want to go install the [Vim plugin](https://github.com/zyedidia/literate.vim) (it has syntax highlighting of the embedded code, linting with Neomake, and jumping to codeblock definitions). 
 I'm sorry that no other editors are supported -- I don't know how to make plugins for other editors.
 
-# Usage
-
-Add `path/to/Literate/bin` to your PATH and then you can generate html and/or code from `.lit` files.
+## Usage
 
 ```
-$ cd Literate/examples
-$ lit wc.lit
-$ ls
-wc.c    wc.html
+Lit: Literate Programming System
+
+Usage: lit [options] <inputs>
+
+Options:
+--help    -h          Show this help text
+--tangle  -t          Only compile code files
+--weave   -w          Only compile HTML files
+--no-output           Do not generate any output files
+--out-dir -odir DIR   Put the generated files in DIR
+--compiler            Report compiler errors (needs @compiler to be defined)
 ```
-
-Additional command line flags are:
-
-* `--weave -w`: Only generate HTML output
-* `--tangle -t`: Only generate code output
-* `--out-dir -odir DIR`: Put the output files in the specified directory
-* `--no-output`: Do not generate any files, only show errors
-* `--compiler`: Report compiler errors (needs `@compiler` to be defined)
 
 For more information see the [manual](http://zbyedidia.webfactional.com/literate/manual.php).
+
+## Contributing
+
+Literate is written in Literate D and you can find the source code in the `dsrc` directory. I happy to accept pull requests, and if you find any bugs, please report them. Thanks!
