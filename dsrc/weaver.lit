@@ -78,7 +78,7 @@ foreach (c; p.chapters) {
                 mkdir(dir);
             }
         }
-        File f = File(dir ~ "/" ~ stripExtension(c.file) ~ ".html", "w");
+        File f = File(dir ~ "/" ~ stripExtension(baseName(c.file)) ~ ".html", "w");
         f.write(output);
         f.close();
     }
