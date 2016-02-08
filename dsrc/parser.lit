@@ -66,9 +66,10 @@ I'll quickly list the imports here.
 --- Imports
 import std.stdio;
 import util;
+import main;
 import std.string: split, startsWith, chomp, replace, strip;
 import std.algorithm: canFind;
-import std.regex: matchAll, matchFirst, regex;
+import std.regex: matchAll, matchFirst, regex, ctRegex, splitter;
 import std.conv;
 import std.path: extension;
 ---
@@ -179,8 +180,11 @@ class Block {
     public string codeType;
     public string commentString;
 
+    public Modifier[] modifiers;
+
     this() {
         lines = [];
+        modifiers = [];
     }
 
     string text() {
@@ -484,6 +488,8 @@ else if (matchAll(line, regex("^---.+"))) {
     curBlock.isCodeblock = true;
     curBlock.name = strip(line[3..$]);
 
+    @{Parse Modifiers}
+
     foreach (cmd; curSection.commands) {
         if (cmd.name == "@code_type") {
             curBlock.codeType = cmd.args;
@@ -493,6 +499,38 @@ else if (matchAll(line, regex("^---.+"))) {
     }
 
     inCodeblock = true;
+}
+---
+
+@s Check for and extract modifiers.
+
+--- Parse Modifiers
+auto checkForModifiers = ctRegex!(`(.*)\s+---\s+(.*)`);
+auto splitOnSpace = ctRegex!(r"(\s+)");
+auto modMatch = matchFirst(curBlock.name, checkForModifiers);
+
+if (modMatch) {
+        curBlock.name = modMatch[1]; // Name without params.
+
+        foreach (m; splitter(modMatch[2], splitOnSpace)) {
+                switch(m) {
+                        case "+=":
+                        curBlock.modifiers ~= Modifier.additive;
+                        break;
+                        case ":=":
+                        break;
+                        case "noWeave":
+                        curBlock.modifiers ~= Modifier.noWeave;
+                        break;
+                        case "noTangle":
+                        curBlock.modifiers ~= Modifier.noTangle;
+                        break;
+                        default:
+                        writeln("Un-implemented modifier: " ~ m);
+                        break;
+                }
+        }
+
 }
 ---
 
