@@ -41,22 +41,21 @@ foreach (chapter; p.chapters) {
     foreach (s; chapter.sections) {
         foreach (block; s.blocks) {
             if (block.isCodeblock) {
-                
+
                 if (block.modifiers.canFind(Modifier.noWeave)) {
-                        writeln("This block is removed");
-                        block.isCodeblock = false;
-                        block.lines = [];
-                        continue;
+                    block.isCodeblock = false; // Prevents it from passing further checks. Hacky?
+                    block.lines = []; // Is this the best way to prevent it from printing anything down the line? 
+                    continue;
                 }
 
                 if (block.modifiers.canFind(Modifier.additive)) {
-                    if (realname(block.name) !in addLocations || !addLocations[realname(block.name)].canFind(to!string(s.num)))
-                        addLocations[realname(block.name)] ~= chapter.num() ~ ":" ~ to!string(s.num);
-                } else if (block.modifiers.canFind(Modifier.coleq)) {
-                    if (realname(block.name) !in redefLocations || !redefLocations[realname(block.name)].canFind(to!string(s.num)))
-                        redefLocations[realname(block.name)] ~= chapter.num() ~ ":" ~ to!string(s.num);
+                    if (block.name !in addLocations || !addLocations[block.name].canFind(to!string(s.num)))
+                        addLocations[block.name] ~= chapter.num() ~ ":" ~ to!string(s.num);
+                } else if (block.modifiers.canFind(Modifier.redef)) {
+                    if (block.name !in redefLocations || !redefLocations[block.name].canFind(to!string(s.num)))
+                        redefLocations[block.name] ~= chapter.num() ~ ":" ~ to!string(s.num);
                 } else {
-                    defLocations[realname(block.name)] = chapter.num() ~ ":" ~ to!string(s.num);
+                    defLocations[block.name] = chapter.num() ~ ":" ~ to!string(s.num);
                 }
 
                 foreach (lineObj; block.lines) {
@@ -303,10 +302,10 @@ string chapterNum;
 string def;
 string defLocation;
 string htmlFile = "";
-if (realname(block.name) !in defLocations) {
-    error(c.file, block.startLine, "{" ~ realname(block.name) ~ "} is never defined");
+if (block.name !in defLocations) {
+    error(c.file, block.startLine, "{" ~ block.name ~ "} is never defined");
 } else {
-    def = defLocations[realname(block.name)];
+    def = defLocations[block.name];
     defLocation = def;
     auto index = def.indexOf(":");
     string chapter = def[0..index];
@@ -332,9 +331,9 @@ We simple put the title in in a strong tag if it is a root codeblock to make it 
 --- Make the title bold if necessary
 string name;
 if (block.isRootBlock) {
-    name = "<strong>" ~ realname(block.name) ~ "</strong>";
+    name = "<strong>" ~ block.name ~ "</strong>";
 } else {
-    name = realname(block.name);
+    name = block.name;
 }
 ---
 
@@ -404,8 +403,8 @@ have a few if statements to figure out the grammar -- where to put the `and`
 and whether to have plurals and whatnot.
 
 --- Write the 'see also' links
-if (realname(block.name) in addLocations) {
-    string[] locations = dup(addLocations[realname(block.name)]);
+if (block.name in addLocations) {
+    string[] locations = dup(addLocations[block.name]);
 
     if (locations.canFind(c.num() ~ ":" ~ to!string(s.num))) {
         locations = remove(locations, locations.countUntil(c.num() ~ ":" ~ to!string(s.num)));
@@ -450,8 +449,8 @@ This is pretty much the same as the 'see also' links except we use the
 `useLocations` array.
 
 --- Write the 'also used in' links
-if (realname(block.name) in useLocations) {
-    string[] locations = dup(useLocations[realname(block.name)]);
+if (block.name in useLocations) {
+    string[] locations = dup(useLocations[block.name]);
 
     if (locations.canFind(c.num() ~ ":" ~ to!string(s.num))) {
         locations.remove(locations.countUntil(c.num() ~ ":" ~ to!string(s.num)));

@@ -202,6 +202,7 @@ class Block {
         b.isCodeblock = isCodeblock;
         b.codeType = codeType;
         b.commentString = commentString;
+        b.modifiers = modifiers;
 
         foreach (Line l; lines) {
             b.lines ~= l.dup();
@@ -504,32 +505,35 @@ else if (matchAll(line, regex("^---.+"))) {
 
 @s Check for and extract modifiers.
 
+Modifier format for a code block: `--- Block Name --- noWeave +=`.
+
 --- Parse Modifiers
 auto checkForModifiers = ctRegex!(`(.*)\s+---\s+(.*)`);
 auto splitOnSpace = ctRegex!(r"(\s+)");
 auto modMatch = matchFirst(curBlock.name, checkForModifiers);
 
 if (modMatch) {
-        curBlock.name = modMatch[1]; // Name without params.
+    curBlock.name = modMatch[1]; // Name without params.
 
-        foreach (m; splitter(modMatch[2], splitOnSpace)) {
-                switch(m) {
-                        case "+=":
-                        curBlock.modifiers ~= Modifier.additive;
-                        break;
-                        case ":=":
-                        break;
-                        case "noWeave":
-                        curBlock.modifiers ~= Modifier.noWeave;
-                        break;
-                        case "noTangle":
-                        curBlock.modifiers ~= Modifier.noTangle;
-                        break;
-                        default:
-                        writeln("Un-implemented modifier: " ~ m);
-                        break;
-                }
+    foreach (m; splitter(modMatch[2], splitOnSpace)) {
+        switch(m) {
+            case "+=":
+                curBlock.modifiers ~= Modifier.additive;
+                break;
+            case ":=":
+                curBlock.modifiers ~= Modifier.redef;
+                break;
+            case "noWeave":
+                curBlock.modifiers ~= Modifier.noWeave;
+                break;
+            case "noTangle":
+                curBlock.modifiers ~= Modifier.noTangle;
+                break;
+            default:
+                error(filename, lineNum, "Invalid modifier: " ~ m);
+                break;
         }
+    }
 
 }
 ---
