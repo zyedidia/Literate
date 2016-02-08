@@ -34,7 +34,7 @@ If you like the project, make sure to leave a star :smile:
 
 ## Example
 
-Here is an example literate program saved in the file `hello.c`.
+Here is an example literate program saved in the file `hello.lit`.
 
 ```
 @title Hello world in C
@@ -70,7 +70,7 @@ To compile this code simply run
 
 `$ lit hello.lit`
 
-Which generates `hello.c` and `hello.html`.
+Which generates [hello.c](http://literate.zbyedidia.webfactional.com/examples/hello.c) and [hello.html](http://literate.zbyedidia.webfactional.com/examples/hello.html).
 
 ## Installation
 
@@ -120,4 +120,5 @@ For more information see the [manual](http://zbyedidia.webfactional.com/literate
 
 ## Contributing
 
-Literate is written in Literate D and you can find the source code in the `dsrc` directory. I happy to accept pull requests, and if you find any bugs, please report them. Thanks!
+Literate is written in Literate D and you can find the source code in the `dsrc` directory. You can also read the source code compiled by Literate [here](http://literate.zbyedidia.webfactional.com/literate-source).
+I am happy to accept pull requests, and if you find any bugs, please report them. Thanks!
