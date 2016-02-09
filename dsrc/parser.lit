@@ -506,16 +506,40 @@ else if (matchAll(line, regex("^---.+"))) {
 @s Check for and extract modifiers.
 
 Modifier format for a code block: `--- Block Name --- noWeave +=`.
+The `checkForModifiers` ugliness is due to lack of `(?|...)` and friends.
+
+First half matches for expressions *with* modifiers:
+
+    1. `(?P<namea>\S.*)` : From the first non-whitespace character ...
+    2. `[ \t]-{3}[ \t]` : Matches ` --- `
+    3. `(?P<modifiers>.+)` : Matches everything after the separator.
+
+Second half matches for no modifiers: Ether `Block name` and with a floating separator `Block Name ---`.
+
+    4. `|(?P<nameb>\S.*?)` : Same thing as #1 but stores it in `nameb`
+    5. `[ \t]*?` : Checks for any amount of whitespace (Including none.)
+    6. `(-{1,}$` : Checks for any floating `-` and verifies that nothing else is there untill end of line.
+    7. `|$))` : Or just checks that there is nothing but the end of the line after the whitespace.
+
+Returns ether `namea` and `modifiers` or just `nameb`. 
 
 --- Parse Modifiers
-auto checkForModifiers = ctRegex!(`(.*)\s+---\s+(.*)`);
+auto checkForModifiers = ctRegex!(`(?P<namea>\S.*)[ \t]-{3}[ \t](?P<modifiers>.+)|(?P<nameb>\S.*?)[ \t]*?(-{1,}$|$)`);
 auto splitOnSpace = ctRegex!(r"(\s+)");
 auto modMatch = matchFirst(curBlock.name, checkForModifiers);
 
-if (modMatch) {
-    curBlock.name = modMatch[1]; // Name without params.
+// matchFirst returns unmatched groups as empty strings
 
-    foreach (m; splitter(modMatch[2], splitOnSpace)) {
+if (modMatch["namea"] != "") {
+    curBlock.name = modMatch["namea"];
+} else if (modMatch["nameb"] != ""){
+    curBlock.name = modMatch["nameb"];
+} else {
+    error(filename, lineNum, "Something went wrong with: " ~ curBlock.name);
+}
+
+if (modMatch["modifiers"]) {
+    foreach (m; splitter(modMatch["modifiers"], splitOnSpace)) {
         switch(m) {
             case "+=":
                 curBlock.modifiers ~= Modifier.additive;
