@@ -16,6 +16,7 @@ Here is an overview:
 --- main.d
 @{Imports}
 @{Globals}
+@{Modifiers}
 
 @{getLinenums function}
 
@@ -52,6 +53,21 @@ bool weaveOnly;
 bool noOutput;
 bool noCompCmd = true;
 string outDir = "."; // Default is current directory
+---
+
+This program uses a number of block modifiers in order to facilitate certain functionality.
+i.e. If you don't wish a code block to be woven into the final HTML then the `noWeave` 
+modifier will indicate this for you.
+
+Each modifier is represented by this list of enums:
+
+--- Modifiers
+enum Modifier {
+    noWeave,
+    noTangle,
+    additive, //+=
+    redef // :=
+}
 ---
 
 Now, to actually parse the arguments:

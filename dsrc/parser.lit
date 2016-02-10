@@ -66,9 +66,10 @@ I'll quickly list the imports here.
 --- Imports
 import std.stdio;
 import util;
-import std.string: split, startsWith, chomp, replace, strip;
+import main;
+import std.string: split, endsWith, startsWith, chomp, replace, strip;
 import std.algorithm: canFind;
-import std.regex: matchAll, matchFirst, regex;
+import std.regex: matchAll, matchFirst, regex, ctRegex, splitter;
 import std.conv;
 import std.path: extension;
 import std.file;
@@ -180,8 +181,11 @@ class Block {
     public string codeType;
     public string commentString;
 
+    public Modifier[] modifiers;
+
     this() {
         lines = [];
+        modifiers = [];
     }
 
     string text() {
@@ -199,6 +203,7 @@ class Block {
         b.isCodeblock = isCodeblock;
         b.codeType = codeType;
         b.commentString = commentString;
+        b.modifiers = modifiers;
 
         foreach (Line l; lines) {
             b.lines ~= l.dup();
@@ -522,6 +527,8 @@ else if (matchAll(line, regex("^---.+"))) {
     curBlock.isCodeblock = true;
     curBlock.name = strip(line[3..$]);
 
+    @{Parse Modifiers}
+
     foreach (cmd; curSection.commands) {
         if (cmd.name == "@code_type") {
             curBlock.codeType = cmd.args;
@@ -531,6 +538,73 @@ else if (matchAll(line, regex("^---.+"))) {
     }
 
     inCodeblock = true;
+}
+---
+
+@s Check for and extract modifiers.
+
+Modifier format for a code block: `--- Block Name --- noWeave +=`.
+The `checkForModifiers` ugliness is due to lack of `(?|...)` and friends.
+
+First half matches for expressions *with* modifiers:
+
+    1. `(?P<namea>\S.*)` : Keep taking from the first non-whitespace character ...
+    2. `[ \t]-{3}[ \t]` : Until it matches ` --- `
+    3. `(?P<modifiers>.+)` : Matches everything after the separator.
+
+Second half matches for no modifiers: Ether `Block name` and with a floating separator `Block Name ---`.
+
+    4. `|(?P<nameb>\S.*?)` : Same thing as #1 but stores it in `nameb`
+    5. `[ \t]*?` : Checks for any amount of whitespace (Including none.)
+    6. `(-{1,}$` : Checks for any floating `-` and verifies that nothing else is there untill end of line.
+    7. `|$))` : Or just checks that there is nothing but the end of the line after the whitespace.
+
+Returns ether `namea` and `modifiers` or just `nameb`. 
+
+--- Parse Modifiers
+auto checkForModifiers = ctRegex!(`(?P<namea>\S.*)[ \t]-{3}[ \t](?P<modifiers>.+)|(?P<nameb>\S.*?)[ \t]*?(-{1,}$|$)`);
+auto splitOnSpace = ctRegex!(r"(\s+)");
+auto modMatch = matchFirst(curBlock.name, checkForModifiers);
+
+// matchFirst returns unmatched groups as empty strings
+
+if (modMatch["namea"] != "") {
+    curBlock.name = modMatch["namea"];
+} else if (modMatch["nameb"] != ""){
+    curBlock.name = modMatch["nameb"];
+    // Check for old syntax.
+    if (curBlock.name.endsWith("+=")) {
+        curBlock.modifiers ~= Modifier.additive;
+        curBlock.name = strip(curBlock.name[0..$-2]);
+    } else if (curBlock.name.endsWith(":=")) {
+        curBlock.modifiers ~= Modifier.redef;
+        curBlock.name = strip(curBlock.name[0..$-2]);
+    }
+} else {
+    error(filename, lineNum, "Something went wrong with: " ~ curBlock.name);
+}
+
+if (modMatch["modifiers"]) {
+    foreach (m; splitter(modMatch["modifiers"], splitOnSpace)) {
+        switch(m) {
+            case "+=":
+                curBlock.modifiers ~= Modifier.additive;
+                break;
+            case ":=":
+                curBlock.modifiers ~= Modifier.redef;
+                break;
+            case "noWeave":
+                curBlock.modifiers ~= Modifier.noWeave;
+                break;
+            case "noTangle":
+                curBlock.modifiers ~= Modifier.noTangle;
+                break;
+            default:
+                error(filename, lineNum, "Invalid modifier: " ~ m);
+                break;
+        }
+    }
+
 }
 ---
 

@@ -41,15 +41,21 @@ foreach (chapter; p.chapters) {
     foreach (s; chapter.sections) {
         foreach (block; s.blocks) {
             if (block.isCodeblock) {
+                if (block.modifiers.canFind(Modifier.noWeave)) {
+                    defLocations[block.name] = "noWeave";
+                    continue;
+                }
+
                 @{Check if it's a root block}
-                if (block.name.indexOf("+=") != -1) {
-                    if (realname(block.name) !in addLocations || !addLocations[realname(block.name)].canFind(to!string(s.num)))
-                        addLocations[realname(block.name)] ~= chapter.num() ~ ":" ~ to!string(s.num);
-                } else if (block.name.indexOf(":=") != -1) {
-                    if (realname(block.name) !in redefLocations || !redefLocations[realname(block.name)].canFind(to!string(s.num)))
-                        redefLocations[realname(block.name)] ~= chapter.num() ~ ":" ~ to!string(s.num);
+
+                if (block.modifiers.canFind(Modifier.additive)) {
+                    if (block.name !in addLocations || !addLocations[block.name].canFind(to!string(s.num)))
+                        addLocations[block.name] ~= chapter.num() ~ ":" ~ to!string(s.num);
+                } else if (block.modifiers.canFind(Modifier.redef)) {
+                    if (block.name !in redefLocations || !redefLocations[block.name].canFind(to!string(s.num)))
+                        redefLocations[block.name] ~= chapter.num() ~ ":" ~ to!string(s.num);
                 } else {
-                    defLocations[realname(block.name)] = chapter.num() ~ ":" ~ to!string(s.num);
+                    defLocations[block.name] = chapter.num() ~ ":" ~ to!string(s.num);
                 }
 
                 foreach (lineObj; block.lines) {
@@ -212,10 +218,12 @@ foreach (s; c.sections) {
               noheading ~ ">" ~ to!string(s.num) ~ ". " ~ s.title ~ "</h4></a>\n";
 
     foreach (block; s.blocks) {
-        if (!block.isCodeblock) {
-            @{Weave a prose block}
-        } else {
-            @{Weave a code block}
+        if (!block.modifiers.canFind(Modifier.noWeave)) {
+            if (!block.isCodeblock) {
+                @{Weave a prose block}
+            } else {
+                @{Weave a code block}
+            }
         }
     }
     output ~= "</div>\n";
@@ -295,10 +303,10 @@ string chapterNum;
 string def;
 string defLocation;
 string htmlFile = "";
-if (realname(block.name) !in defLocations) {
-    error(c.file, block.startLine, "{" ~ realname(block.name) ~ "} is never defined");
+if (block.name !in defLocations) {
+    error(c.file, block.startLine, "{" ~ block.name ~ "} is never defined");
 } else {
-    def = defLocations[realname(block.name)];
+    def = defLocations[block.name];
     defLocation = def;
     auto index = def.indexOf(":");
     string chapter = def[0..index];
@@ -324,9 +332,9 @@ We simple put the title in in a strong tag if it is a root codeblock to make it 
 --- Make the title bold if necessary
 string name;
 if (block.isRootBlock) {
-    name = "<strong>" ~ realname(block.name) ~ "</strong>";
+    name = "<strong>" ~ block.name ~ "</strong>";
 } else {
-    name = realname(block.name);
+    name = block.name;
 }
 ---
 
@@ -359,7 +367,7 @@ string line = lineObj.text;
 string strippedLine = strip(line);
 if (strippedLine.startsWith("@{") && strippedLine.endsWith("}")) {
     @{Link a used codeblock}
-} else {
+} else { 
     output ~= line.replace("&", "&amp;").replace(">", "&gt;").replace("<", "&lt;") ~ "\n";
 }
 ---
@@ -374,7 +382,7 @@ def = "";
 defLocation = "";
 if (strip(strippedLine[2..$ - 1]) !in defLocations) {
     error(c.file, lineObj.lineNum, "{" ~ strip(strippedLine[2..$ - 1]) ~ "} is never defined");
-} else {
+} else if (defLocations[strip(strippedLine[2..$ - 1])] != "noWeave") {
     def = defLocations[strippedLine[2..$ - 1]];
     defLocation = def;
     auto index = def.indexOf(":");
@@ -396,8 +404,8 @@ have a few if statements to figure out the grammar -- where to put the `and`
 and whether to have plurals and whatnot.
 
 --- Write the 'see also' links
-if (realname(block.name) in addLocations) {
-    string[] locations = dup(addLocations[realname(block.name)]);
+if (block.name in addLocations) {
+    string[] locations = dup(addLocations[block.name]);
 
     if (locations.canFind(c.num() ~ ":" ~ to!string(s.num))) {
         locations = remove(locations, locations.countUntil(c.num() ~ ":" ~ to!string(s.num)));
@@ -442,8 +450,8 @@ This is pretty much the same as the 'see also' links except we use the
 `useLocations` array.
 
 --- Write the 'also used in' links
-if (realname(block.name) in useLocations) {
-    string[] locations = dup(useLocations[realname(block.name)]);
+if (block.name in useLocations) {
+    string[] locations = dup(useLocations[block.name]);
 
     if (locations.canFind(c.num() ~ ":" ~ to!string(s.num))) {
         locations.remove(locations.countUntil(c.num() ~ ":" ~ to!string(s.num)));
