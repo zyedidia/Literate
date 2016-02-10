@@ -67,7 +67,7 @@ I'll quickly list the imports here.
 import std.stdio;
 import util;
 import main;
-import std.string: split, startsWith, chomp, replace, strip;
+import std.string: split, endsWith, startsWith, chomp, replace, strip;
 import std.algorithm: canFind;
 import std.regex: matchAll, matchFirst, regex, ctRegex, splitter;
 import std.conv;
@@ -510,8 +510,8 @@ The `checkForModifiers` ugliness is due to lack of `(?|...)` and friends.
 
 First half matches for expressions *with* modifiers:
 
-    1. `(?P<namea>\S.*)` : From the first non-whitespace character ...
-    2. `[ \t]-{3}[ \t]` : Matches ` --- `
+    1. `(?P<namea>\S.*)` : Keep taking from the first non-whitespace character ...
+    2. `[ \t]-{3}[ \t]` : Until it matches ` --- `
     3. `(?P<modifiers>.+)` : Matches everything after the separator.
 
 Second half matches for no modifiers: Ether `Block name` and with a floating separator `Block Name ---`.
@@ -534,6 +534,14 @@ if (modMatch["namea"] != "") {
     curBlock.name = modMatch["namea"];
 } else if (modMatch["nameb"] != ""){
     curBlock.name = modMatch["nameb"];
+    // Check for old syntax.
+    if (curBlock.name.endsWith("+=")) {
+        curBlock.modifiers ~= Modifier.additive;
+        curBlock.name = strip(curBlock.name[0..$-2]);
+    } else if (curBlock.name.endsWith(":=")) {
+        curBlock.modifiers ~= Modifier.redef;
+        curBlock.name = strip(curBlock.name[0..$-2]);
+    }
 } else {
     error(filename, lineNum, "Something went wrong with: " ~ curBlock.name);
 }

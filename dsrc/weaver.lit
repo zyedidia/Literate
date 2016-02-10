@@ -43,8 +43,7 @@ foreach (chapter; p.chapters) {
             if (block.isCodeblock) {
 
                 if (block.modifiers.canFind(Modifier.noWeave)) {
-                    block.isCodeblock = false; // Prevents it from passing further checks. Hacky?
-                    block.lines = []; // Is this the best way to prevent it from printing anything down the line? 
+                    defLocations[block.name] = "noWeave";
                     continue;
                 }
 
@@ -200,10 +199,12 @@ foreach (s; c.sections) {
               noheading ~ ">" ~ to!string(s.num) ~ ". " ~ s.title ~ "</h4></a>\n";
 
     foreach (block; s.blocks) {
-        if (!block.isCodeblock) {
-            @{Weave a prose block}
-        } else {
-            @{Weave a code block}
+        if (!block.modifiers.canFind(Modifier.noWeave)) {
+            if (!block.isCodeblock) {
+                @{Weave a prose block}
+            } else {
+                @{Weave a code block}
+            }
         }
     }
     output ~= "</div>\n";
@@ -366,7 +367,7 @@ string line = lineObj.text;
 string strippedLine = strip(line);
 if (strippedLine.startsWith("@{") && strippedLine.endsWith("}")) {
     @{Link a used codeblock}
-} else {
+} else { 
     output ~= line.replace("&", "&amp;").replace(">", "&gt;").replace("<", "&lt;") ~ "\n";
 }
 ---
@@ -381,7 +382,7 @@ def = "";
 defLocation = "";
 if (strip(strippedLine[2..$ - 1]) !in defLocations) {
     error(c.file, lineObj.lineNum, "{" ~ strip(strippedLine[2..$ - 1]) ~ "} is never defined");
-} else {
+} else if (defLocations[strip(strippedLine[2..$ - 1])] != "noWeave") {
     def = defLocations[strippedLine[2..$ - 1]];
     defLocation = def;
     auto index = def.indexOf(":");
