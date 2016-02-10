@@ -1,7 +1,10 @@
 // util.d
+import main;
 import std.stdio;
+import std.conv;
 import parser;
 import std.string;
+import std.path;
 
 // readall function
 // Read from a file
@@ -39,14 +42,22 @@ void getCodeblocks(Program p,
     foreach (c; p.chapters) {
         foreach (s; c.sections) {
             foreach (b; s.blocks) {
+                bool isRootBlock = false;
                 if (b.isCodeblock) {
-                    if ((!b.name.endsWith("+=")) && (!b.name.endsWith(":="))) {
-                        codeblocks[b.name] = b.dup();
-                        if (matchAll(b.name, regex(".*\\.\\w+"))) {
-                            rootCodeblocks[b.name] = b.dup();
+                    Block copy = b.dup();
+                    if (matchAll(copy.name, regex(".*\\.\\w+")) || matchAll(copy.name, regex("^\".*\"$"))) {
+                        copy.isRootBlock = true;
+                        if (matchAll(copy.name, regex("^\".*\"$"))) {
+                            copy.name = copy.name[1..$-1];
+                        }
+                    }
+                    if ((!copy.modifiers.canFind(Modifier.additive)) && (!copy.modifiers.canFind(Modifier.redef))) {
+                        codeblocks[copy.name] = copy;
+                        if (copy.isRootBlock) {
+                            rootCodeblocks[copy.name] = copy;
                         }
                     } else {
-                        tempCodeblocks ~= b.dup();
+                        tempCodeblocks ~= copy;
                     }
                 }
             }
@@ -55,16 +66,16 @@ void getCodeblocks(Program p,
 
     // Now we go through every codeblock in tempCodeblocks and apply the += and :=
     foreach (b; tempCodeblocks) {
-        if (b.name.endsWith("+=")) {
-            auto index = b.name.length - 2;
+        if (b.modifiers.canFind(Modifier.additive)) {
+            auto index = b.name.length;
             string name = strip(b.name[0..index]);
             if ((name in codeblocks) is null) {
                 error(p.file, b.startLine, "Trying to add to {" ~ name ~ "} which does not exist");
             } else {
                 codeblocks[name].lines ~= b.lines;
             }
-        } else if (b.name.endsWith(":=")) {
-            auto index = b.name.length - 2;
+        } else if (b.modifiers.canFind(Modifier.redef)) {
+            auto index = b.name.length;
             string name = strip(b.name[0..index]);
             if ((name in codeblocks) is null) {
                 error(p.file, b.startLine, "Trying to redefine {" ~ name ~ "} which does not exist");

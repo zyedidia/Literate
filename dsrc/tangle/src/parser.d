@@ -2,10 +2,13 @@
 // Imports
 import std.stdio;
 import util;
-import std.string: split, startsWith, chomp, replace, strip;
+import main;
+import std.string: split, endsWith, startsWith, chomp, replace, strip;
 import std.algorithm: canFind;
-import std.regex: matchAll, regex;
+import std.regex: matchAll, matchFirst, regex, ctRegex, splitter;
 import std.conv;
+import std.path: extension;
+import std.file;
 
 // Classes
 // Line class
@@ -37,13 +40,17 @@ class Block {
     public int startLine;
     public string name;
     public bool isCodeblock;
+    public bool isRootBlock;
     public Line[] lines;
 
     public string codeType;
     public string commentString;
 
+    public Modifier[] modifiers;
+
     this() {
         lines = [];
+        modifiers = [];
     }
 
     string text() {
@@ -61,6 +68,7 @@ class Block {
         b.isCodeblock = isCodeblock;
         b.codeType = codeType;
         b.commentString = commentString;
+        b.modifiers = modifiers;
 
         foreach (Line l; lines) {
             b.lines ~= l.dup();
@@ -134,7 +142,46 @@ class Change {
     }
 }
 
-// Parse function
+
+// Parse functions
+// parseProgram function
+Program parseProgram(Program p, string src) {
+    string filename = p.file;
+
+    string[] lines = src.split("\n");
+    int lineNum;
+    int majorNum;
+    int minorNum;
+    foreach (line; lines) {
+        lineNum++;
+
+        if (line.startsWith("@title")) {
+            p.title = strip(line[6..$]);
+        } else if (auto matches = matchFirst(line, regex(r"\[(?P<chapterName>.*)\]\((?P<filepath>.*)\)"))) {
+            if (matches["filepath"] == "") {
+                error(filename, lineNum, "No filepath for " ~ matches["chapterName"]);
+                continue;
+            }
+            if (leadingWS(line).length > 0) {
+                minorNum++;
+            } else {
+                majorNum++;
+                minorNum = 0;
+            }
+            Chapter c = new Chapter();
+            c.file = matches["filepath"];
+            c.title = matches["chapterName"];
+            c.majorNum = majorNum;
+            c.minorNum = minorNum;
+
+            p.chapters ~= parseChapter(c, readall(File(matches["filepath"])));
+        }
+    }
+
+    return p;
+}
+
+// parseChapter function
 Chapter parseChapter(Chapter chapter, string src) {
     // Initialize some variables
     string filename = chapter.file;
@@ -148,11 +195,30 @@ Chapter parseChapter(Chapter chapter, string src) {
     bool inSearchBlock = false;
     bool inReplaceBlock = false;
 
+
+    string include(string file) {
+        if (file == filename) {
+            error(filename, 1, "Recursive include");
+            return "";
+        }
+        if (!exists(file)){
+            error(filename, 1, "File " ~ file ~ " does not exist");
+            return "";
+        }
+        return readall(File(file));
+    }
+
+    // Handle the @include statements
+    src = std.regex.replaceAll!(match => include(match[1]))(src, regex(`\n@include (.*)`));
     string[] lines = src.split("\n");
 
     int lineNum = 0;
     foreach (line; lines) {
         lineNum++;
+
+        if (strip(line).startsWith("//") && !inCodeblock) {
+            continue;
+        }
 
         // Parse the line
         if (!inCodeblock) {
@@ -185,7 +251,7 @@ Chapter parseChapter(Chapter chapter, string src) {
             } else if (startsWith(line, "@change_end")) {
                 // Apply all the changes
                 string text = readall(File(curChange.filename));
-                for (int i = 0; i < curChange.index; i++) {
+                foreach (i; 0 .. curChange.index) {
                     text = text.replace(curChange.searchText[i], curChange.replaceText[i]);
                 }
                 Chapter c = new Chapter();
@@ -218,22 +284,14 @@ Chapter parseChapter(Chapter chapter, string src) {
                     cmd.name = line.split()[0];
                     auto index = cmd.name.length;
                     cmd.args = strip(line[index..$]);
+                    if (cmd.args == "none") {
+                        cmd.args = "";
+                    }
             
-                    if (cmd.name == "@include") {
-                        Chapter c = new Chapter();
-                        c.file = cmd.args;
-                        // We can ignore these, but they need to be initialized
-                        c.title = "";
-                        c.majorNum = -1;
-                        c.minorNum = -1;
-                        Chapter includedChapter = parseChapter(c, readall(File(cmd.args)));
-                        chapter.sections ~= includedChapter.sections;
+                    if (curSection is null) {
+                        chapter.commands ~= cmd;
                     } else {
-                        if (curSection is null) {
-                            chapter.commands ~= cmd;
-                        } else {
-                            curSection.commands ~= cmd;
-                        }
+                        curSection.commands ~= cmd;
                     }
                 }
             }
@@ -264,8 +322,14 @@ Chapter parseChapter(Chapter chapter, string src) {
                 curBlock = new Block();
                 curBlock.isCodeblock = false;
             }
+
             // Parse the beginning of a code block
             else if (matchAll(line, regex("^---.+"))) {
+                if (curSection is null) {
+                    error(chapter.file, lineNum, "You must define a section with @s before writing a code block");
+                    continue;
+                }
+            
                 if (curBlock !is null) {
                     curSection.blocks ~= curBlock;
                 }
@@ -273,6 +337,53 @@ Chapter parseChapter(Chapter chapter, string src) {
                 curBlock.startLine = lineNum;
                 curBlock.isCodeblock = true;
                 curBlock.name = strip(line[3..$]);
+            
+                // Parse Modifiers
+                auto checkForModifiers = ctRegex!(`(?P<namea>\S.*)[ \t]-{3}[ \t](?P<modifiers>.+)|(?P<nameb>\S.*?)[ \t]*?(-{1,}$|$)`);
+                auto splitOnSpace = ctRegex!(r"(\s+)");
+                auto modMatch = matchFirst(curBlock.name, checkForModifiers);
+                
+                // matchFirst returns unmatched groups as empty strings
+                
+                if (modMatch["namea"] != "") {
+                    curBlock.name = modMatch["namea"];
+                } else if (modMatch["nameb"] != ""){
+                    curBlock.name = modMatch["nameb"];
+                    // Check for old syntax.
+                    if (curBlock.name.endsWith("+=")) {
+                        curBlock.modifiers ~= Modifier.additive;
+                        curBlock.name = strip(curBlock.name[0..$-2]);
+                    } else if (curBlock.name.endsWith(":=")) {
+                        curBlock.modifiers ~= Modifier.redef;
+                        curBlock.name = strip(curBlock.name[0..$-2]);
+                    }
+                } else {
+                    error(filename, lineNum, "Something went wrong with: " ~ curBlock.name);
+                }
+                
+                if (modMatch["modifiers"]) {
+                    foreach (m; splitter(modMatch["modifiers"], splitOnSpace)) {
+                        switch(m) {
+                            case "+=":
+                                curBlock.modifiers ~= Modifier.additive;
+                                break;
+                            case ":=":
+                                curBlock.modifiers ~= Modifier.redef;
+                                break;
+                            case "noWeave":
+                                curBlock.modifiers ~= Modifier.noWeave;
+                                break;
+                            case "noTangle":
+                                curBlock.modifiers ~= Modifier.noTangle;
+                                break;
+                            default:
+                                error(filename, lineNum, "Invalid modifier: " ~ m);
+                                break;
+                        }
+                    }
+                
+                }
+
             
                 foreach (cmd; curSection.commands) {
                     if (cmd.name == "@code_type") {
@@ -286,8 +397,14 @@ Chapter parseChapter(Chapter chapter, string src) {
             }
 
             else if (curBlock !is null) {
+                if (line.split().length > 1) {
+                    if (commands.canFind(line.split()[0])) {
+                        continue;
+                    }
+                }
                 // Add the line to the list of lines
                 curBlock.lines ~= new Line(line, filename, lineNum);
+
             }
         } else if (startsWith(line, "---")) {
             // Begin a new prose block
@@ -298,10 +415,13 @@ Chapter parseChapter(Chapter chapter, string src) {
             curBlock.startLine = lineNum;
             curBlock.isCodeblock = false;
             inCodeblock = false;
+
         } else if (curBlock !is null) {
             // Add the line to the list of lines
             curBlock.lines ~= new Line(line, filename, lineNum);
+
         }
+
     }
     // Close the last section
     if (curBlock !is null) {
@@ -314,6 +434,7 @@ Chapter parseChapter(Chapter chapter, string src) {
     if (curSection !is null) {
         chapter.sections ~= curSection;
     }
+
 
     return chapter;
 }

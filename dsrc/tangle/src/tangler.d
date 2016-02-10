@@ -19,7 +19,7 @@ void tangle(Program p) {
         File f;
         f = File(outDir ~ "/" ~ filename, "w");
     
-        writeCode(codeblocks, filename, f, filename, "");
+        writeCode(codeblocks, b.name, f, filename, "");
         f.close();
     }
 
