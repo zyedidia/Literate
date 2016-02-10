@@ -41,6 +41,7 @@ foreach (chapter; p.chapters) {
     foreach (s; chapter.sections) {
         foreach (block; s.blocks) {
             if (block.isCodeblock) {
+                @{Check if it's a root block}
                 if (block.name.indexOf("+=") != -1) {
                     if (realname(block.name) !in addLocations || !addLocations[realname(block.name)].canFind(to!string(s.num)))
                         addLocations[realname(block.name)] ~= chapter.num() ~ ":" ~ to!string(s.num);
@@ -81,6 +82,24 @@ foreach (c; p.chapters) {
         File f = File(dir ~ "/" ~ stripExtension(baseName(c.file)) ~ ".html", "w");
         f.write(output);
         f.close();
+    }
+}
+---
+
+@s Root block check
+
+We check if the block is a root code block. We check this using
+a regex that basically checks if it the name has an extension. Additionally,
+users can put the block name in quotes to force it to be a root block.
+
+If the block name is in quotes, we have to make sure to remove those once
+we're done.
+
+--- Check if it's a root block
+if (matchAll(block.name, regex(".*\\.\\w+")) || matchAll(block.name, regex("^\".*\"$"))) {
+    block.isRootBlock = true;
+    if (matchAll(block.name, regex("^\".*\"$"))) {
+        block.name = block.name[1..$-1];
     }
 }
 ---
@@ -241,31 +260,12 @@ output ~= html ~ "\n";
 --- Weave a code block
 output ~= "<div class=\"codeblock\">\n";
 
-@{Check if it's a root block}
 @{Write the title out}
 @{Write the actual code}
 @{Write the 'see also' links}
 @{Write the 'also used in' links}
 
 output ~= "</div>\n";
----
-
-@s Root block check
-
-First we check if the block is a root code block. We check this using
-a regex that basically checks if it the name has an extension. Additionally,
-users can put the block name in quotes to force it to be a root block.
-
-If the block name is in quotes, we have to make sure to remove those once
-we're done.
-
---- Check if it's a root block
-if (matchAll(block.name, regex(".*\\.\\w+")) || matchAll(block.name, regex("\".*\""))) {
-    block.isRootBlock = true;
-    if (matchAll(block.name, regex("\".*\""))) {
-        block.name = block.name[1..$-1];
-    }
-}
 ---
 
 @s The codeblock title

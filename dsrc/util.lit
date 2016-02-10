@@ -123,9 +123,9 @@ void getCodeblocks(Program p,
                 bool isRootBlock = false;
                 if (b.isCodeblock) {
                     Block copy = b.dup();
-                    if (matchAll(copy.name, regex(".*\\.\\w+")) || matchAll(copy.name, regex("\".*\""))) {
+                    if (matchAll(copy.name, regex(".*\\.\\w+")) || matchAll(copy.name, regex("^\".*\"$"))) {
                         copy.isRootBlock = true;
-                        if (matchAll(copy.name, regex("\".*\""))) {
+                        if (matchAll(copy.name, regex("^\".*\"$"))) {
                             copy.name = copy.name[1..$-1];
                         }
                     }
