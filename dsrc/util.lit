@@ -13,6 +13,7 @@ It has functions for reading the entire source of a file, and functions
 for reporting errors and warnings.
 
 --- util.d
+import main;
 import std.stdio;
 import std.conv;
 import parser;
@@ -22,7 +23,6 @@ import std.path;
 @{readall function}
 @{error function}
 @{warning function}
-@{realname function}
 @{leadingWS function}
 @{getCodeblocks function}
 @{getChapterHtmlFile function}
@@ -71,23 +71,6 @@ void warn(string file, int line, string message) {
 }
 ---
 
-@s Realname function
-
-Sometimes a block name will be `name +=` and here it is useful to strip
-off the end `+=` because that is not really part of the block name. This
-function does that.
-
---- realname function
-string realname(string name) {
-    name = strip(name);
-    if (name.endsWith("+=") || name.endsWith(":=")) {
-        return strip(name[0..$ - 2]);
-    } else {
-        return name;
-    }
-}
----
-
 @s Leading Whitespace function
 
 This function returns the leading whitespace of the input string.
@@ -129,7 +112,7 @@ void getCodeblocks(Program p,
                             copy.name = copy.name[1..$-1];
                         }
                     }
-                    if ((!copy.name.endsWith("+=")) && (!copy.name.endsWith(":="))) {
+                    if ((!copy.modifiers.canFind(Modifier.additive)) && (!copy.modifiers.canFind(Modifier.redef))) {
                         codeblocks[copy.name] = copy;
                         if (copy.isRootBlock) {
                             rootCodeblocks[copy.name] = copy;
@@ -144,16 +127,16 @@ void getCodeblocks(Program p,
 
     // Now we go through every codeblock in tempCodeblocks and apply the += and :=
     foreach (b; tempCodeblocks) {
-        if (b.name.endsWith("+=")) {
-            auto index = b.name.length - 2;
+        if (b.modifiers.canFind(Modifier.additive)) {
+            auto index = b.name.length;
             string name = strip(b.name[0..index]);
             if ((name in codeblocks) is null) {
                 error(p.file, b.startLine, "Trying to add to {" ~ name ~ "} which does not exist");
             } else {
                 codeblocks[name].lines ~= b.lines;
             }
-        } else if (b.name.endsWith(":=")) {
-            auto index = b.name.length - 2;
+        } else if (b.modifiers.canFind(Modifier.redef)) {
+            auto index = b.name.length;
             string name = strip(b.name[0..index]);
             if ((name in codeblocks) is null) {
                 error(p.file, b.startLine, "Trying to redefine {" ~ name ~ "} which does not exist");
