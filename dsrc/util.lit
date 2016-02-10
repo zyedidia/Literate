@@ -181,7 +181,7 @@ string getChapterHtmlFile(Chapter[] chapters, string num) {
     }
     foreach (Chapter c; chapters) {
         if (c.majorNum == majorNum && c.minorNum == minorNum) {
-            return stripExtension(c.file) ~ ".html";
+            return stripExtension(baseName(c.file)) ~ ".html";
         }
     }
     return "";
