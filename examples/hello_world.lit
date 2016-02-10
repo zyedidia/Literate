@@ -13,7 +13,7 @@ of the features of Literate.
 #include <stdio.h>
 
 int main() {
-    @{Print "hello world"}
+    @{Print hello world}
 
     return 0;
 }
@@ -23,12 +23,12 @@ int main() {
 
 Here we use the `printf` function from stdio to print.
 
---- Print "hello world"
+--- Print hello world
 printf("Hello world");
 ---
 
 We should also make sure to add a newline.
 
---- Print "hello world" +=
+--- Print hello world +=
 printf("\n");
 ---
