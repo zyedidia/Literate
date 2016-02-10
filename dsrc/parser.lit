@@ -58,7 +58,7 @@ in a literate program, and the parse function.
 --- parser.d
 @{Imports}
 @{Classes}
-@{Parse function}
+@{Parse functions}
 ---
 
 I'll quickly list the imports here.
@@ -271,12 +271,28 @@ Now let's get to the actual parse function to turn a text file into a program.
 
 @s The Parse Function
 
-For now, since we are focusing on single chapters, we'll make the `parseChapter` function. This
-function will take three inputs: a partially constructed chapter object, the source of the chapter.
-The chapter object will already have a title, a source file, and a majorNum and minorNum. The
-function will return the complete chapter object. Here is an overview of the `parseChapter` function.
+Here we have two functions: `parseProgram` and `parseChapter`.
 
---- Parse function
+--- Parse functions
+@{parseProgram function}
+@{parseChapter function}
+---
+
+@s parseProgram function
+
+This function takes a literate book source and parses each chapter and returns the final program.
+
+Here is an example book:
+
+    @title Title of the book
+
+    [Chapter 1](chapter1/intro.lit)
+        [Subchapter 1](chapter1/example1.lit)
+        [Subchapter 2](chapter1/example2.lit)
+    [Chapter 2](section2/intro.lit)
+        [Subchapter 1](chapter2/example1.lit)
+
+--- parseProgram function
 Program parseProgram(Program p, string src) {
     string filename = p.file;
 
@@ -312,7 +328,16 @@ Program parseProgram(Program p, string src) {
 
     return p;
 }
+---
 
+@s parseChapter function
+
+The `parseChapter` function is the more complex one. It parses the source of a chapter.
+Before doing any parsing, we resolve the `@include` statements by replacing them with
+the contents of the file that was included. Then we loop through each line in the source
+and parse it, provided that it is not a comment (starting with `//`);
+
+--- parseChapter function
 Chapter parseChapter(Chapter chapter, string src) {
     @{Initialize some variables}
 
