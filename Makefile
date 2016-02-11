@@ -1,11 +1,13 @@
 release:
 	@if [ ! -s dsrc/markdown/source ]; then \
-		git submodule init; \
-		git submodule update; \
+		if [ ! -s .git ]; then \
+			git clone https://github.com/zyedidia/dmarkdown dsrc/markdown; \
+		else \
+			git submodule init; \
+			git submodule update; \
+		fi \
 	fi;
-	@if [ ! -s bin/tangle ]; then \
-		dub --root=dsrc/tangle build; \
-	fi;
+	dub --root=dsrc/tangle build
 	bin/tangle dsrc/*.lit
 	@mkdir -p source
 	@mv *.d source
@@ -14,8 +16,12 @@ release:
 
 debug:
 	@if [ ! -s dsrc/markdown/source ]; then \
-		git submodule init; \
-		git submodule update; \
+		if [ ! -s .git ]; then \
+			git clone https://github.com/zyedidia/dmarkdown dsrc/markdown; \
+		else \
+			git submodule init; \
+			git submodule update; \
+		fi \
 	fi;
 	@if [ ! -s bin/tangle ]; then \
 		dub --root=dsrc/tangle build; \
