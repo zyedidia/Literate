@@ -1,4 +1,4 @@
-release: dsrc/markdown
+release: dsrc/markdown/source
 	dub --root=dsrc/tangle build
 	bin/tangle dsrc/*.lit
 	@mkdir -p source
@@ -6,7 +6,7 @@ release: dsrc/markdown
 	@mkdir -p bin
 	dub build --build=release
 
-debug: dsrc/markdown
+debug: dsrc/markdown/source
 	dub --root=dsrc/tangle build
 	bin/tangle dsrc/*.lit
 	@mkdir -p source
@@ -14,7 +14,7 @@ debug: dsrc/markdown
 	@mkdir -p bin
 	dub build
 
-dsrc/markdown:
+dsrc/markdown/source:
 	@if [ ! -s dsrc/markdown/source ]; then \
 		if [ ! -s .git ]; then \
 			git clone https://github.com/zyedidia/dmarkdown dsrc/markdown; \
