@@ -2,7 +2,7 @@
 
 This is a change file for wc.lit.
 
-We will use this to change the title from WC to Word Count.
+We will use this to change the title from `Word Count Program` to WC.
 
 @replace
 @title Word Count Program

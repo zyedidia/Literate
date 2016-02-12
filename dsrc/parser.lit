@@ -346,6 +346,8 @@ and parse it, provided that it is not a comment (starting with `//`);
 Chapter parseChapter(Chapter chapter, string src) {
     @{Initialize some variables}
 
+    string[] blocks = [];
+
     string include(string file) {
         if (file == filename) {
             error(filename, 1, "Recursive include");
@@ -529,6 +531,14 @@ else if (matchAll(line, regex("^---.+"))) {
 
     @{Parse Modifiers}
 
+    if (blocks.canFind(curBlock.name)) {
+        if (!curBlock.modifiers.canFind(Modifier.redef) && !curBlock.modifiers.canFind(Modifier.additive)) {
+            error(filename, lineNum, "Redefinition of {" ~ curBlock.name ~ "}, use ':=' to redefine");
+        }
+    } else {
+        blocks ~= curBlock.name;
+    }
+
     foreach (cmd; curSection.commands) {
         if (cmd.name == "@code_type") {
             curBlock.codeType = cmd.args;
@@ -548,16 +558,16 @@ The `checkForModifiers` ugliness is due to lack of `(?|...)` and friends.
 
 First half matches for expressions *with* modifiers:
 
-    1. `(?P<namea>\S.*)` : Keep taking from the first non-whitespace character ...
-    2. `[ \t]-{3}[ \t]` : Until it matches ` --- `
-    3. `(?P<modifiers>.+)` : Matches everything after the separator.
+1. `(?P<namea>\S.*)` : Keep taking from the first non-whitespace character ...
+2. `[ \t]-{3}[ \t]` : Until it matches ` --- `
+3. `(?P<modifiers>.+)` : Matches everything after the separator.
 
 Second half matches for no modifiers: Ether `Block name` and with a floating separator `Block Name ---`.
 
-    4. `|(?P<nameb>\S.*?)` : Same thing as #1 but stores it in `nameb`
-    5. `[ \t]*?` : Checks for any amount of whitespace (Including none.)
-    6. `(-{1,}$` : Checks for any floating `-` and verifies that nothing else is there untill end of line.
-    7. `|$))` : Or just checks that there is nothing but the end of the line after the whitespace.
+1. `|(?P<nameb>\S.*?)` : Same thing as #1 but stores it in `nameb`
+2. `[ \t]*?` : Checks for any amount of whitespace (Including none.)
+3. `(-{1,}$` : Checks for any floating `-` and verifies that nothing else is there untill end of line.
+4. `|$))` : Or just checks that there is nothing but the end of the line after the whitespace.
 
 Returns ether `namea` and `modifiers` or just `nameb`. 
 
