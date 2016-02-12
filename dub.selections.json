@@ -1,6 +1,7 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"dmarkdown": "~master"
+		"dmarkdown": "~master",
+		"colorize": "1.0.5"
 	}
 }

@@ -19,6 +19,7 @@ import std.conv;
 import parser;
 import std.string;
 import std.path;
+import colorize: fg, color, cwriteln;
 
 @{readall function}
 @{error function}
@@ -61,13 +62,13 @@ These functions simply write errors or warnings to stdout.
 
 --- error function
 void error(string file, int line, string message) {
-    writeln(file, ":", line, ":error: ", message);
+    cwriteln(file, ":", line, ":", "error".color(fg.red), ": ", message);
 }
 ---
 
 --- warning function
 void warn(string file, int line, string message) {
-    writeln(file, ":", line, ":warning: ", message);
+    writeln(file, ":", line, ":", "warning".color(fg.yellow), ": ", message);
 }
 ---
 

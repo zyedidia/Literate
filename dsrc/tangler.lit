@@ -56,7 +56,7 @@ Now we check if there are any root codeblocks.
 
 --- tangle function +=
 if (rootCodeblocks.length == 0) {
-    warn(p.file, 0, "No file codeblocks, not writing any code");
+    warn(p.file, 1, "No file codeblocks, not writing any code");
 }
 ---
 
@@ -102,12 +102,14 @@ void writeCode(Block[string] codeblocks, string blockName, File file, string fil
             auto newBlockName = stripLine[2..index];
             if (newBlockName == blockName) {
                 error(lineObj.file, lineObj.lineNum, "{" ~ blockName ~ "} refers to itself");
+                tangleErrors = true;
                 return;
             }
             if ((newBlockName in codeblocks) !is null) {
                 writeCode(codeblocks, newBlockName, file, filename, whitespace ~ newWS);
             } else {
                 error(lineObj.file, lineObj.lineNum, "{" ~ newBlockName ~ "} does not exist");
+                tangleErrors = true;
             }
         } else {
             if (!noOutput)
