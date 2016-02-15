@@ -53,6 +53,7 @@ bool weaveOnly;
 bool noOutput;
 bool noCompCmd = true;
 bool tangleErrors;
+bool stdin;
 string outDir = "."; // Default is current directory
 ---
 
@@ -87,7 +88,7 @@ for (int i = 1; i < args.length; i++) {
                 "--weave   -w          Only compile HTML files\n"
                 "--no-output           Do not generate any output files\n"
                 "--out-dir -odir DIR   Put the generated files in DIR\n"
-                "--compiler            Report compiler errors (needs @compiler to be defined)\n"
+                "--compiler            Report compiler errors (needs @compiler to be defined)"
                );
         return;
     } else if (arg == "--tangle" || arg == "-t") {
@@ -108,6 +109,8 @@ for (int i = 1; i < args.length; i++) {
     } else if (arg == "--book" || arg == "-b") {
         // Book feature is a work in progress and undocumented for now
         isBook = true;
+    } else if (arg == "-") {
+        stdin = true;
     } else {
         files ~= arg;
     }
@@ -163,7 +166,7 @@ if (files.length > 0) {
 In addition, we also accept input from stdin if no files were specified.
 
 --- Run Literate +=
-else {
+else if (stdin) {
     string stdinSrc = readall();
 
     Program p;
@@ -193,6 +196,25 @@ else {
     if (!noCompCmd) {
         @{Check for compiler errors}
     }
+}
+---
+
+If there was no `-` argument for stdin, just print the help text.
+
+--- Run Literate +=
+else  {
+    writeln("Lit: Literate Programming System\n"
+            "\n"
+            "Usage: lit [options] <inputs>\n"
+            "\n"
+            "Options:\n"
+            "--help    -h          Show this help text\n"
+            "--tangle  -t          Only compile code files\n"
+            "--weave   -w          Only compile HTML files\n"
+            "--no-output           Do not generate any output files\n"
+            "--out-dir -odir DIR   Put the generated files in DIR\n"
+            "--compiler            Report compiler errors (needs @compiler to be defined)"
+           );
 }
 ---
 
