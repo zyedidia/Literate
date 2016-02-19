@@ -15,8 +15,6 @@ Here is an overview:
 
 --- main.d
 @{Imports}
-@{Globals}
-@{Modifiers}
 
 @{getLinenums function}
 
@@ -53,7 +51,7 @@ bool weaveOnly;
 bool noOutput;
 bool noCompCmd = true;
 bool tangleErrors;
-bool stdin;
+bool useStdin;
 string outDir = "."; // Default is current directory
 ---
 
@@ -70,6 +68,13 @@ enum Modifier {
     additive, //+=
     redef // :=
 }
+---
+
+We'll put these two blocks in their own file for "globals".
+
+--- globals.d
+@{Globals}
+@{Modifiers}
 ---
 
 Now, to actually parse the arguments:
@@ -110,7 +115,7 @@ for (int i = 1; i < args.length; i++) {
         // Book feature is a work in progress and undocumented for now
         isBook = true;
     } else if (arg == "-") {
-        stdin = true;
+        useStdin = true;
     } else {
         files ~= arg;
     }
@@ -166,7 +171,7 @@ if (files.length > 0) {
 In addition, we also accept input from stdin if no files were specified.
 
 --- Run Literate +=
-else if (stdin) {
+else if (useStdin) {
     string stdinSrc = readall();
 
     Program p;
@@ -326,6 +331,7 @@ import parser;
 import tangler;
 import weaver;
 import util;
+import globals;
 import std.stdio;
 import std.file;
 import std.string;

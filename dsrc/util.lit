@@ -13,7 +13,7 @@ It has functions for reading the entire source of a file, and functions
 for reporting errors and warnings.
 
 --- util.d
-import main;
+import globals;
 import std.stdio;
 import std.conv;
 import parser;

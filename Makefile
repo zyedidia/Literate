@@ -1,18 +1,20 @@
-release: dsrc/markdown/source
-	dub --root=dsrc/tangle build
-	bin/tangle dsrc/*.lit
-	@mkdir -p source
-	@mv *.d source
-	@mkdir -p bin
+release: dsrc/markdown/source build
 	dub build --build=release
 
-debug: dsrc/markdown/source
+debug: dsrc/markdown/source build
+	dub build
+
+bin/tangle:
 	dub --root=dsrc/tangle build
+
+build: bin/tangle
 	bin/tangle dsrc/*.lit
 	@mkdir -p source
 	@mv *.d source
 	@mkdir -p bin
-	dub build
+
+test: build
+	dub test
 
 dsrc/markdown/source:
 	@if [ ! -s dsrc/markdown/source ]; then \

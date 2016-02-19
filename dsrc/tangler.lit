@@ -17,10 +17,10 @@ link and adding in the code for it.
 Here is an overview of the file:
 
 --- tangler.d
+import globals;
 import std.string;
 import std.stdio;
 import parser;
-import main;
 import util;
 
 void tangle(Program p) {

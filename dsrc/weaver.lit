@@ -514,6 +514,7 @@ DELIMITER";
 ---
 
 --- Imports
+import globals;
 import std.file;
 import std.conv;
 import std.algorithm;
@@ -523,7 +524,6 @@ import std.stdio;
 import std.string;
 import parser;
 import util;
-import main;
 import dmarkdown;
 ---
 

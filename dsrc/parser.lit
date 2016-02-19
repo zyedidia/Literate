@@ -64,9 +64,9 @@ in a literate program, and the parse function.
 I'll quickly list the imports here.
 
 --- Imports
+import globals;
 import std.stdio;
 import util;
-import main;
 import std.string: split, endsWith, startsWith, chomp, replace, strip;
 import std.algorithm: canFind;
 import std.regex: matchAll, matchFirst, regex, ctRegex, splitter;
