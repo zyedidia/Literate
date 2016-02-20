@@ -16,6 +16,9 @@ file into one or more html files.
 void weave(Program p) {
     @{Parse use locations}
     @{Run weaveChapter}
+    if (isBook && !noOutput) {
+        @{Create the table of contents}
+    }
 }
 
 @{WeaveChapter}
@@ -91,6 +94,44 @@ foreach (c; p.chapters) {
         f.close();
     }
 }
+---
+
+@s Table of contents
+
+If the program being compiled is a book, we should also write a table of contents file.
+
+--- Create the table of contents
+string dir = outDir ~ "/_book";
+File f = File(dir ~ "/" ~ p.title ~ "_contents.html", "w");
+f.writeln("
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            ul#contents {list-style-type: none;}
+        </style>
+        <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" integrity=\"sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7\" crossorigin=\"anonymous\">
+    </head>
+<body>
+<div class=\"container\">"
+);
+
+f.writeln("<h1>" ~ p.title ~ "</h1>");
+
+f.writeln(filterMarkdown(p.text));
+
+f.writeln("<ul id=\"contents\">");
+foreach (c; p.chapters) {
+    f.writeln("<li>" ~ c.num() ~ ". <a href=\"" ~ stripExtension(baseName(c.file)) ~ ".html\">" ~ c.title ~ "</a></li>");
+}
+
+f.writeln("
+</ul>
+</div>
+</body>
+");
+
+f.close();
 ---
 
 @s Root block check

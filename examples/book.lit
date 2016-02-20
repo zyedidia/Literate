@@ -1,0 +1,7 @@
+@title TestBook
+
+This is a very simple example of a Literate book. This small
+section right here is compiled to markdown.
+
+[Word Count](wc.lit)
+[Hangman](hangman.lit)

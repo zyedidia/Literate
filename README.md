@@ -14,7 +14,7 @@ Literate is a tool for creating literate programs.
 
 The goal of this project is to create a literate programming tool which keeps most, if not all of the features of Knuth and Levy's original CWEB system, but simplifies the system and adds even more features.
 
-You can view the main website about Literate [here](http://zbyedidia.webfactional.com/literate) including a [manual](http://zbyedidia.webfactional.com/literate/manual.php) on how to use Literate.
+You can view the main website about Literate [here](http://literate.zbyedidia.webfactional.com) including a [manual](http://literate.zbyedidia.webfactional.com/manual.php) on how to use Literate.
 
 If you like the project, make sure to leave a star :smile:
 
@@ -116,7 +116,7 @@ Options:
 --compiler            Report compiler errors (needs @compiler to be defined)
 ```
 
-For more information see the [manual](http://zbyedidia.webfactional.com/literate/manual.php).
+For more information see the [manual](http://literate.zbyedidia.webfactional.com/manual.php).
 
 ## Contributing
 

@@ -103,6 +103,7 @@ class Program {
     public Command[] commands;
     public Chapter[] chapters;
     public string file;
+    public string text;
 
     this() {
         commands = [];
@@ -328,6 +329,8 @@ Program parseProgram(Program p, string src) {
             c.minorNum = minorNum;
 
             p.chapters ~= parseChapter(c, readall(File(matches["filepath"])));
+        } else {
+            p.text ~= line ~ "\n";
         }
     }
 
