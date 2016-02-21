@@ -107,9 +107,11 @@ void getCodeblocks(Program p,
                 bool isRootBlock = false;
                 if (b.isCodeblock) {
                     Block copy = b.dup();
-                    if (matchAll(copy.name, regex(".*\\.\\w+")) || matchAll(copy.name, regex("^\".*\"$"))) {
+                    auto fileMatch = matchAll(copy.name, regex(".*\\.\\w+"));
+                    auto quoteMatch = matchAll(copy.name, regex("^\".*\"$"));
+                    if (fileMatch || quoteMatch) {
                         copy.isRootBlock = true;
-                        if (matchAll(copy.name, regex("^\".*\"$"))) {
+                        if (quoteMatch) {
                             copy.name = copy.name[1..$-1];
                         }
                     }

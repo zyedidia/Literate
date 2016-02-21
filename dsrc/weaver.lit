@@ -144,9 +144,11 @@ If the block name is in quotes, we have to make sure to remove those once
 we're done.
 
 --- Check if it's a root block
-if (matchAll(block.name, regex(".*\\.\\w+")) || matchAll(block.name, regex("^\".*\"$"))) {
+auto fileMatch = regex(".*\\.\\w+");
+auto quoteMatch = regex("^\".*\"$");
+if (fileMatch || quoteMatch) {
     block.isRootBlock = true;
-    if (matchAll(block.name, regex("^\".*\"$"))) {
+    if (quoteMatch) {
         block.name = block.name[1..$-1];
     }
 }
