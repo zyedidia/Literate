@@ -38,6 +38,8 @@ accepts are:
 * `--no-output`              Do not generate any output
 * `--out-dir    -odir DIR`   Put the generated files in DIR
 * `--compiler`               Don't ignore the `@compiler` command
+* `--book       -b`          Compile the file as a Literate book
+* `--version`                Show the version number and compiler information
 
 All other inputs are input files.
 
@@ -52,7 +54,24 @@ bool noOutput;
 bool noCompCmd = true;
 bool tangleErrors;
 bool useStdin;
+string versionNum = "0.1";
 string outDir = "."; // Default is current directory
+
+string helpText =
+"Lit: Literate Programming System\n"
+"\n"
+"Usage: lit [options] <inputs>\n"
+"\n"
+"Options:\n"
+"--help    -h          Show this help text\n"
+"--tangle  -t          Only compile code files\n"
+"--weave   -w          Only compile HTML files\n"
+"--no-output           Do not generate any output files\n"
+"--out-dir -odir DIR   Put the generated files in DIR\n"
+"--compiler            Report compiler errors (needs @compiler to be defined)\n"
+"--book    -b          Compile the file as a literate book\n"
+"--version             Show the version number and compiler information";
+
 ---
 
 This program uses a number of block modifiers in order to facilitate certain functionality.
@@ -83,18 +102,7 @@ Now, to actually parse the arguments:
 for (int i = 1; i < args.length; i++) {
     auto arg = args[i];
     if (arg == "--help" || arg == "-h") {
-        writeln("Lit: Literate Programming System\n"
-                "\n"
-                "Usage: lit [options] <inputs>\n"
-                "\n"
-                "Options:\n"
-                "--help    -h          Show this help text\n"
-                "--tangle  -t          Only compile code files\n"
-                "--weave   -w          Only compile HTML files\n"
-                "--no-output           Do not generate any output files\n"
-                "--out-dir -odir DIR   Put the generated files in DIR\n"
-                "--compiler            Report compiler errors (needs @compiler to be defined)"
-               );
+        writeln(helpText);
         return;
     } else if (arg == "--tangle" || arg == "-t") {
         tangleOnly = true;
@@ -112,8 +120,11 @@ for (int i = 1; i < args.length; i++) {
         noCompCmd = false;
         noOutput = true;
     } else if (arg == "--book" || arg == "-b") {
-        // Book feature is a work in progress and undocumented for now
         isBook = true;
+    } else if (arg == "--version") {
+        writeln("Literate version " ~ versionNum);
+        writeln("Compiled by " ~ __VENDOR__ ~ " on " ~ __DATE__);
+        return;
     } else if (arg == "-") {
         useStdin = true;
     } else {
@@ -208,18 +219,7 @@ If there was no `-` argument for stdin, just print the help text.
 
 --- Run Literate +=
 else  {
-    writeln("Lit: Literate Programming System\n"
-            "\n"
-            "Usage: lit [options] <inputs>\n"
-            "\n"
-            "Options:\n"
-            "--help    -h          Show this help text\n"
-            "--tangle  -t          Only compile code files\n"
-            "--weave   -w          Only compile HTML files\n"
-            "--no-output           Do not generate any output files\n"
-            "--out-dir -odir DIR   Put the generated files in DIR\n"
-            "--compiler            Report compiler errors (needs @compiler to be defined)"
-           );
+    writeln(helpText);
 }
 ---
 
