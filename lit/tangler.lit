@@ -112,8 +112,12 @@ void writeCode(Block[string] codeblocks, string blockName, File file, string fil
                 tangleErrors = true;
             }
         } else {
-            if (!noOutput)
+            if (!noOutput) {
+                if (lineDirectives) {
+                    file.writeln("#line ", lineObj.lineNum);
+                }
                 file.writeln(whitespace ~ line);
+            }
         }
     }
     if (!noOutput)
