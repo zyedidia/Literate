@@ -38,6 +38,7 @@ accepts are:
 * `--no-output`              Do not generate any output
 * `--out-dir    -odir DIR`   Put the generated files in DIR
 * `--compiler`               Don't ignore the `@compiler` command
+* `--line-directives -l`     Write line directives to the output file
 * `--book       -b`          Compile the file as a Literate book
 * `--version`                Show the version number and compiler information
 
@@ -54,6 +55,7 @@ bool noOutput;
 bool noCompCmd = true;
 bool tangleErrors;
 bool useStdin;
+bool lineDirectives;
 string versionNum = "0.1";
 string outDir = "."; // Default is current directory
 
@@ -63,15 +65,15 @@ string helpText =
 "Usage: lit [options] <inputs>\n"
 "\n"
 "Options:\n"
-"--help    -h          Show this help text\n"
-"--tangle  -t          Only compile code files\n"
-"--weave   -w          Only compile HTML files\n"
-"--no-output           Do not generate any output files\n"
-"--out-dir -odir DIR   Put the generated files in DIR\n"
-"--compiler            Report compiler errors (needs @compiler to be defined)\n"
-"--book    -b          Compile the file as a literate book\n"
-"--version             Show the version number and compiler information";
-
+"--help            -h    Show this help text\n"
+"--tangle          -t    Only compile code files\n"
+"--weave           -w    Only compile HTML files\n"
+"--no-output             Do not generate any output files\n"
+"--out-dir  -odir DIR    Put the generated files in DIR\n"
+"--compiler              Report compiler errors (needs @compiler to be defined)\n"
+"--line-directives -l    Write line directives to the output file\n"
+"--book            -b    Compile the file as a literate book\n"
+"--version               Show the version number and compiler information";
 ---
 
 This program uses a number of block modifiers in order to facilitate certain functionality.
@@ -119,6 +121,8 @@ for (int i = 1; i < args.length; i++) {
     } else if (arg == "--compiler") {
         noCompCmd = false;
         noOutput = true;
+    } else if (arg == "--line-directives" || arg == "-l") {
+        lineDirectives = true;
     } else if (arg == "--book" || arg == "-b") {
         isBook = true;
     } else if (arg == "--version") {
