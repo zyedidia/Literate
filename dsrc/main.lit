@@ -236,11 +236,13 @@ foreach (b; rootCodeblocks) {
 
 string compilerCmd;
 string errorFormat;
+Command errorFormatCmd;
 foreach (cmd; p.commands) {
     if (cmd.name == "@compiler") {
         compilerCmd = cmd.args;
     } else if (cmd.name == "@error_format") {
         errorFormat = cmd.args;
+        errorFormatCmd = cmd;
     }
 }
 if (p.chapters.length == 1) {
@@ -250,6 +252,7 @@ if (p.chapters.length == 1) {
             compilerCmd = cmd.args;
         } else if (cmd.name == "@error_format") {
             errorFormat = cmd.args;
+            errorFormatCmd = cmd;
         }
     }
 }
@@ -265,15 +268,23 @@ if (errorFormat is null) {
 
 if (errorFormat !is null) {
     if (errorFormat.indexOf("%l") != -1 && errorFormat.indexOf("%f") != -1 && errorFormat.indexOf("%m") != -1) {
+        auto r = regex("");
+        try {
+            r = regex("^" ~ errorFormat.replaceAll(regex("%s"), ".*?")
+                                                   .replaceAll(regex("%l"), "(?P<linenum>\\d+?)")
+                                                   .replaceAll(regex("%f"), "(?P<filename>.*?)")
+                                                   .replaceAll(regex("%m"), "(?P<message>.*?)") ~ "$");
+        } catch (Exception e) {
+            error(errorFormatCmd.filename, errorFormatCmd.lineNum, "Regular expression error: " ~ e.msg);
+            return;
+        }
+
         writeln(compilerCmd);
         auto output = executeShell(compilerCmd).output.split("\n");
         int i = 0;
-        foreach (line; output) {
-            auto matches = matchFirst(line, regex("^" ~ errorFormat.replaceAll(regex("%s"), ".*?")
-                                                             .replaceAll(regex("%l"), "(?P<linenum>\\d+?)")
-                                                             .replaceAll(regex("%f"), "(?P<filename>.*?)")
-                                                             .replaceAll(regex("%m"), "(?P<message>.*?)") ~ "$"));
 
+        foreach (line; output) {
+            auto matches = matchFirst(line, r);
 
             string linenum = matches["linenum"];
             string fname = matches["filename"];

@@ -223,6 +223,8 @@ A command is quite simple. It has a name, and any arguments that are passed.
 class Command {
     public string name;
     public string args;
+    public int lineNum;
+    public string filename;
     this() {}
 }
 ---
@@ -461,6 +463,8 @@ if (line.split().length > 1) {
         cmd.name = line.split()[0];
         auto index = cmd.name.length;
         cmd.args = strip(line[index..$]);
+        cmd.lineNum = lineNum;
+        cmd.filename = filename;
         if (cmd.args == "none") {
             cmd.args = "";
         }
