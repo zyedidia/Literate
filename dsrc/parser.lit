@@ -303,6 +303,7 @@ Here is an example book:
 --- parseProgram function
 Program parseProgram(Program p, string src) {
     string filename = p.file;
+    bool hasChapters;
 
     string[] lines = src.split("\n");
     int lineNum;
@@ -331,6 +332,7 @@ Program parseProgram(Program p, string src) {
             c.minorNum = minorNum;
 
             p.chapters ~= parseChapter(c, readall(File(matches["filepath"])));
+            hasChapters = true;
         } else {
             p.text ~= line ~ "\n";
         }

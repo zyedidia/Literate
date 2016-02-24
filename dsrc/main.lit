@@ -153,6 +153,10 @@ if (files.length > 0) {
             p = new Program();
             p.file = filename;
             p = parseProgram(p, fileSrc);
+            if (p.chapters.length == 0) {
+                error(filename, 1, "This book has no chapters");
+                return;
+            }
         } else {
             p = new Program();
             p.file = filename;
@@ -190,6 +194,10 @@ else if (useStdin) {
         p = new Program();
         p.file = "stdin";
         p = parseProgram(p, stdinSrc);
+        if (p.chapters.length == 0) {
+            error("stdin", 1, "This book has no chapters");
+            return;
+        }
     } else {
         p = new Program();
         p.file = "stdin";
