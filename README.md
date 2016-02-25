@@ -83,6 +83,7 @@ You can find the compiled html [here](http://literate.zbyedidia.webfactional.com
 ### Prebuilt binaries
 
 | Download |
+| --- |
 | [Mac OS X](http://literate.zbyedidia.webfactional.com/binaries/literate-osx.tar.gz) |
 | [64 bit Linux](http://literate.zbyedidia.webfactional.com/binaries/literate-linux64.tar.gz) |
 | [32 bit Linux](http://literate.zbyedidia.webfactional.com/binaries/literate-linux32.tar.gz) |
