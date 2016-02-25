@@ -34,7 +34,7 @@ If you like the project, make sure to leave a star :smile:
 
 ## Example
 
-Here is an example literate program saved in the file `hello.lit`.
+Here is a trivial example of a literate program saved in the file `hello.lit`.
 
 ```
 @title Hello world in C
@@ -72,11 +72,27 @@ To compile this code simply run
 
 Which generates [hello.c](http://literate.zbyedidia.webfactional.com/examples/hello.c) and [hello.html](http://literate.zbyedidia.webfactional.com/examples/hello.html).
 
+You can also find this program in `examples/hello.lit`.
+
+For a full example of a literate program, please see `examples/wc.lit` which
+is a literate implementation of the `wc` (word count) program found on Unix systems.
+You can find the compiled html [here](http://literate.zbyedidia.webfactional.com/examples/wc.html).
+
 ## Installation
 
-### Mac
+### Prebuilt binaries
 
-On Mac you can use brew to install Literate:
+| Download |
+| [Mac OS X](http://literate.zbyedidia.webfactional.com/binaries/literate-osx.tar.gz) |
+| [64 bit Linux](http://literate.zbyedidia.webfactional.com/binaries/literate-linux64.tar.gz) |
+| [32 bit Linux](http://literate.zbyedidia.webfactional.com/binaries/literate-linux32.tar.gz) |
+| [Arm Linux](http://literate.zbyedidia.webfactional.com/binaries/literate-linux-arm.tar.gz) |
+
+### Building from Source
+
+#### Mac
+
+On Mac you can use brew to build Literate from source:
 
 ```
 $ brew tap zyedidia/literate
@@ -85,7 +101,8 @@ $ brew install --HEAD literate
 
 For now, Literate is head only.
 
-### Building from Source
+---
+
 Literate is made with the [D programming language](http://dlang.org) so you must install [dmd](http://dlang.org/download.html#dmd) (D compiler) and [dub](https://code.dlang.org/download) (D package manager). Then you should download the zip or clone the repository and run the following commands:
 
 ```

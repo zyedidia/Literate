@@ -1,0 +1,31 @@
+@code_type c .c
+@comment_type // %s
+@compiler lit -t hello_world.lit && gcc hello_world.c && rm a.out
+
+@title Hello world in C
+
+@s Introduction
+
+This is an example hello world C program.
+We can define codeblocks with `---`
+
+--- hello.c
+@{Includes}
+
+int main() {
+    @{Print a string}
+    return 0;
+}
+---
+
+Now we can define the `Includes` codeblock:
+
+--- Includes
+#include <stdio.h>
+---
+
+Finally, our program needs to print "hello world"
+
+--- Print a string
+printf("hello world\n");
+---
