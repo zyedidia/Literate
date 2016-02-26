@@ -17,12 +17,11 @@ Here is an overview:
 @{Imports}
 
 @{getLinenums function}
+@{lit function}
 
 void main(in string[] args) {
     string[] files = [];
-
     @{Parse the arguments}
-
     @{Run Literate}
 }
 ---
@@ -148,64 +147,39 @@ if (files.length > 0) {
         File f = File(filename);
         string fileSrc = readall(f);
 
-        Program p;
-        if (isBook) {
-            p = new Program();
-            p.file = filename;
-            p = parseProgram(p, fileSrc);
-            if (p.chapters.length == 0) {
-                error(filename, 1, "This book has no chapters");
-                return;
-            }
-        } else {
-            p = new Program();
-            p.file = filename;
-            Chapter c = new Chapter();
-            c.file = filename;
-            c.majorNum = 1; c.minorNum = 0;
-
-            c = parseChapter(c, fileSrc);
-            p.chapters ~= c;
-        }
-
-        if (!weaveOnly) {
-            tangle(p);
-        }
-
-        if (!tangleOnly) {
-            weave(p);
-        }
-
-        if (!noCompCmd && !tangleErrors && !weaveOnly) {
-            @{Check for compiler errors}
-        }
+        lit(filename, fileSrc);
     }
+} else if (useStdin) {
+    string stdinSrc = readall();
+    lit("stdin", stdinSrc);
+} else  {
+    writeln(helpText);
 }
 ---
 
-In addition, we also accept input from stdin if no files were specified.
+The lit function parses the text that is inputted and then either tangles,
+weaves, or both. Finally it Checks for compiler errors if the `--compiler` flag
+was passed.
 
---- Run Literate +=
-else if (useStdin) {
-    string stdinSrc = readall();
-
+--- lit function
+void lit(string filename, string fileSrc) {
     Program p;
     if (isBook) {
         p = new Program();
-        p.file = "stdin";
-        p = parseProgram(p, stdinSrc);
+        p.file = filename;
+        p = parseProgram(p, fileSrc);
         if (p.chapters.length == 0) {
-            error("stdin", 1, "This book has no chapters");
+            error(filename, 1, "This book has no chapters");
             return;
         }
     } else {
         p = new Program();
-        p.file = "stdin";
+        p.file = filename;
         Chapter c = new Chapter();
-        c.file = "stdin";
+        c.file = filename;
         c.majorNum = 1; c.minorNum = 0;
 
-        c = parseChapter(c, stdinSrc);
+        c = parseChapter(c, fileSrc);
         p.chapters ~= c;
     }
 
@@ -217,19 +191,19 @@ else if (useStdin) {
         weave(p);
     }
 
-    if (!noCompCmd) {
+    if (!noCompCmd && !tangleErrors && !weaveOnly) {
         @{Check for compiler errors}
     }
 }
 ---
 
-If there was no `-` argument for stdin, just print the help text.
+@s Compiler errors
 
---- Run Literate +=
-else  {
-    writeln(helpText);
-}
----
+Here we check for compiler errors.
+
+First we have to get all the codeblocks so that we can backtrack the line numbers
+from the error message to the correct codeblock. Then we can use the `getLinenums`
+function to get the line numbers for each line in the tangled code.
 
 --- Check for compiler errors
 Line[][string] codeLinenums;
@@ -241,7 +215,11 @@ getCodeblocks(p, codeblocks, rootCodeblocks);
 foreach (b; rootCodeblocks) {
     codeLinenums = getLinenums(codeblocks, b.name, b.name, codeLinenums);
 }
+---
 
+Now we go and check for the `@compiler` command and the `@error_format` command.
+
+--- Check for compiler errors +=
 string compilerCmd;
 string errorFormat;
 Command errorFormatCmd;
@@ -264,6 +242,22 @@ if (p.chapters.length == 1) {
         }
     }
 }
+---
+
+If there is no `@error_format` but the `@compiler` command uses a known compiler, we
+can substitute the error format in.
+
+Supported compilers/linters are:
+
+* `clang`
+* `gcc`
+* `g++`
+* `javac`
+* `pyflakes`
+* `jshint`
+* `dmd`
+
+--- Check for compiler errors +=
 if (errorFormat is null) {
     if (compilerCmd.indexOf("clang") != -1) { errorFormat = "%f:%l:%s: %s: %m"; }
     else if (compilerCmd.indexOf("gcc") != -1) { errorFormat = "%f:%l:%s: %s: %m"; }
@@ -273,7 +267,14 @@ if (errorFormat is null) {
     else if (compilerCmd.indexOf("jshint") != -1) { errorFormat = "%f: line %l,%s, %m"; }
     else if (compilerCmd.indexOf("dmd") != -1) { errorFormat = "%f\\(%l\\):%s: %m"; }
 }
+---
 
+Now we actually go through and create the regex, by replacing the `%l`, `%f`, and `%m` with
+matched regular expressions. Then we execute the shell command, parse each error
+using the error format, and rewrite the error with the proper filename and line number
+given by the array `codeLinenums` that we created earlier.
+
+--- Check for compiler errors +=
 if (errorFormat !is null) {
     if (errorFormat.indexOf("%l") != -1 && errorFormat.indexOf("%f") != -1 && errorFormat.indexOf("%m") != -1) {
         auto r = regex("");
@@ -316,6 +317,12 @@ if (errorFormat !is null) {
     }
 }
 ---
+
+@s GetLinenums
+
+Here is the `getLinenums` function. It just goes through every block like tangle would,
+but for each line it adds the line to the array, storing the file and
+line number for that line.
 
 --- getLinenums function
 Line[][string] getLinenums(Block[string] codeblocks, string blockName, 
