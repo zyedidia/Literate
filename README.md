@@ -74,7 +74,7 @@ Which generates [hello.c](http://literate.zbyedidia.webfactional.com/examples/he
 
 You can also find this program in `examples/hello.lit`.
 
-For a full example of a literate program, please see `examples/wc.lit` which
+For a full example of a literate program, please see [`examples/wc.lit`](https://github.com/zyedidia/Literate/blob/master/examples/wc.lit) which
 is a literate implementation of the `wc` (word count) program found on Unix systems.
 You can find the compiled html [here](http://literate.zbyedidia.webfactional.com/examples/wc.html).
 
