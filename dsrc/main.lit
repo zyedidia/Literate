@@ -37,7 +37,6 @@ accepts are:
 * `--no-output`              Do not generate any output
 * `--out-dir    -odir DIR`   Put the generated files in DIR
 * `--compiler`               Don't ignore the `@compiler` command
-* `--book       -b`          Compile the file as a Literate book
 * `--version`                Show the version number and compiler information
 
 All other inputs are input files.
@@ -68,7 +67,6 @@ string helpText =
 "--no-output           Do not generate any output files\n"
 "--out-dir -odir DIR   Put the generated files in DIR\n"
 "--compiler            Report compiler errors (needs @compiler to be defined)\n"
-"--book    -b          Compile the file as a literate book\n"
 "--version             Show the version number and compiler information";
 
 ---
@@ -118,8 +116,6 @@ for (int i = 1; i < args.length; i++) {
     } else if (arg == "--compiler") {
         noCompCmd = false;
         noOutput = true;
-    } else if (arg == "--book" || arg == "-b") {
-        isBook = true;
     } else if (arg == "--version") {
         writeln("Literate version " ~ versionNum);
         writeln("Compiled by " ~ __VENDOR__ ~ " on " ~ __DATE__);
@@ -163,18 +159,16 @@ was passed.
 
 --- lit function
 void lit(string filename, string fileSrc) {
-    Program p;
-    if (isBook) {
-        p = new Program();
-        p.file = filename;
+    Program p = new Program();
+    p.file = filename;
+    if (fileSrc.matchFirst("(\n|^)@book\\s*?(\n|$)")) {
+        isBook = true;
         p = parseProgram(p, fileSrc);
         if (p.chapters.length == 0) {
             error(filename, 1, "This book has no chapters");
             return;
         }
     } else {
-        p = new Program();
-        p.file = filename;
         Chapter c = new Chapter();
         c.file = filename;
         c.majorNum = 1; c.minorNum = 0;
