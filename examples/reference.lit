@@ -1,4 +1,4 @@
-@title A Large Example
+@title Reference
 @colorscheme github.css
 @compiler lit large_example.lit && clang error.c
 

@@ -17,7 +17,7 @@ void weave(Program p) {
     @{Parse use locations}
     @{Run weaveChapter}
     if (isBook && !noOutput) {
-        @{Create the table of contents}
+@{Create the table of contents}
     }
 }
 
@@ -103,17 +103,18 @@ If the program being compiled is a book, we should also write a table of content
 --- Create the table of contents
 string dir = outDir ~ "/_book";
 File f = File(dir ~ "/" ~ p.title ~ "_contents.html", "w");
-f.writeln("
+f.writeln(
+q"DELIMITER
 <!DOCTYPE html>
 <html>
-    <head>
-        <style>
-            ul#contents {list-style-type: none;}
-        </style>
-        <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" integrity=\"sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7\" crossorigin=\"anonymous\">
-    </head>
+<head>
+<style>
+ul#contents {list-style-type: none;}a{color:#337ABF;}body{min-width:200px;max-width:850px;margin:0 auto;padding:30px;}.chapter-nav{font-size: 10pt;}.codeblock_name,code,pre.prettyprint{font-family:Monaco,"Lucida Console",monospace}body{font-size:14pt}.codeblock_name,.math,.seealso,code{font-size:10pt}.codeblock{page-break-inside:avoid;padding-bottom:15px}.math{text-indent:0}pre.prettyprint{font-size:10pt;padding:10px;border-radius:10px;border:none;white-space:pre-wrap}.codeblock_name{margin-top:1.25em;display:block}a:link{text-decoration:none}a:link:not(.lit):hover{text-decoration:underline}a:link:active{color:red}h4{padding-right:1.25em}h4.noheading{margin-bottom:0}h1{text-align:center}code{padding:2px}pre{-moz-tab-size:4;-o-tab-size:4;tab-size:4}.two-col{list-style-type:none}.two-col li:before{content:'-';padding:5px;margin-right:5px;color:orange;background-color:#fff;display:inline-block}@media print{body{font-size:10pt}pre.prettyprint{font-size:8pt}.seealso{font-size:9pt}.codeblock_name,.math,code{font-size:8pt}.math{text-indent:0}}
+</style>
+</head>
 <body>
-<div class=\"container\">"
+<div class="container">
+DELIMITER"
 );
 
 f.writeln("<h1>" ~ p.title ~ "</h1>");
@@ -175,20 +176,18 @@ string weaveChapter(Chapter c, Program p, string[string] defLocations,
 @{Write the katex source}
     }
 
-    // Leave this out for now
-    /*
     if (isBook) {
-        output ~= "</section><ul class=\"nav\">";
-        foreach (Chapter chapter; p.chapters) {
-            string active = "";
-            if (chapter == c) {
-                active = "class=\"active\"";
-            }
-            output ~= "<li><a " ~ active ~ " href=\"" ~ stripExtension(chapter.file) ~ ".html" ~ "\">" ~ chapter.num() ~ " " ~ chapter.title ~ "</a></li>";
+        output ~= "<br>";
+        int index = cast(int) p.chapters.countUntil(c);
+        if (index - 1 >= 0) {
+            Chapter lastChapter = p.chapters[p.chapters.countUntil(c)-1];
+            output ~= "<a style=\"float:left;\" class=\"chapter-nav\" href=\"" ~ stripExtension(baseName(lastChapter.file)) ~ ".html\">Previous Chapter</a>";
         }
-        output ~= "<ul>";
+        if (index + 1 < p.chapters.length) {
+            Chapter nextChapter = p.chapters[p.chapters.countUntil(c)+1];
+            output ~= "<a style=\"float:right;\" class=\"chapter-nav\" href=\"" ~ stripExtension(baseName(nextChapter.file)) ~ ".html\">Next Chapter</a>";
+        }
     }
-    */
 
     output ~= "</body>\n";
 
@@ -611,13 +610,7 @@ string colorschemeCSS = q"DELIMITER
 DELIMITER";
 
 string defaultCSS = q"DELIMITER
-body {
-    min-width: 200px;
-    max-width: 850px;
-    margin: 0 auto;
-    padding: 30px;
-}
-a:link,a:visited{color:#00f}.codeblock_name,code,pre.prettyprint{font-family:Monaco,"Lucida Console",monospace}body{font-size:14pt}.codeblock_name,.math,.seealso,code{font-size:10pt}.codeblock{page-break-inside:avoid;padding-bottom:15px}.math{text-indent:0}pre.prettyprint{font-size:10pt;padding:10px;border-radius:10px;border:none;white-space:pre-wrap}.codeblock_name{margin-top:1.25em;display:block}a:link{text-decoration:none}a:link:not(.lit):hover{color:#00f;text-decoration:underline}a:link:active{color:red}h4{padding-right:1.25em}h4.noheading{margin-bottom:0}h1{text-align:center}code{padding:2px}pre{-moz-tab-size:4;-o-tab-size:4;tab-size:4}p:not(.notp){margin:0;text-indent:2em}.two-col{list-style-type:none}.two-col li:before{content:'-';padding:5px;margin-right:5px;color:orange;background-color:#fff;display:inline-block}@media print{body{font-size:10pt}pre.prettyprint{font-size:8pt}.seealso{font-size:9pt}.codeblock_name,.math,code{font-size:8pt}.math{text-indent:0}}
+body{min-width:200px;max-width:850px;margin:0 auto;padding:30px;}.chapter-nav{font-size: 10pt;}a:link,a:visited{color:#00f}.codeblock_name,code,pre.prettyprint{font-family:Monaco,"Lucida Console",monospace}body{font-size:14pt}.codeblock_name,.math,.seealso,code{font-size:10pt}.codeblock{page-break-inside:avoid;padding-bottom:15px}.math{text-indent:0}pre.prettyprint{font-size:10pt;padding:10px;border-radius:10px;border:none;white-space:pre-wrap}.codeblock_name{margin-top:1.25em;display:block}a:link{text-decoration:none}a:link:not(.lit):hover{color:#00f;text-decoration:underline}a:link:active{color:red}h4{padding-right:1.25em}h4.noheading{margin-bottom:0}h1{text-align:center}code{padding:2px}pre{-moz-tab-size:4;-o-tab-size:4;tab-size:4}p:not(.notp){margin:0;text-indent:2em}.two-col{list-style-type:none}.two-col li:before{content:'-';padding:5px;margin-right:5px;color:orange;background-color:#fff;display:inline-block}@media print{body{font-size:10pt}pre.prettyprint{font-size:8pt}.seealso{font-size:9pt}.codeblock_name,.math,code{font-size:8pt}.math{text-indent:0}}
 DELIMITER";
 ---
 
