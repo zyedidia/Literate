@@ -366,8 +366,10 @@ it goes outside the `{}` and is not really part of the name anymore.
 
 --- Find the definition location +=
 string extra = "";
-if (strip(block.name).endsWith("+=") || strip(block.name).endsWith(":=")) {
-    extra = " " ~ strip(block.name)[$ - 2..$];
+if (block.modifiers.canFind(Modifier.additive)) {
+    extra = " +=";
+} else if (block.modifiers.canFind(Modifier.redef)) {
+    extra = " :=";
 }
 ---
 
