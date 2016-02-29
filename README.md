@@ -138,5 +138,5 @@ For more information see the [manual](http://literate.zbyedidia.webfactional.com
 
 ## Contributing
 
-Literate is written in Literate D and you can find the source code in the `dsrc` directory. You can also read the source code compiled by Literate [here](http://literate.zbyedidia.webfactional.com/literate-source).
+Literate is written in Literate D and you can find the source code in the `lit` directory. You can also read the source code compiled by Literate [here](http://literate.zbyedidia.webfactional.com/literate-source).
 I am happy to accept pull requests, and if you find any bugs, please report them. Thanks!

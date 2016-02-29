@@ -1,26 +1,26 @@
-release: dsrc/markdown/source lit
+release: lit/markdown/source lit
 	@mkdir -p bin
 	dub build --build=release
 	@rm bin/tangle
 
-debug: dsrc/markdown/source lit
+debug: lit/markdown/source lit
 	@mkdir -p bin
 	dub build
 
 bin/tangle:
-	dub --root=dsrc/tangle build
+	dub --root=lit/tangle build
 
 lit: bin/tangle
 	@mkdir -p source
-	bin/tangle -odir source dsrc/*.lit
+	bin/tangle -odir source lit/*.lit
 
 test: lit
 	dub test
 
-dsrc/markdown/source:
-	@if [ ! -s dsrc/markdown/source ]; then \
+lit/markdown/source:
+	@if [ ! -s lit/markdown/source ]; then \
 		if [ ! -s .git ]; then \
-			git clone https://github.com/zyedidia/dmarkdown dsrc/markdown; \
+			git clone https://github.com/zyedidia/dmarkdown lit/markdown; \
 		else \
 			git submodule init; \
 			git submodule update; \
@@ -29,11 +29,11 @@ dsrc/markdown/source:
 
 clean:
 	dub clean
-	dub clean --root=dsrc/markdown
-	dub clean --root=dsrc/tangle
+	dub clean --root=lit/markdown
+	dub clean --root=lit/tangle
 
 clean-all:
 	dub clean
-	dub clean --root=dsrc/markdown
-	dub clean --root=dsrc/tangle
+	dub clean --root=lit/markdown
+	dub clean --root=lit/tangle
 	rm -rf bin source
