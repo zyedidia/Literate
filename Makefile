@@ -1,16 +1,16 @@
-release: lit/markdown/source lit
+release: lit/markdown/source d-files
 	@mkdir -p bin
 	dub build --build=release
 	@rm bin/tangle
 
-debug: lit/markdown/source lit
+debug: lit/markdown/source d-files
 	@mkdir -p bin
 	dub build
 
 bin/tangle:
 	dub --root=lit/tangle build
 
-lit: bin/tangle
+d-files: bin/tangle
 	@mkdir -p source
 	bin/tangle -odir source lit/*.lit
 
