@@ -391,8 +391,8 @@ to use that, otherwise, the pretty printer will try to figure out how to syntax 
 on its own -- and it's pretty good at that.
 
 --- Write the actual code
-if (block.codeType.split().length > 0) {
-    output ~= "<pre class=\"prettyprint lang-" ~ block.codeType.split()[0] ~ "\">\n";
+if (block.codeType.split().length > 1) {
+    output ~= "<pre class=\"prettyprint lang-" ~ block.codeType.split()[1][1..$] ~ "\">\n";
 } else {
     output ~= "<pre class=\"prettyprint\">\n";
 }
