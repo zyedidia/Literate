@@ -22,6 +22,7 @@ import std.string;
 import std.stdio;
 import parser;
 import util;
+import std.conv: to;
 
 void tangle(Program p) {
     @{tangle function}
@@ -114,7 +115,11 @@ void writeCode(Block[string] codeblocks, string blockName, File file, string fil
         } else {
             if (!noOutput) {
                 if (lineDirectives) {
-                    file.writeln("#line ", lineObj.lineNum);
+                    if (lineDirectiveStr != "") {
+                        file.writeln(lineDirectiveStr, " ", lineObj.lineNum);
+                    } else {
+                        file.writeln(block.commentString.replace("%s", to!string(lineObj.lineNum)));
+                    }
                 }
                 file.writeln(whitespace ~ line);
             }

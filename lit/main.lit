@@ -35,9 +35,9 @@ accepts are:
 * `--tangle     -t`          Only run tangle
 * `--weave      -w`          Only run weave
 * `--no-output`              Do not generate any output
-* `--out-dir    -odir DIR`   Put the generated files in DIR
+* `--out-dir    -odir DIR`   Put the generated files in `DIR`
 * `--compiler`               Don't ignore the `@compiler` command
-* `--line-directives -l`     Write line directives to the output file
+* `--linenums -l STR`        Write line numbers prepended with `STR` to the output file
 * `--version`                Show the version number and compiler information
 
 All other inputs are input files.
@@ -56,6 +56,7 @@ bool useStdin;
 bool lineDirectives;
 string versionNum = "0.1";
 string outDir = "."; // Default is current directory
+string lineDirectiveStr;
 
 string helpText =
 "Lit: Literate Programming System\n"
@@ -63,14 +64,14 @@ string helpText =
 "Usage: lit [options] <inputs>\n"
 "\n"
 "Options:\n"
-"--help            -h    Show this help text\n"
-"--tangle          -t    Only compile code files\n"
-"--weave           -w    Only compile HTML files\n"
-"--no-output             Do not generate any output files\n"
-"--out-dir  -odir DIR    Put the generated files in DIR\n"
-"--compiler              Report compiler errors (needs @compiler to be defined)\n"
-"--line-directives -l    Write line directives to the output file\n"
-"--version               Show the version number and compiler information";
+"--help       -h         Show this help text\n"
+"--tangle     -t         Only compile code files\n"
+"--weave      -w         Only compile HTML files\n"
+"--no-output  -no        Do not generate any output files\n"
+"--out-dir    -odir DIR  Put the generated files in DIR\n"
+"--compiler   -c         Report compiler errors (needs @compiler to be defined)\n"
+"--linenums   -l    STR  Write line numbers prepended with STR to the output file\n"
+"--version    -v         Show the version number and compiler information";
 ---
 
 This program uses a number of block modifiers in order to facilitate certain functionality.
@@ -83,7 +84,7 @@ Each modifier is represented by this list of enums:
 enum Modifier {
     noWeave,
     noTangle,
-    additive, //+=
+    additive, // +=
     redef // :=
 }
 ---
@@ -107,7 +108,7 @@ for (int i = 1; i < args.length; i++) {
         tangleOnly = true;
     } else if (arg == "--weave" || arg == "-w") {
         weaveOnly = true;
-    } else if (arg == "--no-output") {
+    } else if (arg == "--no-output" || arg == "-no") {
         noOutput = true;
     } else if (arg == "--out-dir" || arg == "-odir") {
         if (i == args.length - 1) {
@@ -115,12 +116,17 @@ for (int i = 1; i < args.length; i++) {
             return;
         }
         outDir = args[++i];
-    } else if (arg == "--compiler") {
+    } else if (arg == "--compiler" || arg == "-c") {
         noCompCmd = false;
         noOutput = true;
-    } else if (arg == "--line-directives" || arg == "-l") {
+    } else if (arg == "--linenums" || arg == "-l") {
         lineDirectives = true;
-    } else if (arg == "--version") {
+        if (i == args.length - 1) {
+            writeln("No line number string provided.");
+            return;
+        }
+        lineDirectiveStr = args[++i];
+    } else if (arg == "--version" || arg == "-v") {
         writeln("Literate version " ~ versionNum);
         writeln("Compiled by " ~ __VENDOR__ ~ " on " ~ __DATE__);
         return;
