@@ -369,7 +369,7 @@ string def;
 string defLocation;
 string htmlFile = "";
 if (block.name !in defLocations) {
-    error(c.file, block.startLine, "{" ~ block.name ~ "} is never defined");
+    error(block.startLine.file, block.startLine.lineNum, "{" ~ block.name ~ "} is never defined");
 } else {
     def = defLocations[block.name];
     defLocation = def;
@@ -448,7 +448,7 @@ pretty printer.
 def = "";
 defLocation = "";
 if (strip(strippedLine[2..$ - 1]) !in defLocations) {
-    error(c.file, lineObj.lineNum, "{" ~ strip(strippedLine[2..$ - 1]) ~ "} is never defined");
+    error(lineObj.file, lineObj.lineNum, "{" ~ strip(strippedLine[2..$ - 1]) ~ "} is never defined");
 } else if (defLocations[strip(strippedLine[2..$ - 1])] != "noWeave") {
     def = defLocations[strippedLine[2..$ - 1]];
     defLocation = def;

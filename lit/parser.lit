@@ -173,7 +173,7 @@ a `codeType` and a `commentString`.
 
 --- Block class
 class Block {
-    public int startLine;
+    public Line startLine;
     public string name;
     public bool isCodeblock;
     public bool isRootBlock;
@@ -370,12 +370,18 @@ Chapter parseChapter(Chapter chapter, string src) {
     }
 
     // Handle the @include statements
-    src = std.regex.replaceAll!(match => include(match[1]))(src, regex(`\n@include (.*)`));
-    string[] lines = src.split("\n");
+    /* src = std.regex.replaceAll!(match => include(match[1]))(src, regex(`\n@include (.*)`)); */
+    string[] linesStr = src.split("\n");
+    Line[] lines;
+    foreach (lineNum, line; linesStr) {
+        lines ~= new Line(line, filename, cast(int) lineNum+1);
+    }
 
-    int lineNum = 0;
-    foreach (line; lines) {
-        lineNum++;
+    for (int j = 0; j < lines.length; j++) {
+        auto lineObj = lines[j];
+        filename = lineObj.file;
+        auto lineNum = lineObj.lineNum;
+        auto line = lineObj.text;
 
         if (strip(line).startsWith("//") && !inCodeblock) {
             continue;
@@ -473,6 +479,18 @@ if (line.split().length > 1) {
             cmd.args = "";
         }
 
+        if (cmd.name == "@include") {
+            Line[] includedLines;
+            string fileSrc = readall(File(cmd.args));
+            foreach (includedLineNum, includedLine; fileSrc.split("\n")) {
+                auto includedLineObj = new Line(includedLine, cmd.args, cast(int) includedLineNum + 1);
+                includedLines ~= includedLineObj;
+            }
+            if (includedLines.length > 0) {
+                lines = lines[0 .. lineNum] ~ includedLines ~ lines[lineNum .. $];
+            }
+        }
+
         if (curSection is null) {
             chapter.commands ~= cmd;
         } else {
@@ -503,7 +521,7 @@ else if (startsWith(line, "@s")) {
             curSection.blocks ~= curBlock;
         }
     } else if (curBlock !is null && curBlock.isCodeblock) {
-        error(chapter.file, curBlock.startLine, "Unclosed block {" ~ curBlock.name ~ "}");
+        error(curBlock.startLine.file, curBlock.startLine.lineNum, "Unclosed block {" ~ curBlock.name ~ "}");
     }
     // Make sure the section exists
     if (curSection !is null) {
@@ -536,7 +554,7 @@ else if (matchAll(line, regex("^---.+"))) {
         curSection.blocks ~= curBlock;
     }
     curBlock = new Block();
-    curBlock.startLine = lineNum;
+    curBlock.startLine = lineObj;
     curBlock.isCodeblock = true;
     curBlock.name = strip(line[3..$]);
 
@@ -639,7 +657,7 @@ if (curBlock !is null) {
     curSection.blocks ~= curBlock;
 }
 curBlock = new Block();
-curBlock.startLine = lineNum;
+curBlock.startLine = lineObj;
 curBlock.isCodeblock = false;
 inCodeblock = false;
 ---
@@ -667,7 +685,7 @@ if (curBlock !is null) {
     if (!curBlock.isCodeblock) {
         curSection.blocks ~= curBlock;
     } else {
-        writeln(filename, ":", lineNum - 1, ":error: {", curBlock.name, "} is never closed");
+        writeln(filename, ":", lines.length - 1, ":error: {", curBlock.name, "} is never closed");
     }
 }
 if (curSection !is null) {
