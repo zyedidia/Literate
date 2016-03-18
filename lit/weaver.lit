@@ -130,8 +130,9 @@ if (useMdCompiler) {
     string mdCompilerOutput;
     foreach (line; pipes.stdout.byLine) mdCompilerOutput ~= line.idup;
     if (status != 0) {
-        warn(p.file, 1, "Markdown compilation failed: " ~ mdCompilerOutput ~ " -- Using built-in markdown compiler");
+        warn(p.file, 1, "Custom markdown compilation failed: " ~ mdCompilerOutput ~ " -- Falling back to built-in markdown compiler");
         html = filterMarkdown(md, MarkdownFlags.disableUnderscoreEmphasis);
+        useMdCompiler = false;
     } else {
         html = mdCompilerOutput;
     }
@@ -347,8 +348,9 @@ if (useMdCompiler) {
     string mdCompilerOutput;
     foreach (line; pipes.stdout.byLine) mdCompilerOutput ~= line.idup;
     if (status != 0) {
-        warn(c.file, 1, "Markdown compilation failed: " ~ mdCompilerOutput ~ " -- Using built-in markdown compiler");
+        warn(c.file, 1, "Custom markdown compilation failed: " ~ mdCompilerOutput ~ " -- Falling back to built-in markdown compiler");
         html = filterMarkdown(md, MarkdownFlags.disableUnderscoreEmphasis);
+        useMdCompiler = false;
     } else {
         html = mdCompilerOutput;
     }
