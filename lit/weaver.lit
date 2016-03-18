@@ -307,10 +307,28 @@ by backslashes. Most of the regex is negative look behind to make sure the dolla
 escaped.
 
 --- Weave a prose block
-string html = filterMarkdown(block.text(), MarkdownFlags.disableUnderscoreEmphasis);
+string html;
+string md = block.text();
 
-if (html.matchAll(regex(r"(?<!\\)[\$](?<!\\)[\$](.*?)(?<!\\)[\$](?<!\\)[\$]")) || html.matchAll(regex(r"(?<!\\)[\$](.*?)(?<!\\)[\$]"))) {
+
+if (md.matchAll(regex(r"(?<!\\)[\$](?<!\\)[\$](.*?)(?<!\\)[\$](?<!\\)[\$]")) || md.matchAll(regex(r"(?<!\\)[\$](.*?)(?<!\\)[\$]"))) {
     use_katex = true;
+}
+
+md = md.replaceAll(regex(r"(?<!\\)[\$](?<!\\)[\$](.*?)(?<!\\)[\$](?<!\\)[\$]"), "<div class=\"math\">$1</div>");
+md = md.replaceAll(regex(r"(?<!\\)[\$](.*?)(?<!\\)[\$]"), "<span class=\"math\">$1</span>");
+md = md.replaceAll(regex(r"\\\$"), "$$");
+
+if (useMdCompiler) {
+    auto proc = executeShell("echo " ~ escapeShellCommand(md) ~ " | " ~ mdCompilerCmd);
+    if (proc.status != 0) {
+        warn(c.file, 1, "Markdown compilation failed: " ~ proc.output ~ " -- Using built in markdown compiler");
+        html = filterMarkdown(block.text(), MarkdownFlags.disableUnderscoreEmphasis);
+    } else {
+        html = proc.output;
+    }
+} else {
+    html = filterMarkdown(md, MarkdownFlags.disableUnderscoreEmphasis);
 }
 ---
 
@@ -321,9 +339,6 @@ we replace all backslash dollars to real dollar signs.
 Finally we add this html to the output and add a newline for good measure.
 
 --- Weave a prose block +=
-html = html.replaceAll(regex(r"(?<!\\)[\$](?<!\\)[\$](.*?)(?<!\\)[\$](?<!\\)[\$]"), "<div class=\"math\">$1</div>");
-html = html.replaceAll(regex(r"(?<!\\)[\$](.*?)(?<!\\)[\$]"), "<span class=\"math\">$1</span>");
-html = html.replaceAll(regex(r"\\\$"), "$$");
 output ~= html ~ "\n";
 ---
 
@@ -580,6 +595,7 @@ DELIMITER";
 
 --- Imports
 import globals;
+import std.process;
 import std.file;
 import std.conv;
 import std.algorithm;

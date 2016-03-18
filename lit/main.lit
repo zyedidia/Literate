@@ -54,6 +54,8 @@ bool noCompCmd = true;
 bool tangleErrors;
 bool useStdin;
 bool lineDirectives;
+bool useMdCompiler;
+string mdCompilerCmd;
 string versionNum = "0.1";
 string outDir = "."; // Default is current directory
 string lineDirectiveStr;
@@ -126,6 +128,13 @@ for (int i = 1; i < args.length; i++) {
             return;
         }
         lineDirectiveStr = args[++i];
+    } else if (arg == "--md-compiler") {
+        useMdCompiler = true;
+        if (i == args.length - 1) {
+            writeln("No markdown compiler provided.");
+            return;
+        }
+        mdCompilerCmd = args[++i];
     } else if (arg == "--version" || arg == "-v") {
         writeln("Literate version " ~ versionNum);
         writeln("Compiled by " ~ __VENDOR__ ~ " on " ~ __DATE__);
