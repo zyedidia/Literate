@@ -119,7 +119,26 @@ DELIMITER"
 
 f.writeln("<h1>" ~ p.title ~ "</h1>");
 
-f.writeln(filterMarkdown(p.text));
+string html;
+string md = p.text;
+if (useMdCompiler) {
+    auto pipes = pipeShell(mdCompilerCmd, Redirect.stdin | Redirect.stdout | Redirect.stderrToStdout);
+    pipes.stdin.write(md);
+    pipes.stdin.flush();
+    pipes.stdin.close();
+    auto status = wait(pipes.pid);
+    string mdCompilerOutput;
+    foreach (line; pipes.stdout.byLine) mdCompilerOutput ~= line.idup;
+    if (status != 0) {
+        warn(p.file, 1, "Markdown compilation failed: " ~ mdCompilerOutput ~ " -- Using built-in markdown compiler");
+        html = filterMarkdown(md, MarkdownFlags.disableUnderscoreEmphasis);
+    } else {
+        html = mdCompilerOutput;
+    }
+} else {
+    html = filterMarkdown(md, MarkdownFlags.disableUnderscoreEmphasis);
+}
+f.writeln(html);
 
 f.writeln("<ul id=\"contents\">");
 foreach (c; p.chapters) {
@@ -329,7 +348,7 @@ if (useMdCompiler) {
     foreach (line; pipes.stdout.byLine) mdCompilerOutput ~= line.idup;
     if (status != 0) {
         warn(c.file, 1, "Markdown compilation failed: " ~ mdCompilerOutput ~ " -- Using built-in markdown compiler");
-        html = filterMarkdown(block.text(), MarkdownFlags.disableUnderscoreEmphasis);
+        html = filterMarkdown(md, MarkdownFlags.disableUnderscoreEmphasis);
     } else {
         html = mdCompilerOutput;
     }
