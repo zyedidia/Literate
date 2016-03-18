@@ -83,7 +83,7 @@ Each modifier is represented by this list of enums:
 --- Modifiers
 enum Modifier {
     noWeave,
-    noTangle,
+    noTangle, // Not yet implemented
     additive, // +=
     redef // :=
 }
