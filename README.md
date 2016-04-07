@@ -36,6 +36,10 @@ If you like the project, make sure to leave a star :smile:
 
 Here is a trivial example of a literate program saved in the file `hello.lit`.
 
+For a full example of a literate program, please see [`examples/wc.lit`](https://github.com/zyedidia/Literate/blob/master/examples/wc.lit) which
+is a literate implementation of the `wc` (word count) program found on Unix systems.
+You can find the compiled html [here](http://literate.zbyedidia.webfactional.com/examples/wc.html).
+
 ```
 @title Hello world in C
 
@@ -73,10 +77,6 @@ To compile this code simply run
 Which generates [hello.c](http://literate.zbyedidia.webfactional.com/examples/hello.c) and [hello.html](http://literate.zbyedidia.webfactional.com/examples/hello.html).
 
 You can also find this program in `examples/hello.lit`.
-
-For a full example of a literate program, please see [`examples/wc.lit`](https://github.com/zyedidia/Literate/blob/master/examples/wc.lit) which
-is a literate implementation of the `wc` (word count) program found on Unix systems.
-You can find the compiled html [here](http://literate.zbyedidia.webfactional.com/examples/wc.html).
 
 ## Installation
 
@@ -126,12 +126,15 @@ Lit: Literate Programming System
 Usage: lit [options] <inputs>
 
 Options:
---help    -h          Show this help text
---tangle  -t          Only compile code files
---weave   -w          Only compile HTML files
---no-output           Do not generate any output files
---out-dir -odir DIR   Put the generated files in DIR
---compiler            Report compiler errors (needs @compiler to be defined)
+--help       -h         Show this help text
+--tangle     -t         Only compile code files
+--weave      -w         Only compile HTML files
+--no-output  -no        Do not generate any output files
+--out-dir    -odir DIR  Put the generated files in DIR
+--compiler   -c         Report compiler errors (needs @compiler to be defined)
+--linenums   -l    STR  Write line numbers prepended with STR to the output file
+--md-compiler COMPILER  Use COMPILER as the markdown compiler instead of the built-in one
+--version    -v         Show the version number and compiler information
 ```
 
 For more information see the [manual](http://literate.zbyedidia.webfactional.com/manual.php).
