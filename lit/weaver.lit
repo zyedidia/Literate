@@ -328,8 +328,34 @@ escaped.
 
 --- Weave a prose block
 string html;
-string md = block.text();
 
+string md = "";
+
+foreach (lineObj; block.lines) {
+    auto l = lineObj.text;
+    if (l.matchAll(regex(r"@\{.*?\}"))) {
+        auto matches = l.matchAll(regex(r"@\{(.*?)\}"));
+        foreach (m; matches) {
+            auto def = "";
+            auto defLocation = "";
+            auto str = strip(m[1]);
+            if (str !in defLocations) {
+                error(lineObj.file, lineObj.lineNum, "{" ~ str ~ "} is never defined");
+            } else if (defLocations[str] != "noWeave") {
+                def = defLocations[str];
+                defLocation = def;
+                auto index = def.indexOf(":");
+                string chapter = def[0..index];
+                auto htmlFile = getChapterHtmlFile(p.chapters, chapter);
+                if (chapter == c.num()) {
+                    defLocation = def[index + 1..$];
+                }
+                l = l.replaceAll(regex(r"@\{" ~ str ~ r"\}"), "`{" ~ str ~ ",`[`" ~ defLocation ~ "`](" ~ htmlFile ~ "#" ~ def ~ ")`}`");
+            }
+        }
+    }
+    md ~= l ~ "\n";
+}
 
 if (md.matchAll(regex(r"(?<!\\)[\$](?<!\\)[\$](.*?)(?<!\\)[\$](?<!\\)[\$]")) || md.matchAll(regex(r"(?<!\\)[\$](.*?)(?<!\\)[\$]"))) {
     use_katex = true;
@@ -338,6 +364,7 @@ if (md.matchAll(regex(r"(?<!\\)[\$](?<!\\)[\$](.*?)(?<!\\)[\$](?<!\\)[\$]")) || 
 md = md.replaceAll(regex(r"(?<!\\)[\$](?<!\\)[\$](.*?)(?<!\\)[\$](?<!\\)[\$]", "s"), "<div class=\"math\">$1</div>");
 md = md.replaceAll(regex(r"(?<!\\)[\$](.*?)(?<!\\)[\$]", "s"), "<span class=\"math\">$1</span>");
 md = md.replaceAll(regex(r"\\\$"), "$$");
+
 
 if (useMdCompiler) {
     auto pipes = pipeShell(mdCompilerCmd, Redirect.stdin | Redirect.stdout | Redirect.stderrToStdout);
