@@ -482,7 +482,11 @@ on its own -- and it's pretty good at that.
 
 --- Write the actual code
 if (block.codeType.split().length > 1) {
-    output ~= "<pre class=\"prettyprint lang-" ~ block.codeType.split()[1][1..$] ~ "\">\n";
+    if (block.codeType.split()[1].indexOf(".") == -1) {
+        warn(block.startLine.file, 1, "@code_type extension must begin with a '.', for example: `@code_type c .c`");
+    } else {
+        output ~= "<pre class=\"prettyprint lang-" ~ block.codeType.split()[1][1..$] ~ "\">\n";
+    }
 } else {
     output ~= "<pre class=\"prettyprint\">\n";
 }

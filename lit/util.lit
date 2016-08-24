@@ -18,6 +18,8 @@ import std.stdio;
 import std.conv;
 import parser;
 import std.string;
+import std.algorithm: canFind;
+import std.regex: matchAll, regex;
 import std.path;
 
 @{readall function}
