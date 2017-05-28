@@ -30,6 +30,7 @@ If you like the project, make sure to leave a star :smile:
 * Runs fast -- wc.lit compiled for me in 7ms for both code and HTML output
 * Automatically generates hyperlinks between code sections
 * Formatted output similar to CWEB
+* Supported by [micro](https://github.com/zyedidia/micro) (by default)
 * Compatible with Vim ([literate.vim] (https://github.com/zyedidia/literate.vim))
 
 ## Example
@@ -113,7 +114,13 @@ $ make
 
 You can find the binary in path/to/Literate/bin (you may want to add this to your path or move it to `/usr/local/bin`).
 
-### The Vim Plugin
+### Editors
+
+### Micro
+
+The micro editor has support for literate by default. Download it [here](https://github.com/zyedidia/micro).
+
+### Vim
 
 You might also want to go install the [Vim plugin](https://github.com/zyedidia/literate.vim) (it has syntax highlighting of the embedded code, linting with Neomake, and jumping to codeblock definitions). 
 I'm sorry that no other editors are supported -- I don't know how to make plugins for other editors.
