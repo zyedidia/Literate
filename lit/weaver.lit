@@ -545,9 +545,18 @@ have a few if statements to figure out the grammar -- where to put the `and`
 and whether to have plurals and whatnot.
 
 --- LinkLocations function
+T[] noDupes(T)(in T[] s) {
+    import std.algorithm: canFind;
+    T[] result;
+    foreach (T c; s)
+        if (!result.canFind(c))
+            result ~= c;
+    return result;
+}
+
 string linkLocations(string text, string[][string] sectionLocations, Program p, Chapter c, Section s, parser.Block block) {
     if (block.name in sectionLocations) {
-        string[] locations = dup(sectionLocations[block.name]);
+        string[] locations = dup(sectionLocations[block.name]).noDupes;
 
         if (locations.canFind(c.num() ~ ":" ~ to!string(s.num))) {
             locations = remove(locations, locations.countUntil(c.num() ~ ":" ~ to!string(s.num)));
