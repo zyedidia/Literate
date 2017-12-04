@@ -53,19 +53,19 @@ foreach (chapter; p.chapters) {
                 @{Check if it's a root block}
 
                 if (block.modifiers.canFind(Modifier.additive)) {
-                    if (block.name !in addLocations || !addLocations[block.name].canFind(to!string(s.num)))
-                        addLocations[block.name] ~= chapter.num() ~ ":" ~ to!string(s.num);
+                    if (block.name !in addLocations || !addLocations[block.name].canFind(s.numToString()))
+                        addLocations[block.name] ~= chapter.num() ~ ":" ~ s.numToString();
                 } else if (block.modifiers.canFind(Modifier.redef)) {
-                    if (block.name !in redefLocations || !redefLocations[block.name].canFind(to!string(s.num)))
-                        redefLocations[block.name] ~= chapter.num() ~ ":" ~ to!string(s.num);
+                    if (block.name !in redefLocations || !redefLocations[block.name].canFind(s.numToString()))
+                        redefLocations[block.name] ~= chapter.num() ~ ":" ~ s.numToString();
                 } else {
-                    defLocations[block.name] = chapter.num() ~ ":" ~ to!string(s.num);
+                    defLocations[block.name] = chapter.num() ~ ":" ~ s.numToString();
                 }
 
                 foreach (lineObj; block.lines) {
                     string line = strip(lineObj.text);
                     if (line.startsWith("@{") && line.endsWith("}")) {
-                        useLocations[line[2..$ - 1]] ~= chapter.num() ~ ":" ~ to!string(s.num);
+                        useLocations[line[2..$ - 1]] ~= chapter.num() ~ ":" ~ s.numToString();
                     }
                 }
             }
@@ -294,12 +294,12 @@ between the title and the prose.
 --- Write the body
 output ~= "<body onload=\"prettyPrint()\">\n"
           "<section>\n"
-          "<h1>" ~ c.title ~ "</h1>\n";
+          "<p class=\"title\">" ~ c.title ~ "</p>\n";
 
 foreach (s; c.sections) {
     string noheading = s.title == "" ? " class=\"noheading\"" : "";
-    output ~= "<a name=\"" ~ c.num() ~ ":" ~ to!string(s.num) ~ "\"><div class=\"section\"><h4" ~
-              noheading ~ ">" ~ to!string(s.num) ~ ". " ~ s.title ~ "</h4></a>\n";
+    output ~= "<a name=\"" ~ c.num() ~ ":" ~ s.numToString() ~ "\"><div class=\"section\"><h" ~ to!string(s.level + 1) ~
+              noheading ~ ">" ~ s.numToString() ~ ". " ~ s.title ~ "</h" ~ to!string(s.level + 1) ~ "></a>\n";
 
     foreach (block; s.blocks) {
         if (!block.modifiers.canFind(Modifier.noWeave)) {
@@ -558,8 +558,8 @@ string linkLocations(string text, string[][string] sectionLocations, Program p, 
     if (block.name in sectionLocations) {
         string[] locations = dup(sectionLocations[block.name]).noDupes;
 
-        if (locations.canFind(c.num() ~ ":" ~ to!string(s.num))) {
-            locations = remove(locations, locations.countUntil(c.num() ~ ":" ~ to!string(s.num)));
+        if (locations.canFind(c.num() ~ ":" ~ s.numToString())) {
+            locations = remove(locations, locations.countUntil(c.num() ~ ":" ~ s.numToString()));
         }
 
         if (locations.length > 0) {
@@ -912,7 +912,7 @@ string colorschemeCSS = q"DELIMITER
 DELIMITER";
 
 string defaultCSS = q"DELIMITER
-body{min-width:200px;max-width:850px;margin:0 auto;padding:30px;}.chapter-nav{font-size: 10pt;}a:link,a:visited{color:#00f}.codeblock_name,code,pre.prettyprint{font-family:Monaco,"Lucida Console",monospace}body{font-size:14pt}.codeblock_name,.math,.seealso,code{font-size:10pt}.codeblock{page-break-inside:avoid;padding-bottom:15px}.math{text-indent:0}pre.prettyprint{font-size:10pt;padding:10px;border-radius:10px;border:none;white-space:pre-wrap}.codeblock_name{margin-top:1.25em;display:block}a:link{text-decoration:none}a:link:not(.lit):hover{color:#00f;text-decoration:underline}a:link:active{color:red}h4{padding-right:1.25em}h4.noheading{margin-bottom:0}h1{text-align:center}code{padding:2px}pre{-moz-tab-size:4;-o-tab-size:4;tab-size:4}p:not(.notp){margin:0;text-indent:2em}.two-col{list-style-type:none}.two-col li:before{content:'-';padding:5px;margin-right:5px;color:orange;background-color:#fff;display:inline-block}@media print{body{font-size:10pt}pre.prettyprint{font-size:8pt}.seealso{font-size:9pt}.codeblock_name,.math,code{font-size:8pt}.math{text-indent:0}}
+body{min-width:200px;max-width:850px;margin:0 auto;padding:30px;}.chapter-nav{font-size: 10pt;}a:link,a:visited{color:#00f}.codeblock_name,code,pre.prettyprint{font-family:Monaco,"Lucida Console",monospace}body{font-size:14pt}.codeblock_name,.math,.seealso,code{font-size:10pt}.codeblock{page-break-inside:avoid;padding-bottom:15px}.math{text-indent:0}pre.prettyprint{font-size:10pt;padding:10px;border-radius:10px;border:none;white-space:pre-wrap}.codeblock_name{margin-top:1.25em;display:block}a:link{text-decoration:none}a:link:not(.lit):hover{color:#00f;text-decoration:underline}a:link:active{color:red}h4{padding-right:1.25em}h4.noheading{margin-bottom:0}h1{text-align:left}.title{text-align:center;font-size:20pt}code{padding:2px}pre{-moz-tab-size:4;-o-tab-size:4;tab-size:4}p:not(.notp){margin:0;text-indent:2em}.two-col{list-style-type:none}.two-col li:before{content:'-';padding:5px;margin-right:5px;color:orange;background-color:#fff;display:inline-block}@media print{body{font-size:10pt}pre.prettyprint{font-size:8pt}.seealso{font-size:9pt}.codeblock_name,.math,code{font-size:8pt}.math{text-indent:0}}
 DELIMITER";
 ---
 
