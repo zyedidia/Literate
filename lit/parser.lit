@@ -5,7 +5,7 @@
 
 @title Parser
 
-@s Introduction
+@s1 Introduction
 
 This is an implementation of a literate programming system in D.
 The goal is to be able to create books that one can read on a website,
@@ -21,7 +21,7 @@ CWEB, but differ in many key ways which simplify the source code
 and make it easier to read. Literate will use @ signs for commands
 and markdown to style the prose. 
 
-@s Directory Structure
+@s1 Directory Structure
 
 A Literate program may be just a single file, but it should also be
 possible to make a book out of it, with chapters and possibly multiple
@@ -47,7 +47,7 @@ like this:
 Sub chapters are denoted by tabs, and each chapter is linked to the correct
 `.lit` file using Markdown link syntax.
 
-@s The Parser
+@s1 The Parser
 
 As a first step, I'll make a parser for single chapters only, and leave having
 multiple chapters and books for later.
@@ -90,7 +90,7 @@ are 7 such classes:
 @{Change class}
 ---
 
-@s The Program Class
+@s1 The Program Class
 
 What is a literate program at the highest level? A program has multiple chapters,
 it has a title, and it has various commands associated with it (although some of these
@@ -112,7 +112,7 @@ class Program {
 }
 ---
 
-@s The Chapter class
+@s1 The Chapter class
 
 A chapter is very similar to a program. It has a title, commands, sections, and also
 an original file. In the case of a single file program (which is what we are focusing
@@ -144,7 +144,7 @@ class Chapter {
 }
 ---
 
-@s The Section class
+@s1 The Section class
 
 A section has a title, commands, a number, and a series of blocks, which can either be
 blocks of code, or blocks of prose. 
@@ -195,7 +195,7 @@ class Section {
 }
 ---
 
-@s The Block Class
+@s1 The Block Class
 
 A block is more interesting. It can either be a block of code, or a block of prose, so
 it has a boolean which represents what type it is. It also stores a start line. If it
@@ -247,7 +247,7 @@ class Block {
 }
 ---
 
-@s The Command Class
+@s1 The Command Class
 
 A command is quite simple. It has a name, and any arguments that are passed.
 
@@ -261,7 +261,7 @@ class Command {
 }
 ---
 
-@s The Line Class
+@s1 The Line Class
 
 A line is the lowest level. It stores the line number, the file the line is from, and the
 text for the line itself.
@@ -284,7 +284,7 @@ class Line {
 }
 ---
 
-@s The Change Class
+@s1 The Change Class
 
 The change class helps when parsing a change statement. It stores the file that is being changed,
 what the text to search for is and what the text to replace it with is. These two things are arrays
@@ -309,7 +309,7 @@ class Change {
 That's it for the classes. These 7 classes can be used to represent an entire literate program.
 Now let's get to the actual parse function to turn a text file into a program.
 
-@s The Parse Function
+@s1 The Parse Function
 
 Here we have two functions: `parseProgram` and `parseChapter`.
 
@@ -318,7 +318,7 @@ Here we have two functions: `parseProgram` and `parseChapter`.
 @{parseChapter function}
 ---
 
-@s parseProgram function
+@s1 parseProgram function
 
 This function takes a literate book source and parses each chapter and returns the final program.
 
@@ -376,7 +376,7 @@ Program parseProgram(Program p, string src) {
 }
 ---
 
-@s parseChapter function
+@s1 parseChapter function
 
 The `parseChapter` function is the more complex one. It parses the source of a chapter.
 Before doing any parsing, we resolve the `@include` statements by replacing them with
@@ -430,7 +430,7 @@ Chapter parseChapter(Chapter chapter, string src) {
 }
 ---
 
-@s The Parse Function Setup
+@s1 The Parse Function Setup
 
 For the initial variables, it would be nice to move the value for `chapter.file` into a variable
 called `filename`. Additionally, I'm going to need an array of all the possible commands that
@@ -462,7 +462,7 @@ bool inSearchBlock = false;
 bool inReplaceBlock = false;
 ---
 
-@s Parsing the Line
+@s1 Parsing the Line
 
 When parsing a line, we are either inside a code block, or inside a prose block, or we are transitioning
 from one to the other. So we'll have an if statement to separate the two.
@@ -543,7 +543,7 @@ if (startsWith(line, "@title")) {
 }
 ---
 
-@s Parsing a Section Definition
+@s1 Parsing a Section Definition
 
 When a new section is created (using `@s1` .. `@s6`), we should add the current section to the list
 of sections for the chapter, and then we should create a new section, which becomes the
@@ -598,7 +598,7 @@ void increaseSectionNum(int level)
 }
 ---
 
-@s Parse the Start of a Codeblock
+@s1 Parse the Start of a Codeblock
 
 Codeblocks always begin with `--- title`, so we can use the regex `^---.+` to represent this.
 Once a new codeblock starts, the old one must be appended to the current section's list of
@@ -607,7 +607,7 @@ blocks, and the current codeblock must be reset.
 --- Parse the beginning of a code block
 else if (matchAll(line, regex("^---.+"))) {
     if (curSection is null) {
-        error(chapter.file, lineNum, "You must define a section with @s before writing a code block");
+        error(chapter.file, lineNum, "You must define a section with @s1 before writing a code block");
         continue;
     }
 
@@ -641,7 +641,7 @@ else if (matchAll(line, regex("^---.+"))) {
 }
 ---
 
-@s Check for and extract modifiers.
+@s1 Check for and extract modifiers.
 
 Modifier format for a code block: `--- Block Name --- noWeave +=`.
 The `checkForModifiers` ugliness is due to lack of `(?|...)` and friends.
@@ -708,7 +708,7 @@ if (modMatch["modifiers"]) {
 }
 ---
 
-@s Parse the End of a Codeblock
+@s1 Parse the End of a Codeblock
 
 Codeblocks end with just a `---`. When a codeblock ends, we do the same as when it begins,
 except the new block we create is a block of prose as opposed to code.
@@ -723,7 +723,7 @@ curBlock.isCodeblock = false;
 inCodeblock = false;
 ---
 
-@s Add the current line
+@s1 Add the current line
 
 Finally, if the current line is nothing interesting, we just add it to the current block's
 list of lines.
@@ -734,7 +734,7 @@ curBlock.lines ~= new Line(line, filename, lineNum);
 
 Now we're done parsing the line.
 
-@s Closing the last section
+@s1 Closing the last section
 
 When the end of the file is reached, the last section has not been closed and added to the
 chapter yet, so we should do that. Additionally, if the last block is a prose block, it should
@@ -754,7 +754,7 @@ if (curSection !is null) {
 }
 ---
 
-@s Parsing the change block
+@s1 Parsing the change block
 
 Parsing a change block is somewhat complex. Change blocks look like this:
 

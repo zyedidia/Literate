@@ -5,7 +5,7 @@
 
 @title Main
 
-@s Introduction
+@s1 Introduction
 
 This file contains the source code for `main.d` the file which contains the
 main function for Literate. This will parse any arguments, show help text
@@ -26,7 +26,7 @@ void main(in string[] args) {
 }
 ---
 
-@s Parsing the Arguments
+@s1 Parsing the Arguments
 
 The arguments will consist of either flags or input files. The flags Literate
 accepts are:
@@ -79,7 +79,7 @@ string helpText =
 ---
 
 This program uses a number of block modifiers in order to facilitate certain functionality.
-i.e. If you don't wish a code block to be woven into the final HTML then the `noWeave` 
+i.e. If you don't wish a code block to be woven into the final HTML then the `noWeave`
 modifier will indicate this for you.
 
 Each modifier is represented by this list of enums:
@@ -149,7 +149,7 @@ for (int i = 1; i < args.length; i++) {
 }
 ---
 
-@s Run Literate
+@s1 Run Literate
 
 To run literate we go through every file that was passed in, check if it exists,
 and run tangle and weave on it (unless `tangleOnly` or `weaveOnly` was specified).
@@ -212,7 +212,7 @@ void lit(string filename, string fileSrc) {
 }
 ---
 
-@s Compiler errors
+@s1 Compiler errors
 
 Here we check for compiler errors.
 
@@ -333,14 +333,14 @@ if (errorFormat !is null) {
 }
 ---
 
-@s GetLinenums
+@s1 GetLinenums
 
 Here is the `getLinenums` function. It just goes through every block like tangle would,
 but for each line it adds the line to the array, storing the file and
 line number for that line.
 
 --- getLinenums function
-Line[][string] getLinenums(Block[string] codeblocks, string blockName, 
+Line[][string] getLinenums(Block[string] codeblocks, string blockName,
                  string rootName, Line[][string] codeLinenums) {
     Block block = codeblocks[blockName];
 

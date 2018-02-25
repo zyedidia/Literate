@@ -5,7 +5,7 @@
 
 @title Weaver
 
-@s Introduction
+@s1 Introduction
 
 Here is an overview of the weave program. This file turns a literate source
 file into one or more html files.
@@ -25,7 +25,7 @@ void weave(Program p) {
 @{LinkLocations function}
 ---
 
-@s Parsing Codeblocks
+@s1 Parsing Codeblocks
 
 Now we parse the codeblocks across all chapters in the program. We
 have four arrays:
@@ -96,7 +96,7 @@ foreach (c; p.chapters) {
 }
 ---
 
-@s Table of contents
+@s1 Table of contents
 
 If the program being compiled is a book, we should also write a table of contents file.
 
@@ -109,7 +109,7 @@ q"DELIMITER
 <html>
 <head>
 <style>
-ul#contents {list-style-type: none;}a{color:#337ABF;}body{min-width:200px;max-width:850px;margin:0 auto;padding:30px;}.chapter-nav{font-size: 10pt;}.codeblock_name,code,pre.prettyprint{font-family:Monaco,"Lucida Console",monospace}body{font-size:14pt}.codeblock_name,.math,.seealso,code{font-size:10pt}.codeblock{page-break-inside:avoid;padding-bottom:15px}.math{text-indent:0}pre.prettyprint{font-size:10pt;padding:10px;border-radius:10px;border:none;white-space:pre-wrap}.codeblock_name{margin-top:1.25em;display:block}a:link{text-decoration:none}a:link:not(.lit):hover{text-decoration:underline}a:link:active{color:red}h4{padding-right:1.25em}h4.noheading{margin-bottom:0}h1{text-align:center}code{padding:2px}pre{-moz-tab-size:4;-o-tab-size:4;tab-size:4}.two-col{list-style-type:none}.two-col li:before{content:'-';padding:5px;margin-right:5px;color:orange;background-color:#fff;display:inline-block}@media print{body{font-size:10pt}pre.prettyprint{font-size:8pt}.seealso{font-size:9pt}.codeblock_name,.math,code{font-size:8pt}.math{text-indent:0}}
+ul#contents {list-style-type: none;}a{color:#337ABF;}body{min-width:200px;max-width:1200px;margin:0 auto;padding:30px;}.chapter-nav{font-size: 10pt;}.codeblock_name,code,pre.prettyprint{font-family:Monaco,"Lucida Console",monospace}body{font-size:14pt}.codeblock_name,.math,.seealso,code{font-size:10pt}.codeblock{page-break-inside:avoid;padding-bottom:15px}.math{text-indent:0}pre.prettyprint{font-size:10pt;padding:10px;border-radius:10px;border:none;white-space:pre-wrap}.codeblock_name{margin-top:1.25em;display:block}a:link{text-decoration:none}a:link:not(.lit):hover{text-decoration:underline}a:link:active{color:red}h4{padding-right:1.25em}h4.noheading{margin-bottom:0}h1{text-align:center}code{padding:2px}pre{-moz-tab-size:4;-o-tab-size:4;tab-size:4}.two-col{list-style-type:none}.two-col li:before{content:'-';padding:5px;margin-right:5px;color:orange;background-color:#fff;display:inline-block}@media print{body{font-size:10pt}pre.prettyprint{font-size:8pt}.seealso{font-size:9pt}.codeblock_name,.math,code{font-size:8pt}.math{text-indent:0}}
 </style>
 </head>
 <body>
@@ -155,7 +155,7 @@ f.writeln("
 f.close();
 ---
 
-@s Root block check
+@s1 Root block check
 
 We check if the block is a root code block. We check this using
 a regex that basically checks if it the name has an extension. Additionally,
@@ -175,7 +175,7 @@ if (fileMatch || quoteMatch) {
 }
 ---
 
-@s WeaveChapter
+@s1 WeaveChapter
 
 This function weaves a single chapter.
 
@@ -215,7 +215,7 @@ string weaveChapter(Chapter c, Program p, string[string] defLocations,
 }
 ---
 
-@s Head of the Document
+@s1 Head of the Document
 
 This writes out the start of the document. Mainly the scripts (prettify.js) 
 and the css (prettiy css, default css, and colorscheme css). It also adds
@@ -278,7 +278,7 @@ output ~= "<!DOCTYPE html>\n"
              "</head>\n";
 ---
 
-@s Parse the Chapter
+@s1 Parse the Chapter
 
 Now we write the body -- this is the meat of the weaver. First we write
 a couple things at the beginning: making sure the `prettyprint` function is
@@ -314,7 +314,7 @@ foreach (s; c.sections) {
 }
 ---
 
-@s Weave a prose block
+@s1 Weave a prose block
 
 Weaving a prose block is not very complicated. First we get the html by sending it
 through the markdown compiler by using the `filterMarkdown` function. We disable the
@@ -396,7 +396,7 @@ Finally we add this html to the output and add a newline for good measure.
 output ~= html ~ "\n";
 ---
 
-@s Weave a code block
+@s1 Weave a code block
 
 --- Weave a code block
 output ~= "<div class=\"codeblock\">\n";
@@ -410,7 +410,7 @@ output ~= "<div class=\"codeblock\">\n";
 output ~= "</div>\n";
 ---
 
-@s The codeblock title
+@s1 The codeblock title
 
 Here we create the title for the codeblock. For the title, we have to link
 to the definition (which is usually the current block, but sometimes not
@@ -474,7 +474,7 @@ if (block.isRootBlock) {
 }
 ---
 
-@s The actual code
+@s1 The actual code
 
 At the beginning, we open the pre tag. If a codetype is defined, we tell the prettyprinter
 to use that, otherwise, the pretty printer will try to figure out how to syntax highlight
@@ -536,7 +536,7 @@ if (strip(strippedLine[2..$ - 1]) !in defLocations) {
 output ~= "<span class=\"nocode pln\">" ~ leadingWS(line) ~ "{" ~ strippedLine[2..$ - 1] ~ def ~ "}</span>\n";
 ---
 
-@s Add links to other sections
+@s1 Add links to other sections
 
 Writing the links is pretty similar to figuring out where a codeblock
 was defined because we have access to the `sectionLocations` array (which is
@@ -597,7 +597,7 @@ string linkLocations(string text, string[][string] sectionLocations, Program p, 
 }
 ---
 
-@s See also links
+@s1 See also links
 
 Writing the 'added to' links is pretty similar to figuring out where a codeblock
 was defined because we have access to the `addLocations` array. Then we just
@@ -608,7 +608,7 @@ and whether to have plurals and whatnot.
 output ~= linkLocations("Added to in section", addLocations, p, c, s, block) ~ "\n";
 ---
 
-@s Also used in links
+@s1 Also used in links
 
 This is pretty much the same as the 'added to' links except we use the
 `useLocations` array.
@@ -617,13 +617,13 @@ This is pretty much the same as the 'added to' links except we use the
 output ~= linkLocations("Used in section", useLocations, p, c, s, block) ~ "\n";
 ---
 
-@s Redefined in links
+@s1 Redefined in links
 
 --- Write the 'redefined in' links
 output ~= linkLocations("Redefined in section", redefLocations, p, c, s, block) ~ "\n";
 ---
 
-@s Katex source
+@s1 Katex source
 
 This is the source code for katex which should only be used if math is used in the literate
 file. We include a script which uses the cdn first because that will use better fonts, however

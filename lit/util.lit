@@ -5,7 +5,7 @@
 
 @title Util
 
-@s Introduction
+@s1 Introduction
 
 This file contains some utilities for the rest of the literate program.
 
@@ -30,7 +30,7 @@ import std.path;
 @{getChapterHtmlFile function}
 ---
 
-@s Readall
+@s1 Readall
 
 The `readall` function reads an entire text file, or
 reads from stdin until `control-d` is pressed, and returns the string.
@@ -57,7 +57,7 @@ string readall() {
 }
 ---
 
-@s Error and Warning
+@s1 Error and Warning
 
 These functions simply write errors or warnings to stdout.
 
@@ -73,7 +73,7 @@ void warn(string file, int line, string message) {
 }
 ---
 
-@s Leading Whitespace function
+@s1 Leading Whitespace function
 
 This function returns the leading whitespace of the input string.
 
@@ -84,7 +84,7 @@ string leadingWS(string str) {
 }
 ---
 
-@s getCodeblocks function
+@s1 getCodeblocks function
 
 `tempCodeblocks` is an array that contains only codeblocks that
 have `+=` or `:=`. `rootCodeblocks` and `codeblocks` are both associative arrays
@@ -152,7 +152,7 @@ void getCodeblocks(Program p,
 }
 ---
 
-@s getChapterHtmlFile function
+@s1 getChapterHtmlFile function
 
 This function returns the html file for a chapter given the major and minor
 numbers for it. The minor and major nums are passed in as a string formatted as:
