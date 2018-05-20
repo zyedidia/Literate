@@ -5,7 +5,7 @@
 
 @title Tangler
 
-@s Introduction
+@s1 Introduction
 
 This is the source for tangle. This compiles code from a `.lit` file into runnable code.
 We do this by going through all the codeblocks, and storing them in an associative array.
@@ -31,7 +31,7 @@ void tangle(Program p) {
 @{writeCode function}
 ---
 
-@s Overview
+@s2 Overview
 
 The `tangle` function will take a program in, go through all the chapters, sections
 and find all the codeblocks. It will then apply the codeblock with `+=` and `:=`.
@@ -39,7 +39,7 @@ Another thing it must do is find the root blocks, that is, the files that need
 to be generated. Starting with those, it will recursively write code to a file using
 the `writeCode` function.
 
-@s The Tangle Function
+@s1 The Tangle Function
 
 The tangle function should find the codeblocks, apply the `+=` and `:=`, find the
 root codeblocks, and call `writeCode` from those.
@@ -79,7 +79,7 @@ foreach (b; rootCodeblocks) {
 }
 ---
 
-@s The writeCode Function
+@s1 The writeCode Function
 
 The writeCode function recursively follows the links inside a codeblock and writes
 all the code for a codeblock. It also keeps the leading whitespace to make sure
