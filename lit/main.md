@@ -2,10 +2,9 @@
 @comment_type // %s
 @compiler make debug -C ..
 @error_format .*/%f\(%l,%s\):%s: %m
-
 @title Main
 
-@s1 Introduction
+# Introduction
 
 This file contains the source code for `main.d` the file which contains the
 main function for Literate. This will parse any arguments, show help text
@@ -13,7 +12,9 @@ and finally run tangle or weave (or both) on any input files.
 
 Here is an overview:
 
---- main.d
+## main.d
+
+```d
 @{Imports}
 
 @{getLinenums function}
@@ -24,9 +25,9 @@ void main(in string[] args) {
     @{Parse the arguments}
     @{Run Literate}
 }
----
+```
 
-@s1 Parsing the Arguments
+# Parsing the Arguments
 
 The arguments will consist of either flags or input files. The flags Literate
 accepts are:
@@ -46,7 +47,9 @@ All other inputs are input files.
 We also need some variables to store these flags in, and they should be global
 so that the rest of the program can access them.
 
---- Globals
+## Globals
+
+```d
 bool tangleOnly;
 bool isBook;
 bool weaveOnly;
@@ -76,7 +79,7 @@ string helpText =
 "--linenums   -l    STR  Write line numbers prepended with STR to the output file\n"
 "--md-compiler COMPILER  Use COMPILER as the markdown compiler instead of the built-in one\n"
 "--version    -v         Show the version number and compiler information";
----
+```
 
 This program uses a number of block modifiers in order to facilitate certain functionality.
 i.e. If you don't wish a code block to be woven into the final HTML then the `noWeave`
@@ -84,25 +87,31 @@ modifier will indicate this for you.
 
 Each modifier is represented by this list of enums:
 
---- Modifiers
+## Modifiers
+
+```d
 enum Modifier {
     noWeave,
     noTangle, // Not yet implemented
+    noComment,
     additive, // +=
     redef // :=
 }
----
+```
 
 We'll put these two blocks in their own file for "globals".
 
---- globals.d
+## globals.d
+```d
 @{Globals}
 @{Modifiers}
----
+```
 
 Now, to actually parse the arguments:
 
---- Parse the arguments
+## Parse the arguments
+
+```d
 for (int i = 1; i < args.length; i++) {
     auto arg = args[i];
     if (arg == "--help" || arg == "-h") {
@@ -147,14 +156,16 @@ for (int i = 1; i < args.length; i++) {
         files ~= arg;
     }
 }
----
+```
 
-@s1 Run Literate
+# Run Literate
 
 To run literate we go through every file that was passed in, check if it exists,
 and run tangle and weave on it (unless `tangleOnly` or `weaveOnly` was specified).
 
---- Run Literate
+## Run Literate
+
+```d
 if (files.length > 0) {
     foreach (filename; files) {
         if (!filename.exists()) {
@@ -172,13 +183,14 @@ if (files.length > 0) {
 } else  {
     writeln(helpText);
 }
----
+```
 
 The lit function parses the text that is inputted and then either tangles,
 weaves, or both. Finally it Checks for compiler errors if the `--compiler` flag
 was passed.
 
---- lit function
+## lit function
+```d
 void lit(string filename, string fileSrc) {
     Program p = new Program();
     p.file = filename;
@@ -210,9 +222,9 @@ void lit(string filename, string fileSrc) {
         @{Check for compiler errors}
     }
 }
----
+```
 
-@s1 Compiler errors
+# Compiler errors
 
 Here we check for compiler errors.
 
@@ -220,7 +232,8 @@ First we have to get all the codeblocks so that we can backtrack the line number
 from the error message to the correct codeblock. Then we can use the `getLinenums`
 function to get the line numbers for each line in the tangled code.
 
---- Check for compiler errors
+## Check for compiler errors
+```d
 Line[][string] codeLinenums;
 
 Block[string] rootCodeblocks;
@@ -230,11 +243,12 @@ getCodeblocks(p, codeblocks, rootCodeblocks);
 foreach (b; rootCodeblocks) {
     codeLinenums = getLinenums(codeblocks, b.name, b.name, codeLinenums);
 }
----
+```
 
 Now we go and check for the `@compiler` command and the `@error_format` command.
 
---- Check for compiler errors +=
+## Check for compiler errors +=
+```d
 string compilerCmd;
 string errorFormat;
 Command errorFormatCmd;
@@ -257,7 +271,7 @@ if (p.chapters.length == 1) {
         }
     }
 }
----
+```
 
 If there is no `@error_format` but the `@compiler` command uses a known compiler, we
 can substitute the error format in.
@@ -272,7 +286,8 @@ Supported compilers/linters are:
 * `jshint`
 * `dmd`
 
---- Check for compiler errors +=
+## Check for compiler errors +=
+```d
 if (errorFormat is null) {
     if (compilerCmd.indexOf("clang") != -1) { errorFormat = "%f:%l:%s: %s: %m"; }
     else if (compilerCmd.indexOf("gcc") != -1) { errorFormat = "%f:%l:%s: %s: %m"; }
@@ -282,14 +297,15 @@ if (errorFormat is null) {
     else if (compilerCmd.indexOf("jshint") != -1) { errorFormat = "%f: line %l,%s, %m"; }
     else if (compilerCmd.indexOf("dmd") != -1) { errorFormat = "%f\\(%l\\):%s: %m"; }
 }
----
+```
 
 Now we actually go through and create the regex, by replacing the `%l`, `%f`, and `%m` with
 matched regular expressions. Then we execute the shell command, parse each error
 using the error format, and rewrite the error with the proper filename and line number
 given by the array `codeLinenums` that we created earlier.
 
---- Check for compiler errors +=
+## Check for compiler errors +=
+```d
 if (errorFormat !is null) {
     if (errorFormat.indexOf("%l") != -1 && errorFormat.indexOf("%f") != -1 && errorFormat.indexOf("%m") != -1) {
         auto r = regex("");
@@ -331,15 +347,16 @@ if (errorFormat !is null) {
         }
     }
 }
----
+```
 
-@s1 GetLinenums
+# GetLinenums
 
 Here is the `getLinenums` function. It just goes through every block like tangle would,
 but for each line it adds the line to the array, storing the file and
 line number for that line.
 
---- getLinenums function
+## getLinenums function
+```d
 Line[][string] getLinenums(Block[string] codeblocks, string blockName,
                  string rootName, Line[][string] codeLinenums) {
     Block block = codeblocks[blockName];
@@ -363,11 +380,12 @@ Line[][string] getLinenums(Block[string] codeblocks, string blockName,
 
     return codeLinenums;
 }
----
+```
 
 Finally, we also have to add the imports.
 
---- Imports
+# Imports
+```d
 import parser;
 import tangler;
 import weaver;
@@ -379,4 +397,4 @@ import std.string;
 import std.process;
 import std.regex;
 import std.conv;
----
+```

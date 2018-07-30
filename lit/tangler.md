@@ -5,9 +5,9 @@
 
 @title Tangler
 
-@s1 Introduction
+# Introduction
 
-This is the source for tangle. This compiles code from a `.lit` file into runnable code.
+This is the source for tangle. This compiles code from a `.md` file into runnable code.
 We do this by going through all the codeblocks, and storing them in an associative array.
 Then we apply additions and redefinitions so that the array just contains the code for
 each codeblock (indexed with a string: the codeblock name). Then we find the root codeblocks,
@@ -16,7 +16,8 @@ link and adding in the code for it.
 
 Here is an overview of the file:
 
---- tangler.d
+## tangler.d
+```d
 import globals;
 import std.string;
 import std.stdio;
@@ -29,9 +30,9 @@ void tangle(Program p) {
 }
 
 @{writeCode function}
----
+```
 
-@s2 Overview
+# Overview
 
 The `tangle` function will take a program in, go through all the chapters, sections
 and find all the codeblocks. It will then apply the codeblock with `+=` and `:=`.
@@ -39,34 +40,37 @@ Another thing it must do is find the root blocks, that is, the files that need
 to be generated. Starting with those, it will recursively write code to a file using
 the `writeCode` function.
 
-@s1 The Tangle Function
+# The Tangle Function
 
 The tangle function should find the codeblocks, apply the `+=` and `:=`, find the
 root codeblocks, and call `writeCode` from those.
 
 We'll start with these three variables.
 
---- tangle function
+## tangle function
+```d
 Block[string] rootCodeblocks;
 Block[string] codeblocks;
 
 getCodeblocks(p, codeblocks, rootCodeblocks);
----
+```
 
 Now we check if there are any root codeblocks.
 
---- tangle function +=
+## tangle function +=
+```d
 if (rootCodeblocks.length == 0) {
     warn(p.file, 1, "No file codeblocks, not writing any code");
 }
----
+```
 
 Finally we go through every root codeblock, and run writeCode on it. We open a file
 (making sure it is in `outDir`). We get the `commentString` from the list of commands.
 Then we call `writeCode`, which will recursively follow the links and generate all
 the code.
 
---- tangle function +=
+## tangle function +=
+```d
 foreach (b; rootCodeblocks) {
     string filename = b.name;
     File f;
@@ -77,15 +81,16 @@ foreach (b; rootCodeblocks) {
     if (!noOutput)
         f.close();
 }
----
+```
 
-@s1 The writeCode Function
+# The writeCode Function
 
 The writeCode function recursively follows the links inside a codeblock and writes
 all the code for a codeblock. It also keeps the leading whitespace to make sure
 indentation in the target file is correct.
 
---- writeCode function
+## writeCode function
+```d
 void writeCode(Block[string] codeblocks, string blockName, File file, string filename, string whitespace) {
     Block block = codeblocks[blockName];
 
@@ -128,4 +133,4 @@ void writeCode(Block[string] codeblocks, string blockName, File file, string fil
     if (!noOutput)
         file.writeln();
 }
----
+```

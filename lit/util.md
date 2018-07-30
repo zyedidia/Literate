@@ -5,14 +5,15 @@
 
 @title Util
 
-@s1 Introduction
+# Introduction
 
 This file contains some utilities for the rest of the literate program.
 
 It has functions for reading the entire source of a file, and functions
 for reporting errors and warnings.
 
---- util.d
+## util.d
+```d
 import globals;
 import std.stdio;
 import std.conv;
@@ -28,14 +29,15 @@ import std.path;
 @{leadingWS function}
 @{getCodeblocks function}
 @{getChapterHtmlFile function}
----
+```
 
-@s1 Readall
+# Readall
 
 The `readall` function reads an entire text file, or
 reads from stdin until `control-d` is pressed, and returns the string.
 
---- readall function
+## readall function
+```d
 // Read from a file
 string readall(File file) {
     string src = "";
@@ -55,36 +57,39 @@ string readall() {
     }
     return src;
 }
----
+```
 
-@s1 Error and Warning
+# Error and Warning
 
 These functions simply write errors or warnings to stdout.
 
---- error function
+## error function
+```d
 void error(string file, int line, string message) {
     writeln(file, ":", line, ":error: ", message);
 }
----
+```
 
---- warning function
+## warning function
+```d
 void warn(string file, int line, string message) {
     writeln(file, ":", line, ":warning: ", message);
 }
----
+```
 
-@s1 Leading Whitespace function
+# Leading Whitespace function
 
 This function returns the leading whitespace of the input string.
 
---- leadingWS function
+## leadingWS function
+```d
 string leadingWS(string str) {
     auto firstChar = str.indexOf(strip(str)[0]);
     return str[0..firstChar];
 }
----
+```
 
-@s1 getCodeblocks function
+# getCodeblocks function
 
 `tempCodeblocks` is an array that contains only codeblocks that
 have `+=` or `:=`. `rootCodeblocks` and `codeblocks` are both associative arrays
@@ -96,7 +101,8 @@ Here we go through every single block in the program, and add it to the
 the `codeblocks` array, and if it matches the filename regex `.*\.\w+`, we add
 it to the `rootCodeblocks` array.
 
---- getCodeblocks function
+## getCodeblocks function
+```d
 void getCodeblocks(Program p, 
                    out Block[string] codeblocks,
                    out Block[string] rootCodeblocks) {
@@ -150,15 +156,16 @@ void getCodeblocks(Program p,
         }
     }
 }
----
+```
 
-@s1 getChapterHtmlFile function
+# getChapterHtmlFile function
 
 This function returns the html file for a chapter given the major and minor
 numbers for it. The minor and major nums are passed in as a string formatted as:
 `major.minor`.
 
---- getChapterHtmlFile function
+## getChapterHtmlFile function
+```d
 string getChapterHtmlFile(Chapter[] chapters, string num) {
     string[] nums = num.split(".");
     int majorNum = to!int(nums[0]);
@@ -173,4 +180,4 @@ string getChapterHtmlFile(Chapter[] chapters, string num) {
     }
     return "";
 }
----
+```
