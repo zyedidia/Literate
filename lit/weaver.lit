@@ -266,15 +266,15 @@ scripts ~= prettifyExtension;
 
 bool use_katex = false;
 
-output ~= "<!DOCTYPE html>\n"
-             "<html>\n"
-             "<head>\n"
-             "<meta charset=\"utf-8\">\n"
+output ~= "<!DOCTYPE html>\n" ~
+             "<html>\n" ~
+             "<head>\n" ~
+             "<meta charset=\"utf-8\">\n" ~
              "<title>" ~ c.title ~ "</title>\n" ~
              scripts ~
              "<style>\n" ~
              css ~
-             "</style>\n"
+             "</style>\n" ~
              "</head>\n";
 ---
 
@@ -292,8 +292,8 @@ will be moved up a bit towards it -- otherwise it looks like there is too much e
 between the title and the prose.
 
 --- Write the body
-output ~= "<body onload=\"prettyPrint()\">\n"
-          "<section>\n"
+output ~= "<body onload=\"prettyPrint()\">\n" ~
+          "<section>\n" ~
           "<h1>" ~ c.title ~ "</h1>\n";
 
 foreach (s; c.sections) {
@@ -631,7 +631,7 @@ it needs the user to be connected to the internet. In the case that the user is 
 the entire source for katex, but it will use worse fonts (still better than nothing though).
 
 --- Write the katex source
-output ~= "<link rel=\"stylesheet\" href=\"http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.css\">\n"
+output ~= "<link rel=\"stylesheet\" href=\"http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.css\">\n" ~
 "<script src=\"http://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js\"></script>\n";
 output ~= katex;
 ---
