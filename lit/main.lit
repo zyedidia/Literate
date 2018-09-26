@@ -293,44 +293,42 @@ given by the array `codeLinenums` that we created earlier.
 
 --- Check for compiler errors +=
 if (errorFormat !is null) {
-    if (errorFormat.indexOf("%l") != -1 && errorFormat.indexOf("%f") != -1 && errorFormat.indexOf("%m") != -1) {
-        auto r = regex("");
-        try {
-            r = regex("^" ~ errorFormat.replaceAll(regex("%s"), ".*?")
-                                                   .replaceAll(regex("%l"), "(?P<linenum>\\d+?)")
-                                                   .replaceAll(regex("%f"), "(?P<filename>.*?)")
-                                                   .replaceAll(regex("%m"), "(?P<message>.*?)") ~ "$");
-        } catch (Exception e) {
-            error(errorFormatCmd.filename, errorFormatCmd.lineNum, "Regular expression error: " ~ e.msg);
-            return;
-        }
-
-        writeln(compilerCmd);
-        auto output = executeShell(compilerCmd).output.split("\n");
-        int i = 0;
-
-        foreach (line; output) {
-            auto matches = matchFirst(line, r);
-
-            string linenum = matches["linenum"];
-            string fname = matches["filename"];
-            string message = matches["message"];
-
-            if (linenum != "" && fname != "") {
-                if (codeLinenums[fname].length > to!int(linenum)) {
-                    auto codeline = codeLinenums[fname][to!int(linenum) - 1];
-                    error(codeline.file, codeline.lineNum, message);
-                } else {
-                    auto codeline = codeLinenums[fname][codeLinenums[fname].length - 2];
-                    error(codeline.file, codeline.lineNum, message);
-                }
+    auto r = regex("");
+    try {
+        r = regex("^" ~ errorFormat.replaceAll(regex("%s"), ".*?")
+                                               .replaceAll(regex("%l"), "(?P<linenum>\\d+?)")
+                                               .replaceAll(regex("%f"), "(?P<filename>.*?)")
+                                               .replaceAll(regex("%m"), "(?P<message>.*?)") ~ "$");
+    } catch (Exception e) {
+        error(errorFormatCmd.filename, errorFormatCmd.lineNum, "Regular expression error: " ~ e.msg);
+        return;
+    }
+ 
+    writeln(compilerCmd);
+    auto output = executeShell(compilerCmd).output.split("\n");
+    int i = 0;
+ 
+    foreach (line; output) {
+        auto matches = matchFirst(line, r);
+ 
+        string linenum = matches.canFind("linenum") ? matches["linenum"] : "";
+        string fname = matches.canFind("filename") ? matches["filename"] : "";
+        string message = matches.canFind("message") ? matches["message"] : "";
+ 
+        if (linenum != "" && fname != "") {
+            if (codeLinenums[fname].length > to!int(linenum)) {
+                auto codeline = codeLinenums[fname][to!int(linenum) - 1];
+                error(codeline.file, codeline.lineNum, message);
             } else {
-                if (!(line == "" && i == output.length - 1)) {
-                    writeln(line);
-                }
+                auto codeline = codeLinenums[fname][codeLinenums[fname].length - 2];
+                error(codeline.file, codeline.lineNum, message);
             }
-            i++;
+        } else {
+            if (!(line == "" && i == output.length - 1)) {
+                writeln(line);
+            }
         }
+        i++;
     }
 }
 ---
@@ -380,5 +378,6 @@ import std.file;
 import std.string;
 import std.process;
 import std.regex;
+import std.algorithm: canFind;
 import std.conv;
 ---
