@@ -20,6 +20,7 @@ Here is an overview of the file:
 import globals;
 import std.string;
 import std.stdio;
+import std.algorithm: canFind;
 import parser;
 import util;
 import std.conv: to;
@@ -90,7 +91,7 @@ void writeCode(Block[string] codeblocks, string blockName, File file, string fil
     Block block = codeblocks[blockName];
 
     if (block.commentString != "") {
-        if (!noOutput)
+        if (!noOutput && !block.modifiers.canFind(Modifier.noHeader))
             file.writeln(whitespace ~ block.commentString.replace("%s", blockName));
     }
 

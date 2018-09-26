@@ -88,8 +88,9 @@ Each modifier is represented by this list of enums:
 enum Modifier {
     noWeave,
     noTangle, // Not yet implemented
+    noHeader, // Don't print the block header
     additive, // +=
-    redef // :=
+    redef, // :=
 }
 ---
 
