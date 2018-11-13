@@ -316,7 +316,7 @@ if (errorFormat !is null) {
             string fname = matches["filename"];
             string message = matches["message"];
 
-            if (linenum != "" && fname != "") {
+            if (matches && linenum != "" && fname != "") {
                 if (codeLinenums[fname].length > to!int(linenum)) {
                     auto codeline = codeLinenums[fname][to!int(linenum) - 1];
                     error(codeline.file, codeline.lineNum, message);
