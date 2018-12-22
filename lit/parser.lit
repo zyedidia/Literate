@@ -67,7 +67,7 @@ I'll quickly list the imports here.
 import globals;
 import std.stdio;
 import util;
-import std.string: split, endsWith, startsWith, chomp, replace, strip;
+import std.string: split, endsWith, startsWith, chomp, replace, strip, format;
 import std.algorithm: canFind;
 import std.regex: matchAll, matchFirst, regex, ctRegex, splitter;
 import std.conv;
@@ -685,7 +685,7 @@ if (curBlock !is null) {
     if (!curBlock.isCodeblock) {
         curSection.blocks ~= curBlock;
     } else {
-        writeln(filename, ":", lines.length - 1, ":error: {", curBlock.name, "} is never closed");
+        error(filename, cast (int)(lines.length - 1), "{%s} is never closed".format(curBlock.name));
     }
 }
 if (curSection !is null) {
