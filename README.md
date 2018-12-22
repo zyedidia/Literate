@@ -105,7 +105,7 @@ For now, Literate is head only.
 
 ---
 
-Literate is made with the [D programming language](http://dlang.org) so you must install [dmd](http://dlang.org/download.html#dmd) (D compiler) and [dub](https://code.dlang.org/download) (D package manager). Then you should download the zip or clone the repository and run the following commands:
+Literate is made with the [D programming language](https://dlang.org) so you must install [dmd](https://dlang.org/download.html#dmd) (D compiler) and [dub](https://code.dlang.org/download) (D package manager). Then you should download the zip or clone the repository and run the following commands:
 
 ```
 $ cd Literate
