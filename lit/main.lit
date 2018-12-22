@@ -39,6 +39,7 @@ accepts are:
 * `--compiler`               Don't ignore the `@compiler` command
 * `--linenums -l STR`        Write line numbers prepended with `STR` to the output file
 * `--md-compiler COMPILER`   Use the command line program `COMPILER` as the markdown compiler instead of the built-in one
+* `--section-depth INT`      Output section headers at the given depth in the weave
 * `--version`                Show the version number and compiler information
 
 All other inputs are input files.
@@ -56,6 +57,7 @@ bool tangleErrors;
 bool useStdin;
 bool lineDirectives;
 bool useMdCompiler;
+int sectionDepth = 4;
 string mdCompilerCmd;
 string versionNum = "0.1";
 string outDir = "."; // Default is current directory
@@ -75,6 +77,7 @@ string helpText =
 "--compiler   -c         Report compiler errors (needs @compiler to be defined)\n" ~
 "--linenums   -l    STR  Write line numbers prepended with STR to the output file\n" ~
 "--md-compiler COMPILER  Use COMPILER as the markdown compiler instead of the built-in one\n" ~
+"--section-depth INT     Output section headers at the given depth in the weave\n" ~
 "--version    -v         Show the version number and compiler information";
 ---
 
@@ -138,6 +141,17 @@ for (int i = 1; i < args.length; i++) {
             return;
         }
         mdCompilerCmd = args[++i];
+    } else if (arg == "--section-depth") {
+        if (i == args.length - 1) {
+            writeln("No section depth provided.");
+            return;
+        }
+        auto sectionDepthArg = args[++i];
+        if (!sectionDepthArg.isNumeric()) {
+            writeln("Section depth should be a numeric value.");
+            return;
+        }
+        sectionDepth = to!int(sectionDepthArg);
     } else if (arg == "--version" || arg == "-v") {
         writeln("Literate version " ~ versionNum);
         writeln("Compiled by " ~ __VENDOR__ ~ " on " ~ __DATE__);

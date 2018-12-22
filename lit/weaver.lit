@@ -298,8 +298,9 @@ output ~= "<body onload=\"prettyPrint()\">\n" ~
 
 foreach (s; c.sections) {
     string noheading = s.title == "" ? " class=\"noheading\"" : "";
-    output ~= "<a name=\"" ~ c.num() ~ ":" ~ to!string(s.num) ~ "\"><div class=\"section\"><h4" ~
-              noheading ~ ">" ~ to!string(s.num) ~ ". " ~ s.title ~ "</h4></a>\n";
+    output ~= "<a name=\"" ~ c.num() ~ ":" ~ to!string(s.num) ~ "\"><div class=\"section\"><h" ~ 
+              to!string(sectionDepth) ~ noheading ~ ">" ~ to!string(s.num) ~ ". " ~ s.title ~ 
+              "</h" ~ to!string(sectionDepth) ~ "></a>\n";
 
     foreach (block; s.blocks) {
         if (!block.modifiers.canFind(Modifier.noWeave)) {
