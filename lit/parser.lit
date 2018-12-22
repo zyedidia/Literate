@@ -638,6 +638,9 @@ if (modMatch["modifiers"]) {
             case "noTangle":
                 curBlock.modifiers ~= Modifier.noTangle;
                 break;
+            case "noHeader":
+                curBlock.modifiers ~= Modifier.noHeader;
+                break;
             default:
                 error(filename, lineNum, "Invalid modifier: " ~ m);
                 break;
