@@ -5,6 +5,7 @@ import std.conv;
 import parser;
 import std.string;
 import std.path;
+import std.regex;
 
 // readall function
 // Read from a file

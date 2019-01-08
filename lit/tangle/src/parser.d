@@ -5,7 +5,7 @@ import util;
 import main;
 import std.string: split, endsWith, startsWith, chomp, replace, strip;
 import std.algorithm: canFind;
-import std.regex: matchAll, matchFirst, regex, ctRegex, splitter;
+import std.regex;
 import std.conv;
 import std.path: extension;
 import std.file;
@@ -209,7 +209,7 @@ Chapter parseChapter(Chapter chapter, string src) {
     }
 
     // Handle the @include statements
-    src = std.regex.replaceAll!(match => include(match[1]))(src, regex(`\n@include (.*)`));
+    src = replaceAll!(match => include(match[1]))(src, regex(`\n@include (.*)`));
     string[] lines = src.split("\n");
 
     int lineNum = 0;
