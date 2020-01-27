@@ -15,18 +15,19 @@ import (
 )
 
 var (
-	flagVersion       = pflag.BoolP("version", "v", false, "Show the version")
-	flagTangle        = pflag.BoolP("tangle", "t", false, "Only output source code")
-	flagWeave         = pflag.BoolP("weave", "w", false, "Only output a readable document")
-	flagTarget        = pflag.String("target", "pdf", "Specify the weave target format: pdf, tex, md, html")
-	flagOutput        = pflag.StringP("output", "o", "", "Specify the output file name")
-	flagNoOutput      = pflag.BoolP("no-output", "n", false, "Do not generate any output files")
-	flagLineNums      = pflag.StringP("linenums", "l", "", "Write line numbers prepended with 'string' to the code output")
-	flagCompiler      = pflag.BoolP("compiler", "c", false, "Report compiler errors (requires @compiler)")
-	flagHelp          = pflag.BoolP("help", "h", false, "Show usage")
-	flagInstallPandoc = pflag.Bool("install-pandoc", false, "Install pandoc")
-	flagVerbose       = pflag.Bool("verbose", false, "Give verbose output")
-	flagPandocFlags   = pflag.StringP("pandoc", "p", "", "Additional flags to pass to Pandoc")
+	flagVersion          = pflag.BoolP("version", "v", false, "Show the version")
+	flagTangle           = pflag.BoolP("tangle", "t", false, "Only output source code")
+	flagWeave            = pflag.BoolP("weave", "w", false, "Only output a readable document")
+	flagTarget           = pflag.String("target", "pdf", "Specify the weave target format: pdf, tex, md, html")
+	flagOutput           = pflag.StringP("output", "o", "", "Specify the output file name")
+	flagNoOutput         = pflag.BoolP("no-output", "n", false, "Do not generate any output files")
+	flagLineNums         = pflag.StringP("linenums", "l", "", "Write line numbers prepended with 'string' to the code output")
+	flagCompiler         = pflag.BoolP("compiler", "c", false, "Report compiler errors (requires @compiler)")
+	flagHelp             = pflag.BoolP("help", "h", false, "Show usage")
+	flagInstallPandoc    = pflag.Bool("install-pandoc", false, "Install Pandoc")
+	flagVerbose          = pflag.Bool("verbose", false, "Give verbose output")
+	flagPandocFlags      = pflag.StringP("pandoc", "p", "", "Additional flags to pass to Pandoc")
+	flagShowIntermediate = pflag.Bool("intermediate", false, "Display the intermediate markdown that is sent to Pandoc")
 )
 
 // FindPandoc detects if pandoc is installed and if not informs the user to install it or attempts to install it
@@ -106,6 +107,11 @@ func main() {
 			if FindPandoc() {
 				outfname := strings.TrimSuffix(filepath.Base(a), filepath.Ext(a)) + "." + *flagTarget
 				toPandoc := weave.Transform(lines, doc)
+
+				if *flagShowIntermediate {
+					fmt.Print(toPandoc)
+				}
+
 				err := pandoc.Run(toPandoc, []string{"-s", "--listings", "--number-sections", "-o", outfname})
 				if err != nil {
 					fmt.Println(err)

@@ -16,11 +16,11 @@ used.
 
 To use math equations in your code, Literate uses 
 [katex](https://github.com/Khan/KaTeX). To write an equation simply
-place dollar signs (`\$`) around the equation and use Latex/Tex formatting. 
+place dollar signs (`$`) around the equation and use Latex/Tex formatting. 
 Here is an example equation: $f(x) = \int_{-\infty}^\infty\hat f(\xi)\,e^{2 \pi i \xi x}\,d\xi$.
 
 If you want the equation to be centered instead of inlined, use double
-dollar signs (`\$\$`):
+dollar signs (`$$`):
 
 $$f(x) = \int_{-\infty}^\infty\hat f(\xi)\,e^{2 \pi i \xi x}\,d\xi$$
 

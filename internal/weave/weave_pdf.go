@@ -70,7 +70,12 @@ func Transform(src []string, doc parse.DocumentInfo) string {
 					blockName = strings.TrimSpace(blockName[:len(blockName)-2])
 				}
 
-				buf.WriteString(fmt.Sprintf("```{.%s title=\"[%s]%s\"}\n", doc.CodeType, blockName, suffix))
+				codetype := ""
+				if doc.CodeType != "" {
+					codetype = "." + doc.CodeType + " "
+				}
+
+				buf.WriteString(fmt.Sprintf("```{%stitle=\"[%s]%s\"}\n", codetype, blockName, suffix))
 			} else {
 				buf.WriteString("```\n")
 				buf.WriteString("\\label{" + util.EncodeBlockName(blockName) + "}\n")
