@@ -1,7 +1,0 @@
-name "tangle"
-description "Tangler for Literate"
-authors "Zachary Yedidia"
-homepage "literate.zbyedidia.webfactional.com"
-license "MIT"
-targetName "tangle"
-targetPath "../../bin"

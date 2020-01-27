@@ -1,8 +1,0 @@
-name "literate"
-description "A modern literate programming system"
-authors "Zachary Yedidia"
-homepage "literate.zbyedidia.webfactional.com"
-license "MIT"
-dependency "dmarkdown" path="./lit/markdown"
-targetName "lit"
-targetPath "./bin"
