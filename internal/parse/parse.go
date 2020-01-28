@@ -51,43 +51,35 @@ func ParseBlocks(src []string) (map[string]Codeblock, DocumentInfo) {
 
 	for i, l := range src {
 		trimmed := strings.TrimSpace(l)
-		if strings.HasPrefix(trimmed, "---") {
-			inCodeblock = !inCodeblock
+		if strings.HasPrefix(trimmed, "---") && len(trimmed) > 3 && !inCodeblock {
+			inCodeblock = true
+			blockName := strings.TrimSpace(trimmed[3:])
+			if strings.HasSuffix(trimmed, "+=") || strings.HasSuffix(trimmed, ":=") {
+				blockName = strings.TrimSpace(blockName[:len(blockName)-2])
 
-			if inCodeblock {
-				blockName := strings.TrimSpace(trimmed[3:])
-				if strings.HasSuffix(trimmed, "+=") || strings.HasSuffix(trimmed, ":=") {
-					blockName = strings.TrimSpace(blockName[:len(blockName)-2])
-
-					if b, ok := blocks[blockName]; !ok {
-						// TODO throw error because block wasn't defined yet
-						log.Fatal("Block not yet defined ", blockName)
-						os.Exit(1)
-					} else {
-						curBlock = b
-					}
-				}
-
-				if strings.HasSuffix(trimmed, "+=") {
-					addCode = true
-				} else {
-					addCode = false
-				}
-
-				curBlock.Name = blockName
-				if !addCode {
-					curBlock.References = make([]Reference, 0)
-					curBlock.Code = make([]Line, 0)
-				}
-			} else {
-				if trimmed != "---" {
-					// TODO throw error because end of codeblock has extra chars
-					log.Fatal("Block end has extra chars")
+				if b, ok := blocks[blockName]; !ok {
+					// TODO throw error because block wasn't defined yet
+					log.Fatal("Block not yet defined ", blockName)
 					os.Exit(1)
+				} else {
+					curBlock = b
 				}
-
-				blocks[curBlock.Name] = curBlock
 			}
+
+			if strings.HasSuffix(trimmed, "+=") {
+				addCode = true
+			} else {
+				addCode = false
+			}
+
+			curBlock.Name = blockName
+			if !addCode {
+				curBlock.References = make([]Reference, 0)
+				curBlock.Code = make([]Line, 0)
+			}
+		} else if len(trimmed) == 3 && inCodeblock {
+			inCodeblock = false
+			blocks[curBlock.Name] = curBlock
 		} else if inCodeblock {
 			codebuf := &bytes.Buffer{}
 			for {

@@ -60,26 +60,25 @@ func Transform(src []string, doc parse.DocumentInfo) string {
 	blockName := ""
 	for _, l := range src {
 		trimmed := strings.TrimSpace(l)
-		if strings.HasPrefix(trimmed, "---") {
-			inCodeblock = !inCodeblock
-			if inCodeblock {
-				blockName = strings.TrimSpace(trimmed[3:])
-				suffix := ""
-				if strings.HasSuffix(trimmed, "+=") || strings.HasSuffix(trimmed, ":=") {
-					suffix = " " + trimmed[len(trimmed)-2:]
-					blockName = strings.TrimSpace(blockName[:len(blockName)-2])
-				}
-
-				codetype := ""
-				if doc.CodeType != "" {
-					codetype = "." + doc.CodeType + " "
-				}
-
-				buf.WriteString(fmt.Sprintf("```{%stitle=\"[%s]%s\"}\n", codetype, blockName, suffix))
-			} else {
-				buf.WriteString("```\n")
-				buf.WriteString("\\label{" + util.EncodeBlockName(blockName) + "}\n")
+		if strings.HasPrefix(trimmed, "---") && len(trimmed) > 3 && !inCodeblock {
+			inCodeblock = true
+			blockName = strings.TrimSpace(trimmed[3:])
+			suffix := ""
+			if strings.HasSuffix(trimmed, "+=") || strings.HasSuffix(trimmed, ":=") {
+				suffix = " " + trimmed[len(trimmed)-2:]
+				blockName = strings.TrimSpace(blockName[:len(blockName)-2])
 			}
+
+			codetype := ""
+			if doc.CodeType != "" {
+				codetype = "." + doc.CodeType + " "
+			}
+
+			buf.WriteString(fmt.Sprintf("```{%stitle=\"[%s]%s\"}\n", codetype, blockName, suffix))
+		} else if len(trimmed) == 3 && inCodeblock {
+			inCodeblock = false
+			buf.WriteString("```\n")
+			buf.WriteString("\\label{" + util.EncodeBlockName(blockName) + "}\n")
 		} else if inCodeblock {
 			for {
 				loc := r.FindStringIndex(l)

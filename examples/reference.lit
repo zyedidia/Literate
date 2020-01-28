@@ -197,6 +197,8 @@ Because of the `@compiler` command at the top of this file, if you run:
 
     $ lit --compiler large_example.lit
 
+---
+
 It should report the error to the correct line (232). In fact, if you have the vim plugin
 installed and Neomake, and you run `:Neomake`, an error should pop up next to that line in
 the sidebar. You can run `:lopen` which will open a list of all the errors in the document.
