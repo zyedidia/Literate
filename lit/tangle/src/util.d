@@ -6,6 +6,7 @@ import parser;
 import std.string;
 import std.path;
 import std.regex;
+import std.algorithm: canFind;
 
 // readall function
 // Read from a file
