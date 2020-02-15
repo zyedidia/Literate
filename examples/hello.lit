@@ -1,6 +1,6 @@
 @code_type c .c
 @comment_type // %s
-@compiler lit -t hello_world.lit && gcc hello_world.c && rm a.out
+@compiler lit -t hello.lit && gcc hello.c && rm a.out
 
 @title Hello world in C
 
