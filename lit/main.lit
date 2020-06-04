@@ -305,7 +305,8 @@ if (errorFormat is null) {
 }
 ---
 
-Now we actually go through and create the regex, by replacing the `%l`, `%f`, and `%m` with
+Now we actually go through and create the regex, by replacing the `%l` (line
+number), `%f` (file name), and `%m` (error message) with
 matched regular expressions. Then we execute the shell command, parse each error
 using the error format, and rewrite the error with the proper filename and line number
 given by the array `codeLinenums` that we created earlier.
