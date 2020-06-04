@@ -286,6 +286,8 @@ Supported compilers/linters are:
 * `pyflakes`
 * `jshint`
 * `dmd`
+* `cargo`
+* `rustc`
 
 --- Check for compiler errors +=
 if (errorFormat is null) {
