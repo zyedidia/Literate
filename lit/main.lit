@@ -288,6 +288,7 @@ Supported compilers/linters are:
 * `dmd`
 * `cargo`
 * `rustc`
+* `go`
 
 --- Check for compiler errors +=
 if (errorFormat is null) {
@@ -300,6 +301,7 @@ if (errorFormat is null) {
     else if (compilerCmd.indexOf("dmd") != -1) { errorFormat = "%f\\(%l\\):%s: %m"; }
     else if (compilerCmd.indexOf("cargo") != -1) { errorFormat = "%s --> %f:%l:%m%s"; }
     else if (compilerCmd.indexOf("rustc") != -1) { errorFormat = "%s --> %f:%l:%m%s"; }
+    else if (compilerCmd.indexOf("go") != -1) { errorFormat = "%f:%l:%s: %m"; }
 }
 ---
 
