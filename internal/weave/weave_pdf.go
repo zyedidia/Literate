@@ -3,6 +3,9 @@ package weave
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -10,51 +13,68 @@ import (
 	"github.com/zyedidia/lit/internal/util"
 )
 
-var header = `---
-title: %s
+var meta = `title: %s
 author: %s
 date: %s
 geometry: "left=3cm,right=3cm,top=2cm,bottom=2cm"
 urlcolor: blue
-linkcolor: blue
-header-includes:
+linkcolor: blue`
+
+var includes = `
+lit-caption-includes:
 - |
-` + "\t```{=latex}" + `
-	\usepackage{xcolor}
-	\usepackage{caption}
-	\definecolor{synred}{rgb}{0.6,0,0}
-	\definecolor{syngreen}{rgb}{0.25,0.5,0.35}
-	\definecolor{synpurple}{rgb}{0.5,0,0.35}
+` + "    ```{=latex}" + `
+    \usepackage{caption}
 
-	\lstset{ basicstyle=\ttfamily
-		, keepspaces=true
-		, escapeinside={(*@}{@*)}
-		, showspaces=false
-		, showstringspaces=false
-		, breaklines=true
-		, frame=tb
-		, keywordstyle=\color{synpurple}\bfseries
-		, stringstyle=\color{synred}
-		, commentstyle=\color{syngreen}
-		}
+    \DeclareCaptionFormat{listing} {
+       \parbox{\textwidth}{\hspace{-0.2cm}#1#2#3}
+    }
 
-	\DeclareCaptionFormat{listing} {
-	   \parbox{\textwidth}{\hspace{-0.2cm}#1#2#3}
-	}
+    \captionsetup[lstlisting]{format=listing, singlelinecheck=true, margin=0pt, font={tt,bf}}
+` + "    ```" + `
+lit-highlight-includes:
+- |
+` + "    ```{=latex}" + `
+    \usepackage{xcolor}
+    \definecolor{synred}{rgb}{0.6,0,0}
+    \definecolor{syngreen}{rgb}{0.25,0.5,0.35}
+    \definecolor{synpurple}{rgb}{0.5,0,0.35}
 
-	\captionsetup[lstlisting]{format=listing, singlelinecheck=true, margin=0pt, font={tt,bf}}
-` + "\t```\n---"
+    \lstset{ basicstyle=\ttfamily
+        , keepspaces=true
+        , escapeinside={(*@}{@*)}
+        , showspaces=false
+        , showstringspaces=false
+        , breaklines=true
+        , frame=tb
+        , keywordstyle=\color{synpurple}\bfseries
+        , stringstyle=\color{synred}
+        , commentstyle=\color{syngreen}
+        }
+` + "    ```\n"
 
 // SetTarget sets the target type (pdf, latex, html, md)
 func SetTarget(t int) {
 	target = t
 }
 
-func Transform(src []string, doc parse.DocumentInfo) string {
+// Transform returns the lit file transformed into a pandoc-compatible markdown file
+// and the arguments to run with pandoc to convert the markdown to PDF.
+func Transform(src []string, doc parse.DocumentInfo) (string, []string, string) {
 	buf := &bytes.Buffer{}
 	inCodeblock := false
 
-	buf.WriteString(fmt.Sprintf(header, doc.Title, doc.Author, doc.Date))
+	dir, err := ioutil.TempDir("", "lit")
+	if err != nil {
+		log.Fatal(err)
+		return "", []string{}, ""
+	}
+
+	template := filepath.Join(dir, "template.tex")
+	metaf := filepath.Join(dir, "meta.yaml")
+	ioutil.WriteFile(metaf, []byte(fmt.Sprintf(meta, doc.Title, doc.Author, doc.Date)), 0666)
+	ioutil.WriteFile(template, []byte(templateTex), 0666)
+
 	r := regexp.MustCompile("@{.*?}")
 
 	blockName := ""
@@ -74,11 +94,11 @@ func Transform(src []string, doc parse.DocumentInfo) string {
 				codetype = "." + doc.CodeType + " "
 			}
 
+			buf.WriteString("\\label{" + util.EncodeBlockName(blockName) + "}\n")
 			buf.WriteString(fmt.Sprintf("```{%stitle=\"[%s]%s\"}\n", codetype, blockName, suffix))
 		} else if len(trimmed) == 3 && inCodeblock {
 			inCodeblock = false
 			buf.WriteString("```\n")
-			buf.WriteString("\\label{" + util.EncodeBlockName(blockName) + "}\n")
 		} else if inCodeblock {
 			for {
 				loc := r.FindStringIndex(l)
@@ -89,7 +109,7 @@ func Transform(src []string, doc parse.DocumentInfo) string {
 					refName := l[loc[0]+2 : loc[1]-1]
 					code := l[:loc[0]]
 					buf.WriteString(code)
-					buf.WriteString("@{(*@")
+					buf.WriteString("{(*@")
 					buf.WriteString(refName)
 					buf.WriteString(" \\ref{" + util.EncodeBlockName(refName) + "}@*)}")
 					l = l[loc[1]:]
@@ -105,5 +125,7 @@ func Transform(src []string, doc parse.DocumentInfo) string {
 		}
 	}
 
-	return buf.String()
+	args := []string{"-s", "--listings", "--number-sections", "--template=" + template, "--metadata-file=" + metaf}
+
+	return buf.String(), args, dir
 }

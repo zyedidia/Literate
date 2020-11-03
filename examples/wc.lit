@@ -1,7 +1,4 @@
 @code_type c .c
-@comment_type /* %s */
-@compiler lit -t wc.lit && gcc wc.c && rm a.out
-
 @title Word Count Program
 
 # An example of Literate programming

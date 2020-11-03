@@ -106,13 +106,17 @@ func main() {
 		if *flagWeave || !*flagTangle {
 			if FindPandoc() {
 				outfname := strings.TrimSuffix(filepath.Base(a), filepath.Ext(a)) + "." + *flagTarget
-				toPandoc := weave.Transform(lines, doc)
+				toPandoc, args, tempdir := weave.Transform(lines, doc)
 
 				if *flagShowIntermediate {
 					fmt.Print(toPandoc)
 				}
 
-				err := pandoc.Run(toPandoc, []string{"-s", "--listings", "--number-sections", "-o", outfname})
+				err := pandoc.Run(toPandoc, append(args, "-o", outfname))
+				fmt.Println(args)
+
+				os.RemoveAll(tempdir)
+
 				if err != nil {
 					fmt.Println(err)
 				}
