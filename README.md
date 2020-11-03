@@ -1,5 +1,10 @@
 # Literate
 
+This branch stores the in-development version of the re-made Literate tool. The new version will support weaving to
+PDF and tex as primary targets, as well as markdown and html.
+
+The rest of this readme is out of date and will be updated once the new version of Literate is ready for use.
+
 ## What is Literate programming?
 
 Literate programming is a style of programming invented by Donald Knuth, where the main idea is that a program's source code is made primarily to be read and understood by other people, and secondarily to be executed by the computer.
@@ -14,9 +19,7 @@ Literate is a tool for creating literate programs.
 
 The goal of this project is to create a literate programming tool which keeps most, if not all of the features of Knuth and Levy's original CWEB system, but simplifies the system and adds even more features.
 
-You can view the main website about Literate [here](http://literate.zbyedidia.webfactional.com) including a [manual](http://literate.zbyedidia.webfactional.com/manual.php) on how to use Literate.
-
-If you like the project, make sure to leave a star :smile:
+You can view the main website about Literate [here](https://zyedidia.github.io/literate) including a [manual](https://zyedidia.github.io/literate/manual.html) on how to use Literate.
 
 ## Features
 
@@ -31,7 +34,7 @@ If you like the project, make sure to leave a star :smile:
 * Automatically generates hyperlinks between code sections
 * Formatted output similar to CWEB
 * Supported by [micro](https://github.com/zyedidia/micro) (by default)
-* Compatible with Vim ([literate.vim] (https://github.com/zyedidia/literate.vim))
+* Compatible with Vim ([literate.vim](https://github.com/zyedidia/literate.vim))
 
 ## Example
 
@@ -39,7 +42,7 @@ Here is a trivial example of a literate program saved in the file `hello.lit`.
 
 For a full example of a literate program, please see [`examples/wc.lit`](https://github.com/zyedidia/Literate/blob/master/examples/wc.lit) which
 is a literate implementation of the `wc` (word count) program found on Unix systems.
-You can find the compiled html [here](http://literate.zbyedidia.webfactional.com/examples/wc.html).
+You can find the compiled html [here](https://zyedidia.github.io/literate/examples/wc.html).
 
 ```
 @title Hello world in C
@@ -75,7 +78,7 @@ To compile this code simply run
 
 `$ lit hello.lit`
 
-Which generates [hello.c](http://literate.zbyedidia.webfactional.com/examples/hello.c) and [hello.html](http://literate.zbyedidia.webfactional.com/examples/hello.html).
+Which generates [hello.c](https://zyedidia.github.io/literate/examples/hello.c) and [hello.html](https://zyedidia.github.io/literate/examples/hello.html).
 
 You can also find this program in `examples/hello.lit`.
 
@@ -85,10 +88,10 @@ You can also find this program in `examples/hello.lit`.
 
 | Download |
 | --- |
-| [Mac OS X](http://literate.zbyedidia.webfactional.com/binaries/literate-osx.tar.gz) |
-| [64 bit Linux](http://literate.zbyedidia.webfactional.com/binaries/literate-linux64.tar.gz) |
-| [32 bit Linux](http://literate.zbyedidia.webfactional.com/binaries/literate-linux32.tar.gz) |
-| [Arm Linux](http://literate.zbyedidia.webfactional.com/binaries/literate-linux-arm.tar.gz) |
+| [Mac OS X](https://zyedidia.github.io/literate/binaries/literate-osx.tar.gz) |
+| [64 bit Linux](https://zyedidia.github.io/literate/binaries/literate-linux64.tar.gz) |
+| [32 bit Linux](https://zyedidia.github.io/literate/binaries/literate-linux32.tar.gz) |
+| [Arm Linux](https://zyedidia.github.io/literate/binaries/literate-linux-arm.tar.gz) |
 
 ### Building from Source
 
@@ -144,9 +147,9 @@ Options:
 --version    -v         Show the version number and compiler information
 ```
 
-For more information see the [manual](http://literate.zbyedidia.webfactional.com/manual.php).
+For more information see the [manual](https://zyedidia.github.io/literate/manual.html).
 
 ## Contributing
 
-Literate is written in Literate D and you can find the source code in the `lit` directory. You can also read the source code compiled by Literate [here](http://literate.zbyedidia.webfactional.com/literate-source).
+Literate is written in Literate D and you can find the source code in the `lit` directory. You can also read the source code compiled by Literate [here](https://zyedidia.github.io/literate/literate-source).
 I am happy to accept pull requests, and if you find any bugs, please report them. Thanks!
