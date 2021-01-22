@@ -1,10 +1,5 @@
 # Literate
 
-This branch stores the in-development version of the re-made Literate tool. The new version will support weaving to
-PDF and tex as primary targets, as well as markdown and html.
-
-The rest of this readme is out of date and will be updated once the new version of Literate is ready for use.
-
 ## What is Literate programming?
 
 Literate programming is a style of programming invented by Donald Knuth, where the main idea is that a program's source code is made primarily to be read and understood by other people, and secondarily to be executed by the computer.
