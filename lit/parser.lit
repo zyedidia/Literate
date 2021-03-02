@@ -500,10 +500,17 @@ if (line.split().length > 1) {
 }
 ---
 
-Parsing an `@title` command is even simpler.
+Parsing an `@title` command is even simpler - with one caveat: in books, titles can be set in the table of contents, and then reset in the chapter file. To avoid any confusion, we warn where we can detect that the title has already been set, and add a hint if we're currently in a book.
 
 --- Parse a title command
 if (startsWith(line, "@title")) {
+    if (chapter.title != "") {
+        auto warning = ["found a @title command when the title has already been set"];
+        if (isBook) {
+            warning ~= ["perhaps the title is set in the table of contents?"];
+        }
+        warn(filename, lineNum, warning);   
+    }
     chapter.title = strip(line[6..$]);
 }
 ---

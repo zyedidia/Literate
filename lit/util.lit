@@ -19,10 +19,12 @@ import std.conv;
 import parser;
 import std.string;
 import std.algorithm: canFind;
+import std.array: replicate;
 import std.regex: matchAll, regex;
 import std.path;
 
 @{readall function}
+@{message function}
 @{error function}
 @{warning function}
 @{leadingWS function}
@@ -61,15 +63,35 @@ string readall() {
 
 These functions simply write errors or warnings to stdout.
 
+--- message function
+void emit_formatted_messages(string file, int line, string kind, string[] messages) {
+    auto header = "%s:%d:%s:".format(file, line, kind);
+    auto whitespace = replicate(" ", header.length);
+
+    for(int i = 0; i < messages.length; i++) {
+        auto leading = (i == 0) ? header : whitespace;
+        writeln(leading, messages[i]);
+    }
+}
+---
+
 --- error function
 void error(string file, int line, string message) {
-    writeln(file, ":", line, ":error: ", message);
+    error(file, line, [message]);
+}
+
+void error(string file, int line, string[] messages) {
+    emit_formatted_messages(file, line, "error", messages);
 }
 ---
 
 --- warning function
 void warn(string file, int line, string message) {
-    writeln(file, ":", line, ":warning: ", message);
+    warn(file, line, [message]);
+}
+
+void warn(string file, int line, string[] messages) {
+    emit_formatted_messages(file, line, "warning", messages);
 }
 ---
 
