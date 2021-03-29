@@ -18,6 +18,9 @@ Here is an overview of the file:
 
 --- tangler.d
 import globals;
+import std.file;
+import std.path;
+import std.range;
 import std.string;
 import std.stdio;
 import std.algorithm: canFind;
@@ -71,8 +74,16 @@ the code.
 foreach (b; rootCodeblocks) {
     string filename = b.name;
     File f;
-    if (!noOutput)
-        f = File(outDir ~ "/" ~ filename, "w");
+    if (!noOutput) {
+        string fname = std.path.buildNormalizedPath(outDir, filename);
+
+        string dname = std.path.buildPath(std.range.dropBack(std.path.pathSplitter(fname), 1));
+        if (dname != "") {
+            std.file.mkdirRecurse(dname);
+        }
+
+        f = File(fname, "w");
+    }
 
     writeCode(codeblocks, b.name, f, filename, "");
     if (!noOutput)
