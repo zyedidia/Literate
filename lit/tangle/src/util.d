@@ -1,5 +1,6 @@
 // util.d
 import main;
+import std.algorithm : canFind;
 import std.stdio;
 import std.conv;
 import parser;
