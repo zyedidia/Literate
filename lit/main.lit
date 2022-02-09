@@ -286,6 +286,9 @@ Supported compilers/linters are:
 * `pyflakes`
 * `jshint`
 * `dmd`
+* `cargo`
+* `rustc`
+* `go`
 
 --- Check for compiler errors +=
 if (errorFormat is null) {
@@ -298,10 +301,12 @@ if (errorFormat is null) {
     else if (compilerCmd.indexOf("dmd") != -1) { errorFormat = "%f\\(%l\\):%s: %m"; }
     else if (compilerCmd.indexOf("cargo") != -1) { errorFormat = "%s --> %f:%l:%m%s"; }
     else if (compilerCmd.indexOf("rustc") != -1) { errorFormat = "%s --> %f:%l:%m%s"; }
+    else if (compilerCmd.indexOf("go") != -1) { errorFormat = "%f:%l:%s: %m"; }
 }
 ---
 
-Now we actually go through and create the regex, by replacing the `%l`, `%f`, and `%m` with
+Now we actually go through and create the regex, by replacing the `%l` (line
+number), `%f` (file name), and `%m` (error message) with
 matched regular expressions. Then we execute the shell command, parse each error
 using the error format, and rewrite the error with the proper filename and line number
 given by the array `codeLinenums` that we created earlier.
