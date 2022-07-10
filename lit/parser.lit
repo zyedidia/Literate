@@ -19,7 +19,7 @@ programmer likes, and the code should be explained.
 The source code for a literate program will somewhat resemble
 CWEB, but differ in many key ways which simplify the source code
 and make it easier to read. Literate will use @ signs for commands
-and markdown to style the prose. 
+and markdown to style the prose.
 
 @s Directory Structure
 
@@ -37,7 +37,7 @@ different chapters in the book. An example `Summary.lit` file might look
 like this:
 
     @title Title of the book
-    
+
     [Chapter 1](chapter1/intro.lit)
         [Subchapter 1](chapter1/example1.lit)
         [Subchapter 2](chapter1/example2.lit)
@@ -403,7 +403,7 @@ are recognized.
 
 --- Initialize some variables
 string filename = chapter.file;
-string[] commands = ["@code_type", "@comment_type", "@compiler", "@error_format", 
+string[] commands = ["@code_type", "@comment_type", "@compiler", "@error_format",
                      "@add_css", "@overwrite_css", "@colorscheme", "@include"];
 ---
 
@@ -591,14 +591,14 @@ First half matches for expressions *with* modifiers:
 2. `[ \t]-{3}[ \t]` : Until it matches ` --- `
 3. `(?P<modifiers>.+)` : Matches everything after the separator.
 
-Second half matches for no modifiers: Ether `Block name` and with a floating separator `Block Name ---`.
+Second half matches for no modifiers: Either `Block name` or with a floating separator: `Block Name ---`.
 
 1. `|(?P<nameb>\S.*?)` : Same thing as #1 but stores it in `nameb`
 2. `[ \t]*?` : Checks for any amount of whitespace (Including none.)
 3. `(-{1,}$` : Checks for any floating `-` and verifies that nothing else is there untill end of line.
 4. `|$))` : Or just checks that there is nothing but the end of the line after the whitespace.
 
-Returns ether `namea` and `modifiers` or just `nameb`. 
+Returns either `namea` and `modifiers` or just `nameb`.
 
 --- Parse Modifiers
 auto checkForModifiers = ctRegex!(`(?P<namea>\S.*)[ \t]-{3}[ \t](?P<modifiers>.+)|(?P<nameb>\S.*?)[ \t]*?(-{1,}$|$)`);
@@ -701,25 +701,25 @@ if (curSection !is null) {
 Parsing a change block is somewhat complex. Change blocks look like this:
 
     @change file.lit
-    
+
     Some comments here...
-    
+
     @replace
     replace this text
     @with
     with this text
     @end
-    
+
     More comments ...
-    
+
     @replace
     ...
     @with
     ...
     @end
-    
+
     ...
-    
+
     @change_end
 
 You can make multiple changes on one file. We've got two nice flags for keeping track of
